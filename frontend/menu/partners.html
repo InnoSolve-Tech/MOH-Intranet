@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partners - Partner Management System</title>
+    <link rel="stylesheet" href="../css/global.css">
+    <link rel="stylesheet" href="../css/dashboard.css">
+    <link rel="stylesheet" href="../css/partners.css">
+    <!-- Added ag-grid CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-grid.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/styles/ag-theme-alpine.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Dashboard</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="menu-item active" data-page="partners">
+                    <a href="partners.html">
+                        <span class="menu-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 7c-.8 0-1.54.5-1.85 1.26l-1.92 5.77c-.24.71.11 1.49.81 1.73.71.24 1.49-.11 1.73-.81L16.5 12H18v10h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm1.5 2h-2C3.57 8 2.5 9.57 2.5 11.5V22h2v-6h2v6h2v-10.5C8.5 9.57 7.43 8 6 8z"/>
+                            </svg>
+                        </span>
+                        <span class="menu-text">Partners</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-page="users">
+                    <a href="users.html">
+                        <span class="menu-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M16 13c1.66 0 2.99-1.34 2.99-3S17.66 7 16 7s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 7 8 7 5 8.34 5 10s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-1.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-1.5c0-2.33-4.67-3.5-7-3.5z"/>
+                            </svg>
+                        </span>
+                        <span class="menu-text">Users</span>
+                    </a>
+                </li>
+                <li class="menu-item" data-page="settings">
+                    <a href="settings.html">
+                        <span class="menu-icon">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                            </svg>
+                        </span>
+                        <span class="menu-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="logout()">
+                    <span class="menu-icon">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                        </svg>
+                    </span>
+                    <span class="menu-text">Logout</span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Tree View Filter Section -->
+        <div class="tree-filter-panel">
+            <div class="tree-header">
+                <h3>Filter Partners</h3>
+                <button class="clear-filters-btn" onclick="clearTreeFilters()">Clear All</button>
+            </div>
+            <div class="tree-container">
+                <div class="tree-search">
+                    <input type="text" id="treeSearch" placeholder="Search in tree..." onkeyup="searchTree()">
+                </div>
+                <div class="tree-view" id="partnerTree">
+                    <!-- Tree structure will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="content-header">
+                <h1>Partners Management</h1>
+                <div class="header-actions">
+                    <button class="btn btn-primary" onclick="openAddPartnerModal()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                        </svg>
+                        Add New Partner
+                    </button>
+                </div>
+            </header>
+
+            <div class="content-body">
+                <!-- ag-grid container -->
+                <div class="grid-container">
+                    <div id="partnersGrid" class="ag-theme-alpine"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add/Edit Partner Modal -->
+    <div id="partnerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Add New Partner</h2>
+                <span class="close" onclick="closePartnerModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="partnerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="partnerName">Partner Name *</label>
+                            <input type="text" id="partnerName" name="partnerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="acronym">Acronym *</label>
+                            <input type="text" id="acronym" name="acronym" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="partnerType">Partner Type *</label>
+                            <select id="partnerType" name="partnerType" required>
+                                <option value="">Select Type</option>
+                                <option value="NGO">NGO</option>
+                                <option value="Government">Government</option>
+                                <option value="Private">Private</option>
+                                <option value="International">International</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Health">Health</option>
+                                <option value="Education">Education</option>
+                                <option value="Agriculture">Agriculture</option>
+                                <option value="Technology">Technology</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Official Phone *</label>
+                            <input type="tel" id="phone" name="phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <textarea id="address" name="address" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closePartnerModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" onclick="savePartner()">Save Partner</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="contactToUserModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Convert Contact to User Account</h2>
+                <span class="close" onclick="closeContactToUserModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="contact-info">
+                    <h3>Contact Information</h3>
+                    <div id="contactDetails"></div>
+                </div>
+                <form id="contactToUserForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="userRole">User Role *</label>
+                            <select id="userRole" name="userRole" required>
+                                <option value="">Select Role</option>
+                                <option value="User">User</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Viewer">Viewer</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="userDepartment">Department</label>
+                            <select id="userDepartment" name="userDepartment">
+                                <option value="">Select Department</option>
+                                <option value="IT">IT</option>
+                                <option value="HR">HR</option>
+                                <option value="Finance">Finance</option>
+                                <option value="Operations">Operations</option>
+                                <option value="Management">Management</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tempPassword">Temporary Password *</label>
+                            <input type="password" id="tempPassword" name="tempPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="sendWelcomeEmail" name="sendWelcomeEmail" checked>
+                                Send welcome email with login credentials
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeContactToUserModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" onclick="convertContactToUser()">Create User Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contacts View Dialog -->
+    <div id="contactsModal" class="modal">
+        <div class="modal-content large-modal">
+            <div class="modal-header">
+                <h2 id="contactsModalTitle">Partner Contacts</h2>
+                <span class="close" onclick="closeContactsModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="contactsList" class="contacts-list">
+                    <!-- Contacts will be populated here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeContactsModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Added ag-grid JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+    <!-- Added jQuery CDN -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/partners.js"></script>
+</body>
+</html>

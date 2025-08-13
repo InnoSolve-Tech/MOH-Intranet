@@ -1,0 +1,469 @@
+/* Compressed Partners Page Styles with Tree View and ag-grid */
+
+/* Tree Filter Panel */
+.tree-filter-panel {
+  width: 20%;
+  background: white;
+  border-right: 1px solid #e9ecef;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 0;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.tree-header {
+  padding: 8px;
+  border-bottom: 1px solid #e9ecef;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tree-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.clear-filters-btn {
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.tree-container {
+  padding: 0;
+}
+
+.tree-search {
+  padding: 8px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.tree-search input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.tree-view {
+  padding: 0;
+}
+
+.tree-node {
+  padding: 0;
+  margin: 0;
+}
+
+.tree-node-header {
+  padding: 4px 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.tree-node-header:hover {
+  background: #e9ecef;
+}
+
+.tree-node-header.active {
+  background: #3498db;
+  color: white;
+}
+
+.tree-toggle {
+  margin-right: 4px;
+  font-size: 0.7rem;
+  width: 12px;
+  text-align: center;
+}
+
+.tree-children {
+  padding-left: 12px;
+  display: none;
+}
+
+.tree-children.expanded {
+  display: block;
+}
+
+.tree-leaf {
+  padding: 2px 8px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: #6c757d;
+  border-bottom: 1px solid #f8f9fa;
+}
+
+.tree-leaf:hover {
+  background: #f8f9fa;
+  color: #2c3e50;
+}
+
+.tree-leaf.selected {
+  background: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+}
+
+/* Main Content takes full remaining width (65% of screen) */
+.main-content {
+  width: 65%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.content-header {
+  padding: 8px 12px;
+  border-bottom: 1px solid #e9ecef;
+  background: white;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.content-header h1 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.content-body {
+  flex: 1;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* ag-Grid Container takes full width and height */
+.grid-container {
+  flex: 1;
+  width: 100%;
+  padding: 0;
+  min-height: 0;
+}
+
+#partnersGrid {
+  height: 100%;
+  width: 100%;
+}
+
+/* ag-Grid Customization */
+.ag-theme-alpine {
+  --ag-grid-size: 2px;
+  --ag-list-item-height: 28px;
+  --ag-row-height: 32px;
+  --ag-header-height: 32px;
+  --ag-font-size: 12px;
+  --ag-cell-horizontal-padding: 4px;
+}
+
+.ag-theme-alpine .ag-header-cell {
+  padding: 0 4px;
+}
+
+.ag-theme-alpine .ag-cell {
+  padding: 0 4px;
+  line-height: 32px;
+}
+
+/* Compressed Button Styles */
+.btn {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.header-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+/* Action Buttons in Grid */
+.action-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.action-btn {
+  padding: 2px 4px;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-view {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.btn-edit {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-contacts {
+  background-color: #28a745;
+  color: white;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-active {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-pending {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.status-inactive {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Contact-to-User Conversion Dialog Styles */
+.contact-info {
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 5px;
+  margin-bottom: 16px;
+}
+
+.contact-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 1rem;
+  color: #2c3e50;
+}
+
+#contactDetails {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Contacts List Dialog Styles */
+.large-modal .modal-content {
+  max-width: 700px;
+}
+
+.contacts-list {
+  display: grid;
+  gap: 12px;
+}
+
+.contact-card {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 5px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contact-details {
+  flex: 1;
+}
+
+.contact-name {
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 4px;
+}
+
+.contact-position {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.contact-info-line {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.contact-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.btn-convert {
+  background-color: #17a2b8;
+  color: white;
+  padding: 4px 8px;
+  font-size: 0.7rem;
+}
+
+/* Inline Contact Editing */
+.contact-edit-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.contact-edit-form input {
+  padding: 2px 4px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  font-size: 0.7rem;
+}
+
+.contact-edit-actions {
+  grid-column: span 2;
+  display: flex;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.btn-save-contact {
+  background-color: #28a745;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.65rem;
+}
+
+.btn-cancel-contact {
+  background-color: #6c757d;
+  color: white;
+  padding: 2px 6px;
+  font-size: 0.65rem;
+}
+
+/* Modal Adjustments */
+.modal-content {
+  max-width: 500px;
+}
+
+.modal-header {
+  padding: 12px 16px;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.modal-footer {
+  padding: 12px 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 2px;
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 0.8rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 4px 6px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  font-size: 0.8rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-weight: normal !important;
+  font-size: 0.8rem;
+}
+
+/* Dashboard Container Layout Fix */
+.dashboard-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tree-filter-panel {
+    width: 25%;
+  }
+
+  .main-content {
+    width: 60%;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}

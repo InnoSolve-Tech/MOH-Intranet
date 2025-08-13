@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <!-- Added global.css import before specific styles -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/contact.css">
+</head>
+<body>
+    <!-- Added container class alongside contact-container -->
+    <div class="container contact-container">
+        <h2>Contact Us</h2>
+        
+        <div class="contact-info">
+            <h3>Get in Touch</h3>
+            <p><strong>Address:</strong> 123 Business Street, City, State 12345</p>
+            <p><strong>Phone:</strong> +1 (555) 123-4567</p>
+            <p><strong>Email:</strong> info@company.com</p>
+            <p><strong>Business Hours:</strong> Monday - Friday, 9:00 AM - 5:00 PM</p>
+        </div>
+
+        <form id="contactForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Subject *</label>
+                <select id="subject" name="subject" required>
+                    <option value="">Select Subject</option>
+                    <option value="general">General Inquiry</option>
+                    <option value="partnership">Partnership Opportunity</option>
+                    <option value="support">Technical Support</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message *</label>
+                <textarea id="message" name="message" rows="5" placeholder="Please describe your inquiry..." required></textarea>
+            </div>
+
+            <!-- Updated button to use shared btn classes -->
+            <button type="submit" class="btn btn-primary btn-full submit-btn">Send Message</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/" class="link">← Back to Login</a>
+        </div>
+    </div>
+
+    <script src="js/contact.js"></script>
+</body>
+</html>

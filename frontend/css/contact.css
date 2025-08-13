@@ -1,0 +1,28 @@
+/* Removed overlapping styles, kept only contact-specific styles */
+/* Contact Specific Styles */
+.contact-container {
+  max-width: 500px;
+}
+
+.contact-info {
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.contact-info h3 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.contact-info p {
+  margin-bottom: 6px;
+  color: #666;
+  font-size: 14px;
+}
+
+.back-link {
+  text-align: center;
+}
