@@ -6,6 +6,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
+	"moh-intranet.com/database"
 	"moh-intranet.com/routes"
 )
 
@@ -27,7 +28,7 @@ func main() {
 			return c.Status(code).JSON(fiber.Map{"error": err.Error()})
 		},
 	})
-
+	database.ConnectDB()
 	routes.SetupRoutes(app)
 
 	fmt.Println("Server starting on port 7088...")

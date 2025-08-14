@@ -11,9 +11,10 @@ func SetupRoutes(app *fiber.App) {
 
 	partners := app.Group("/partners")
 	{
-		partners.Post("/partners", service.CreatePartner)         // Create partner with file upload
-		partners.Get("/partners/:uuid", service.GetPartner)       // Get partner by UUID
-		partners.Put("/partners/:uuid", service.UpdatePartner)    // Update partner by UUID
-		partners.Delete("/partners/:uuid", service.DeletePartner) // Delete partner by UUID
+		partners.Post("", service.CreatePartner) // Create partner with file upload
+		partners.Get("", service.GetPartners)
+		partners.Get("/:uuid", service.GetPartnerByID)   // Get partner by UUID
+		partners.Put("/:uuid", service.UpdatePartner)    // Update partner by UUID
+		partners.Delete("/:uuid", service.DeletePartner) // Delete partner by UUID
 	}
 }

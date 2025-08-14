@@ -1,157 +1,103 @@
-let partnersData = [];
-let filteredPartners = [];
-let gridApi = null;
-let editingPartnerId = null;
-let selectedContact = null;
-let editingContactIndex = null;
+let partnersData = []
+let filteredPartners = []
+let gridApi = null
+let editingPartnerId = null
+let selectedContact = null
+let editingContactIndex = null
 let treeFilters = {
   type: null,
   category: null,
   acronym: null,
-};
+}
 
-const agGrid = window.agGrid;
-const $ = window.jQuery;
+const agGrid = window.agGrid
+const $ = window.jQuery
 
 $(document).ready(() => {
-  initializePartnersPage();
-  loadPartners();
-  initializeGrid();
-  setupPartnersEventListeners();
-});
+  initializePartnersPage()
+  loadPartners()
+  initializeGrid()
+  setupPartnersEventListeners()
+})
 
 function initializePartnersPage() {
-  setActiveMenuItem("partners");
+  setActiveMenuItem("partners")
 }
 
 function setupPartnersEventListeners() {
   $(window).on("click", (event) => {
     if ($(event.target).hasClass("modal")) {
-      closePartnerModal();
-      closeContactsModal();
-      closeContactToUserModal();
+      closePartnerModal()
+      closeContactsModal()
+      closeContactToUserModal()
+      closeSupportYearsModal()
     }
-  });
+  })
 
   $("#partnerForm").on("submit", (e) => {
-    e.preventDefault();
-    savePartner();
-  });
+    e.preventDefault()
+    savePartner()
+  })
 
   $("#contactToUserForm").on("submit", (e) => {
-    e.preventDefault();
-    convertContactToUser();
-  });
+    e.preventDefault()
+    convertContactToUser()
+  })
 }
 
-function loadPartners() {
-  partnersData = [
-    {
-      id: 1,
-      name: "United Nations Children's Fund",
-      acronym: "UNICEF",
-      type: "International",
-      category: "Health",
-      phone: "+256-414-234567",
-      email: "uganda@unicef.org",
-      address: "Plot 15, Yusuf Lule Road, Kampala",
-      status: "active",
-      contacts: [
-        {
-          name: "John Doe",
-          position: "Country Director",
-          phone: "+256-700-123456",
-          email: "john.doe@unicef.org",
-        },
-        {
-          name: "Jane Smith",
-          position: "Program Manager",
-          phone: "+256-700-234567",
-          email: "jane.smith@unicef.org",
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "World Health Organization",
-      acronym: "WHO",
-      type: "International",
-      category: "Health",
-      phone: "+256-414-345678",
-      email: "uganda@who.int",
-      address: "Plot 20, Nakasero Road, Kampala",
-      status: "active",
-      contacts: [
-        {
-          name: "Dr. Michael Johnson",
-          position: "WHO Representative",
-          phone: "+256-700-345678",
-          email: "m.johnson@who.int",
-        },
-      ],
-    },
-    {
-      id: 3,
-      name: "Ministry of Health",
-      acronym: "MOH",
-      type: "Government",
-      category: "Health",
-      phone: "+256-414-456789",
-      email: "info@health.go.ug",
-      address: "Plot 6, Lourdel Road, Kampala",
-      status: "active",
-      contacts: [
-        {
-          name: "Dr. Sarah Williams",
-          position: "Permanent Secretary",
-          phone: "+256-700-456789",
-          email: "ps@health.go.ug",
-        },
-      ],
-    },
-    {
-      id: 4,
-      name: "Makerere University",
-      acronym: "MAK",
-      type: "Government",
-      category: "Education",
-      phone: "+256-414-567890",
-      email: "info@mak.ac.ug",
-      address: "University Road, Kampala",
-      status: "pending",
-      contacts: [
-        {
-          name: "Prof. David Brown",
-          position: "Vice Chancellor",
-          phone: "+256-700-567890",
-          email: "vc@mak.ac.ug",
-        },
-      ],
-    },
-    {
-      id: 5,
-      name: "Uganda Red Cross Society",
-      acronym: "URCS",
-      type: "NGO",
-      category: "Health",
-      phone: "+256-414-678901",
-      email: "info@redcrossug.org",
-      address: "Plot 17, Buganda Road, Kampala",
-      status: "active",
-      contacts: [
-        {
-          name: "Mary Johnson",
-          position: "Secretary General",
-          phone: "+256-700-678901",
-          email: "sg@redcrossug.org",
-        },
-      ],
-    },
-  ];
+async function loadPartners() {
+  try {
+    const res = await fetch("/partners")
+    if (!res.ok) {
+      throw new Error(`HTTP error! Status: ${res.status}`)
+    }
+    const apiPartners = await res.json()
+    console.log("API Response:", apiPartners)
 
-  filteredPartners = [...partnersData];
-  buildTreeView();
-  applyTreeFilters();
+    partnersData = apiPartners.map((partner) => ({
+      id: partner.ID,
+      uuid: partner.uuid,
+      name: partner.acronym, // Using acronym as name since API doesn't have separate name field
+      acronym: partner.acronym,
+      type: partner.partner_type,
+      category: partner.partner_category,
+      phone: partner.official_phone,
+      email: partner.official_email,
+      addresses: partner.partner_address || [],
+      address:
+        partner.partner_address && partner.partner_address.length > 0
+          ? partner.partner_address.map((addr) => addr.address || addr.official_phone).join(", ")
+          : "",
+      status: "active", // Default status since API doesn't provide this
+      has_mou: partner.has_mou,
+      mou_link: partner.mou_link,
+      contacts: partner.partner_contacts
+        ? partner.partner_contacts.map((contact) => ({
+            name: contact.names,
+            position: contact.title,
+            phone: contact.phone_number,
+            email: contact.offical_email,
+            address: contact.address,
+            user_id: contact.user_id,
+          }))
+        : [],
+      support_years: partner.partner_support_years || [],
+    }))
+
+    filteredPartners = [...partnersData]
+    buildTreeView()
+    applyTreeFilters()
+
+    showNotification(`Loaded ${partnersData.length} partners successfully!`, "success")
+  } catch (error) {
+    console.error("Error loading partners:", error)
+    showNotification("Failed to load partners. Please try again.", "error")
+
+    partnersData = []
+    filteredPartners = []
+    buildTreeView()
+    applyTreeFilters()
+  }
 }
 
 function initializeGrid() {
@@ -160,6 +106,7 @@ function initializeGrid() {
       headerName: "Partner",
       field: "name",
       width: 200,
+      flex:1,
       cellRenderer: (params) => `
         <div style="font-weight: 500; font-size: 0.8rem;">${params.value}</div>
         <div style="font-size: 0.7rem; color: #6c757d;">${params.data.acronym}</div>
@@ -169,27 +116,47 @@ function initializeGrid() {
       headerName: "Type",
       field: "type",
       width: 80,
+          flex:1,
       cellStyle: { fontSize: "0.75rem" },
     },
     {
       headerName: "Category",
       field: "category",
       width: 90,
+          flex:1,
       cellStyle: { fontSize: "0.75rem" },
     },
     {
       headerName: "Contact",
       field: "phone",
       width: 140,
+          flex:1,
       cellRenderer: (params) => `
         <div style="font-size: 0.7rem;">${params.value}</div>
         <div style="font-size: 0.65rem; color: #6c757d;">${params.data.email}</div>
       `,
     },
     {
+      headerName: "MOU",
+      field: "has_mou",
+      width: 80,
+          flex:1,
+      cellRenderer: (params) => {
+        if (params.data.has_mou && params.data.mou_link) {
+          return `<a href="${params.data.mou_link}" target="_blank" class="mou-link" title="View MOU">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+          </a>`
+        }
+        return params.data.has_mou ? "Yes" : "No"
+      },
+    },
+    {
       headerName: "Contacts",
       field: "contacts",
       width: 100,
+          flex:1,
       cellRenderer: (params) => {
         return `
           <button class="action-btn btn-contacts" onclick="showContactsDialog(${params.data.id})" title="View Contacts">
@@ -198,13 +165,30 @@ function initializeGrid() {
             </svg>
             ${params.value.length}
           </button>
-        `;
+        `
+      },
+    },
+    {
+      headerName: "Support Years",
+      field: "support_years",
+      width: 100,
+          flex:1,
+      cellRenderer: (params) => {
+        return `
+          <button class="action-btn btn-support-years" onclick="showSupportYearsDialog(${params.data.id})" title="View Support Years">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+            </svg>
+            ${params.value.length}
+          </button>
+        `
       },
     },
     {
       headerName: "Status",
       field: "status",
       width: 70,
+          flex:1,
       cellRenderer: (params) => `
         <span class="status-badge status-${params.value}">${params.value}</span>
       `,
@@ -212,6 +196,7 @@ function initializeGrid() {
     {
       headerName: "Actions",
       width: 120,
+          flex:1.5,
       cellRenderer: (params) => `
         <div class="action-buttons">
           <button class="action-btn btn-view" onclick="viewPartner(${params.data.id})" title="View">
@@ -232,7 +217,7 @@ function initializeGrid() {
         </div>
       `,
     },
-  ];
+  ]
 
   const gridOptions = {
     columnDefs: columnDefs,
@@ -246,22 +231,22 @@ function initializeGrid() {
       filter: true,
       resizable: true,
     },
-  };
+  }
 
-  const gridDiv = $("#partnersGrid")[0];
+  const gridDiv = $("#partnersGrid")[0]
   if (gridDiv) {
-    gridApi = agGrid.createGrid(gridDiv, gridOptions);
+    gridApi = agGrid.createGrid(gridDiv, gridOptions)
   }
 }
 
 function showContactsDialog(partnerId) {
-  const partner = partnersData.find((p) => p.id === partnerId);
+  const partner = partnersData.find((p) => p.id === partnerId)
   if (!partner || !partner.contacts) {
-    showNotification("Partner or contacts not found", "error");
-    return;
+    showNotification("Partner or contacts not found", "error")
+    return
   }
 
-  $("#contactsModalTitle").text(`${partner.name} - Contacts`);
+  $("#contactsModalTitle").text(`${partner.name} - Contacts`)
 
   const contactsHtml = partner.contacts
     .map(
@@ -298,72 +283,113 @@ function showContactsDialog(partnerId) {
     </div>
   `,
     )
-    .join("");
+    .join("")
 
-  $("#contactsList").html(contactsHtml);
-  $("#contactsModal").addClass("show");
+  $("#contactsList").html(contactsHtml)
+  $("#contactsModal").addClass("show")
 }
 
-function savePartner() {
-  const form = $("#partnerForm")[0];
+async function savePartner() {
+  const form = $("#partnerForm")[0]
   if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
+    form.reportValidity()
+    return
   }
 
-  const formData = new FormData(form);
+  const formData = new FormData(form)
+
   const partnerData = {
-    name: formData.get("partnerName"),
     acronym: formData.get("acronym"),
-    type: formData.get("partnerType"),
-    category: formData.get("category"),
-    phone: formData.get("phone"),
-    email: formData.get("email"),
-    address: formData.get("address"),
-    status: "active",
-    contacts: [],
-  };
-
-  if (editingPartnerId) {
-    const index = partnersData.findIndex((p) => p.id === editingPartnerId);
-    if (index !== -1) {
-      partnersData[index] = { ...partnersData[index], ...partnerData };
-      showNotification("Partner updated successfully!", "success");
-    }
-  } else {
-    const newId = Math.max(...partnersData.map((p) => p.id), 0) + 1;
-    const newPartner = { id: newId, ...partnerData };
-    partnersData.push(newPartner);
-    showNotification("Partner added successfully!", "success");
+    partner_type: formData.get("partnerType"),
+    partner_category: formData.get("category"),
+    official_phone: formData.get("phone"),
+    official_email: formData.get("email"),
+    has_mou: formData.get("hasMou") === "on",
+    mou_link: formData.get("mouLink") || "",
+    partner_address: formData.getAll("addresses").map((addr) => ({ address: addr })),
+    partner_contacts: [], // Will be managed separately
+    partner_support_years: [], // Will be managed separately
   }
 
-  buildTreeView();
-  applyTreeFilters();
-  closePartnerModal();
+  const mouFile = formData.get("mouFile")
+  if (mouFile && mouFile.size > 0) {
+    // In a real implementation, you would upload the file first
+    // and get back a URL to store in mou_link
+    console.log("MOU file to upload:", mouFile)
+    partnerData.mou_link = `uploads/mou/${mouFile.name}` // Placeholder
+  }
+
+  try {
+    let response
+    if (editingPartnerId) {
+      response = await fetch(`/partners/${editingPartnerId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(partnerData),
+      })
+    } else {
+      response = await fetch("/partners", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(partnerData),
+      })
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`)
+    }
+
+    const result = await response.json()
+    console.log("Partner saved:", result)
+
+    showNotification(editingPartnerId ? "Partner updated successfully!" : "Partner added successfully!", "success")
+
+    await loadPartners()
+    closePartnerModal()
+  } catch (error) {
+    console.error("Error saving partner:", error)
+    showNotification("Failed to save partner. Please try again.", "error")
+  }
 }
 
-function deletePartner(id) {
-  const partner = partnersData.find((p) => p.id === id);
-  if (!partner) return;
+async function deletePartner(id) {
+  const partner = partnersData.find((p) => p.id === id)
+  if (!partner) return
 
   if (confirm(`Are you sure you want to delete ${partner.name}?`)) {
-    partnersData = partnersData.filter((p) => p.id !== id);
-    buildTreeView();
-    applyTreeFilters();
-    showNotification("Partner deleted successfully!", "success");
+    try {
+      const response = await fetch(`/partners/${id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`)
+      }
+
+      showNotification("Partner deleted successfully!", "success")
+
+      await loadPartners()
+    } catch (error) {
+      console.error("Error deleting partner:", error)
+      showNotification("Failed to delete partner. Please try again.", "error")
+    }
   }
 }
 
 function convertContactToUser() {
-  if (!selectedContact) return;
+  if (!selectedContact) return
 
-  const form = $("#contactToUserForm")[0];
+  const form = $("#contactToUserForm")[0]
   if (!form.checkValidity()) {
-    form.reportValidity();
-    return;
+    form.reportValidity()
+    return
   }
 
-  const formData = new FormData(form);
+  const formData = new FormData(form)
   const userData = {
     firstName: selectedContact.contact.name.split(" ")[0],
     lastName: selectedContact.contact.name.split(" ").slice(1).join(" "),
@@ -376,178 +402,165 @@ function convertContactToUser() {
     status: "active",
     createdFrom: "contact_conversion",
     partnerId: selectedContact.partnerId,
-  };
+  }
 
-  console.log("Converting contact to user:", userData);
-  showNotification(
-    `Successfully converted ${selectedContact.contact.name} to user account!`,
-    "success",
-  );
-  closeContactToUserModal();
+  console.log("Converting contact to user:", userData)
+  showNotification(`Successfully converted ${selectedContact.contact.name} to user account!`, "success")
+  closeContactToUserModal()
 }
 
 function buildTreeView() {
-  const $treeContainer = $("#partnerTree");
-  if (!$treeContainer.length) return;
+  const $treeContainer = $("#partnerTree")
+  if (!$treeContainer.length) return
 
-  const treeData = buildTreeData();
-  $treeContainer.empty();
+  const treeData = buildTreeData()
+  $treeContainer.empty()
 
   Object.keys(treeData).forEach((type) => {
-    const typeNode = createTreeNode(type, "type", treeData[type]);
-    $treeContainer.append(typeNode);
-  });
+    const typeNode = createTreeNode(type, "type", treeData[type])
+    $treeContainer.append(typeNode)
+  })
 }
 
 function buildTreeData() {
-  const tree = {};
+  const tree = {}
 
   partnersData.forEach((partner) => {
     if (!tree[partner.type]) {
-      tree[partner.type] = {};
+      tree[partner.type] = {}
     }
     if (!tree[partner.type][partner.category]) {
-      tree[partner.type][partner.category] = [];
+      tree[partner.type][partner.category] = []
     }
-    tree[partner.type][partner.category].push(partner);
-  });
+    tree[partner.type][partner.category].push(partner)
+  })
 
-  return tree;
+  return tree
 }
 
 function createTreeNode(label, level, children) {
-  const $nodeDiv = $("<div>").addClass("tree-node");
-  const $headerDiv = $("<div>").addClass("tree-node-header");
+  const $nodeDiv = $("<div>").addClass("tree-node")
+  const $headerDiv = $("<div>").addClass("tree-node-header")
 
-  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label));
+  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label))
 
-  const hasChildren = level !== "acronym" && Object.keys(children).length > 0;
+  const hasChildren = level !== "acronym" && Object.keys(children).length > 0
 
   $headerDiv.html(`
     <span class="tree-toggle">${hasChildren ? "▶" : ""}</span>
     <span>${label} ${level === "type" ? `(${Object.values(children).flat().length})` : level === "category" ? `(${children.length})` : ""}</span>
-  `);
+  `)
 
-  $nodeDiv.append($headerDiv);
+  $nodeDiv.append($headerDiv)
 
   if (hasChildren) {
-    const $childrenDiv = $("<div>").addClass("tree-children");
+    const $childrenDiv = $("<div>").addClass("tree-children")
 
     if (level === "type") {
       Object.keys(children).forEach((category) => {
-        const categoryNode = createTreeNode(
-          category,
-          "category",
-          children[category],
-        );
-        $childrenDiv.append(categoryNode);
-      });
+        const categoryNode = createTreeNode(category, "category", children[category])
+        $childrenDiv.append(categoryNode)
+      })
     } else if (level === "category") {
       children.forEach((partner) => {
-        const $acronymDiv = $("<div>")
-          .addClass("tree-leaf")
-          .text(partner.acronym);
-        $acronymDiv.on("click", () =>
-          selectTreeLeaf($acronymDiv[0], "acronym", partner.acronym),
-        );
-        $childrenDiv.append($acronymDiv);
-      });
+        const $acronymDiv = $("<div>").addClass("tree-leaf").text(partner.acronym)
+        $acronymDiv.on("click", () => selectTreeLeaf($acronymDiv[0], "acronym", partner.acronym))
+        $childrenDiv.append($acronymDiv)
+      })
     }
 
-    $nodeDiv.append($childrenDiv);
+    $nodeDiv.append($childrenDiv)
   }
 
-  return $nodeDiv[0];
+  return $nodeDiv[0]
 }
 
 function toggleTreeNode(header, level, value) {
-  const $header = $(header);
-  const $children = $header.parent().find(".tree-children").first();
-  const $toggle = $header.find(".tree-toggle");
+  const $header = $(header)
+  const $children = $header.parent().find(".tree-children").first()
+  const $toggle = $header.find(".tree-toggle")
 
   if ($children.length) {
-    const isExpanded = $children.hasClass("expanded");
-    $children.toggleClass("expanded");
-    $toggle.text(isExpanded ? "▶" : "▼");
+    const isExpanded = $children.hasClass("expanded")
+    $children.toggleClass("expanded")
+    $toggle.text(isExpanded ? "▶" : "▼")
   }
 
   if (level === "type") {
-    treeFilters.type = treeFilters.type === value ? null : value;
-    treeFilters.category = null;
-    treeFilters.acronym = null;
+    treeFilters.type = treeFilters.type === value ? null : value
+    treeFilters.category = null
+    treeFilters.acronym = null
   } else if (level === "category") {
-    treeFilters.category = treeFilters.category === value ? null : value;
-    treeFilters.acronym = null;
+    treeFilters.category = treeFilters.category === value ? null : value
+    treeFilters.acronym = null
   }
 
-  updateTreeSelection();
-  applyTreeFilters();
+  updateTreeSelection()
+  applyTreeFilters()
 }
 
 function selectTreeLeaf(leaf, level, value) {
-  $(".tree-leaf.selected").removeClass("selected");
+  $(".tree-leaf.selected").removeClass("selected")
 
   if (treeFilters.acronym === value) {
-    treeFilters.acronym = null;
+    treeFilters.acronym = null
   } else {
-    $(leaf).addClass("selected");
-    treeFilters.acronym = value;
+    $(leaf).addClass("selected")
+    treeFilters.acronym = value
   }
 
-  applyTreeFilters();
+  applyTreeFilters()
 }
 
 function updateTreeSelection() {
-  $(".tree-node-header").removeClass("active");
+  $(".tree-node-header").removeClass("active")
 
   if (treeFilters.type) {
     $(".tree-node-header").each(function () {
       if ($(this).text().includes(treeFilters.type)) {
-        $(this).addClass("active");
+        $(this).addClass("active")
       }
-    });
+    })
   }
 }
 
 function applyTreeFilters() {
   filteredPartners = partnersData.filter((partner) => {
-    if (treeFilters.type && partner.type !== treeFilters.type) return false;
-    if (treeFilters.category && partner.category !== treeFilters.category)
-      return false;
-    if (treeFilters.acronym && partner.acronym !== treeFilters.acronym)
-      return false;
-    return true;
-  });
+    if (treeFilters.type && partner.type !== treeFilters.type) return false
+    if (treeFilters.category && partner.category !== treeFilters.category) return false
+    if (treeFilters.acronym && partner.acronym !== treeFilters.acronym) return false
+    return true
+  })
 
   if (gridApi) {
-    gridApi.setGridOption("rowData", filteredPartners);
+    gridApi.setGridOption("rowData", filteredPartners)
   }
 }
 
 function searchTree() {
-  const searchTerm = $("#treeSearch").val().toLowerCase();
+  const searchTerm = $("#treeSearch").val().toLowerCase()
   $(".tree-node-header, .tree-leaf").each(function () {
-    const text = $(this).text().toLowerCase();
-    const match = text.includes(searchTerm);
-    $(this).css("display", match || searchTerm === "" ? "flex" : "none");
-  });
+    const text = $(this).text().toLowerCase()
+    const match = text.includes(searchTerm)
+    $(this).css("display", match || searchTerm === "" ? "flex" : "none")
+  })
 }
 
 function clearTreeFilters() {
-  treeFilters = { type: null, category: null, acronym: null };
-  $(".tree-node-header.active").removeClass("active");
-  $(".tree-leaf.selected").removeClass("selected");
-  $("#treeSearch").val("");
-  searchTree();
-  applyTreeFilters();
+  treeFilters = { type: null, category: null, acronym: null }
+  $(".tree-node-header.active").removeClass("active")
+  $(".tree-leaf.selected").removeClass("selected")
+  $("#treeSearch").val("")
+  searchTree()
+  applyTreeFilters()
 }
 
 function editContact(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId);
-  const contact = partner.contacts[contactIndex];
-  const $contactCard = $(`#contact-${partnerId}-${contactIndex}`);
+  const partner = partnersData.find((p) => p.id === partnerId)
+  const contact = partner.contacts[contactIndex]
+  const $contactCard = $(`#contact-${partnerId}-${contactIndex}`)
 
-  editingContactIndex = contactIndex;
+  editingContactIndex = contactIndex
 
   $contactCard.html(`
     <div class="contact-details">
@@ -562,41 +575,41 @@ function editContact(partnerId, contactIndex) {
         </div>
       </div>
     </div>
-  `);
+  `)
 }
 
 function saveContactEdit(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId);
+  const partner = partnersData.find((p) => p.id === partnerId)
 
   const updatedContact = {
     name: $("#editContactName").val(),
     position: $("#editContactPosition").val(),
     phone: $("#editContactPhone").val(),
     email: $("#editContactEmail").val(),
-  };
+  }
 
-  partner.contacts[contactIndex] = updatedContact;
-  editingContactIndex = null;
+  partner.contacts[contactIndex] = updatedContact
+  editingContactIndex = null
 
-  showNotification("Contact updated successfully!", "success");
-  showContactsDialog(partnerId); // Refresh the dialog
+  showNotification("Contact updated successfully!", "success")
+  showContactsDialog(partnerId)
 }
 
 function cancelContactEdit(partnerId) {
-  editingContactIndex = null;
-  showContactsDialog(partnerId); // Refresh the dialog
+  editingContactIndex = null
+  showContactsDialog(partnerId)
 }
 
 function closeContactsModal() {
-  $("#contactsModal").removeClass("show");
-  editingContactIndex = null;
+  $("#contactsModal").removeClass("show")
+  editingContactIndex = null
 }
 
 function openContactToUserModal(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId);
-  const contact = partner.contacts[contactIndex];
+  const partner = partnersData.find((p) => p.id === partnerId)
+  const contact = partner.contacts[contactIndex]
 
-  selectedContact = { partnerId, contactIndex, contact };
+  selectedContact = { partnerId, contactIndex, contact }
 
   $("#contactDetails").html(`
     <strong>${contact.name}</strong><br>
@@ -604,66 +617,86 @@ function openContactToUserModal(partnerId, contactIndex) {
     Phone: ${contact.phone}<br>
     Email: ${contact.email}<br>
     Partner: ${partner.name}
-  `);
+  `)
 
-  $("#contactToUserForm")[0].reset();
-  $("#contactToUserModal").addClass("show");
-  closeContactsModal();
+  $("#contactToUserForm")[0].reset()
+  $("#contactToUserModal").addClass("show")
+  closeContactsModal()
 }
 
 function closeContactToUserModal() {
-  $("#contactToUserModal").removeClass("show");
-  selectedContact = null;
+  $("#contactToUserModal").removeClass("show")
+  selectedContact = null
 }
 
 function openAddPartnerModal() {
-  editingPartnerId = null;
-  $("#modalTitle").text("Add New Partner");
-  $("#partnerForm")[0].reset();
-  $("#partnerModal").addClass("show");
+  editingPartnerId = null
+  $("#modalTitle").text("Add New Partner")
+  $("#partnerForm")[0].reset()
+  $("#partnerModal").addClass("show")
 }
 
 function editPartner(id) {
-  const partner = partnersData.find((p) => p.id === id);
-  if (!partner) return;
+  const partner = partnersData.find((p) => p.id === id)
+  if (!partner) return
 
-  editingPartnerId = id;
-  $("#modalTitle").text("Edit Partner");
-  $("#partnerName").val(partner.name);
-  $("#acronym").val(partner.acronym);
-  $("#partnerType").val(partner.type);
-  $("#category").val(partner.category);
-  $("#phone").val(partner.phone);
-  $("#email").val(partner.email);
-  $("#address").val(partner.address || "");
-  $("#partnerModal").addClass("show");
+  editingPartnerId = id
+  $("#modalTitle").text("Edit Partner")
+  $("#partnerName").val(partner.name)
+  $("#acronym").val(partner.acronym)
+  $("#partnerType").val(partner.type)
+  $("#category").val(partner.category)
+  $("#phone").val(partner.phone)
+  $("#email").val(partner.email)
+
+  if (partner.addresses && partner.addresses.length > 0) {
+    partner.addresses.forEach((addr, index) => {
+      if (index === 0) {
+        $("#address").val(addr.address || addr.official_phone || "")
+      } else {
+        // Add additional address fields dynamically
+        addAddressField(addr.address || addr.official_phone || "")
+      }
+    })
+  }
+
+  $("#hasMou").prop("checked", partner.has_mou)
+  $("#mouLink").val(partner.mou_link || "")
+
+  $("#partnerModal").addClass("show")
 }
 
 function closePartnerModal() {
-  $("#partnerModal").removeClass("show");
-  editingPartnerId = null;
+  $("#partnerModal").removeClass("show")
+  editingPartnerId = null
 }
 
 function viewPartner(id) {
-  const partner = partnersData.find((p) => p.id === id);
-  if (!partner) return;
+  const partner = partnersData.find((p) => p.id === id)
+  if (!partner) return
 
-  const contactsList = partner.contacts
-    .map((c) => `${c.name} (${c.position}) - ${c.phone}`)
-    .join("\n");
+  const contactsList = partner.contacts.map((c) => `${c.name} (${c.position}) - ${c.phone}`).join("\n")
+  const addressesList = partner.addresses
+    ? partner.addresses.map((addr) => addr.address || addr.official_phone).join("\n")
+    : "Not provided"
+  const supportYearsList =
+    partner.support_years.length > 0
+      ? partner.support_years.map((sy) => `${sy.year}: ${sy.level} - ${sy.districts}`).join("\n")
+      : "No support years recorded"
+
   alert(
-    `Partner Details:\n\nName: ${partner.name}\nAcronym: ${partner.acronym}\nType: ${partner.type}\nCategory: ${partner.category}\nPhone: ${partner.phone}\nEmail: ${partner.email}\nAddress: ${partner.address || "Not provided"}\nStatus: ${partner.status}\n\nContacts:\n${contactsList}`,
-  );
+    `Partner Details:\n\nName: ${partner.name}\nAcronym: ${partner.acronym}\nType: ${partner.type}\nCategory: ${partner.category}\nPhone: ${partner.phone}\nEmail: ${partner.email}\n\nAddresses:\n${addressesList}\n\nMOU: ${partner.has_mou ? "Yes" : "No"}${partner.mou_link ? ` (${partner.mou_link})` : ""}\nStatus: ${partner.status}\n\nContacts:\n${contactsList}\n\nSupport Years:\n${supportYearsList}`,
+  )
 }
 
 function setActiveMenuItem(menuItem) {
-  console.log(`Setting active menu item to: ${menuItem}`);
+  console.log(`Setting active menu item to: ${menuItem}`)
 }
 
 function showNotification(message, type) {
-  console.log(`Notification (${type}): ${message}`);
+  console.log(`Notification (${type}): ${message}`)
 
-  let $notification = $("#notification");
+  let $notification = $("#notification")
   if (!$notification.length) {
     $notification = $("<div>").attr("id", "notification").css({
       position: "fixed",
@@ -676,21 +709,76 @@ function showNotification(message, type) {
       zIndex: "10000",
       opacity: "0",
       transition: "opacity 0.3s ease",
-    });
-    $("body").append($notification);
+    })
+    $("body").append($notification)
   }
 
   $notification
     .text(message)
     .removeClass()
     .addClass(`notification-${type}`)
-    .css(
-      "backgroundColor",
-      type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8",
-    )
-    .css("opacity", "1");
+    .css("backgroundColor", type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8")
+    .css("opacity", "1")
 
   setTimeout(() => {
-    $notification.css("opacity", "0");
-  }, 3000);
+    $notification.css("opacity", "0")
+  }, 3000)
+}
+
+function showSupportYearsDialog(partnerId) {
+  const partner = partnersData.find((p) => p.id === partnerId)
+  if (!partner) {
+    showNotification("Partner not found", "error")
+    return
+  }
+
+  $("#supportYearsModalTitle").text(`${partner.name} - Support Years`)
+
+  const supportYearsHtml =
+    partner.support_years.length > 0
+      ? partner.support_years
+          .map(
+            (supportYear, index) => `
+        <div class="support-year-card" id="support-year-${partnerId}-${index}">
+          <div class="support-year-details">
+            <div class="support-year-year">Year: ${supportYear.year || "N/A"}</div>
+            <div class="support-year-level">Level: ${supportYear.level || "N/A"}</div>
+            <div class="support-year-districts">Districts: ${supportYear.districts || "N/A"}</div>
+            <div class="support-year-thematic">Thematic Areas: ${supportYear.thematic_areas || "N/A"}</div>
+          </div>
+          <div class="support-year-actions">
+            <button class="btn btn-edit" onclick="editSupportYear(${partnerId}, ${index})">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+              </svg>
+              Edit
+            </button>
+          </div>
+        </div>
+      `,
+          )
+          .join("")
+      : '<div class="no-support-years">No support years recorded</div>'
+
+  $("#supportYearsList").html(supportYearsHtml)
+  $("#supportYearsModal").addClass("show")
+}
+
+function closeSupportYearsModal() {
+  $("#supportYearsModal").removeClass("show")
+}
+
+function addAddressField(value) {
+  const $addressContainer = $("#addressContainer")
+  const $newAddressField = $("<input>")
+    .attr({
+      type: "text",
+      class: "form-control",
+      id: `address-${$addressContainer.children().length}`,
+      name: "addresses",
+      placeholder: "Address",
+    })
+    .val(value)
+
+  $addressContainer.append($newAddressField)
 }

@@ -13,7 +13,7 @@ function checkAuthentication() {
 
   if (userSession) {
     // No session found, redirect to login
-    window.location.href = "login.html";
+    window.location.href = "/";
     return false;
   }
 
@@ -29,7 +29,7 @@ function checkAuthentication() {
       // 8 hours session timeout
       localStorage.removeItem("userSession");
       alert("Your session has expired. Please login again.");
-      window.location.href = "login.html";
+      window.location.href = "/";
       return false;
     }
 
@@ -39,7 +39,7 @@ function checkAuthentication() {
   } catch (error) {
     console.error("Invalid session data:", error);
     localStorage.removeItem("userSession");
-    window.location.href = "login.html";
+    window.location.href = "/";
     return false;
   }
 }
@@ -170,7 +170,7 @@ function logout() {
     alert("You have been logged out successfully.");
 
     // Redirect to login page
-    window.location.href = "login.html";
+    window.location.href = "/";
   }
 }
 
