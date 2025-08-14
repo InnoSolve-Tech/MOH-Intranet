@@ -1,47 +1,47 @@
-let partnersData = []
-let filteredPartners = []
-let gridApi = null
-let editingPartnerId = null
-let selectedContact = null
-let editingContactIndex = null
+let partnersData = [];
+let filteredPartners = [];
+let gridApi = null;
+let editingPartnerId = null;
+let selectedContact = null;
+let editingContactIndex = null;
 let treeFilters = {
   type: null,
   category: null,
   acronym: null,
-}
+};
 
-const agGrid = window.agGrid
-const $ = window.jQuery
+const agGrid = window.agGrid;
+const $ = window.jQuery;
 
 $(document).ready(() => {
-  initializePartnersPage()
-  loadPartners()
-  initializeGrid()
-  setupPartnersEventListeners()
-})
+  initializePartnersPage();
+  loadPartners();
+  initializeGrid();
+  setupPartnersEventListeners();
+});
 
 function initializePartnersPage() {
-  setActiveMenuItem("partners")
+  setActiveMenuItem("partners");
 }
 
 function setupPartnersEventListeners() {
   $(window).on("click", (event) => {
     if ($(event.target).hasClass("modal")) {
-      closePartnerModal()
-      closeContactsModal()
-      closeContactToUserModal()
+      closePartnerModal();
+      closeContactsModal();
+      closeContactToUserModal();
     }
-  })
+  });
 
   $("#partnerForm").on("submit", (e) => {
-    e.preventDefault()
-    savePartner()
-  })
+    e.preventDefault();
+    savePartner();
+  });
 
   $("#contactToUserForm").on("submit", (e) => {
-    e.preventDefault()
-    convertContactToUser()
-  })
+    e.preventDefault();
+    convertContactToUser();
+  });
 }
 
 function loadPartners() {
@@ -57,8 +57,18 @@ function loadPartners() {
       address: "Plot 15, Yusuf Lule Road, Kampala",
       status: "active",
       contacts: [
-        { name: "John Doe", position: "Country Director", phone: "+256-700-123456", email: "john.doe@unicef.org" },
-        { name: "Jane Smith", position: "Program Manager", phone: "+256-700-234567", email: "jane.smith@unicef.org" },
+        {
+          name: "John Doe",
+          position: "Country Director",
+          phone: "+256-700-123456",
+          email: "john.doe@unicef.org",
+        },
+        {
+          name: "Jane Smith",
+          position: "Program Manager",
+          phone: "+256-700-234567",
+          email: "jane.smith@unicef.org",
+        },
       ],
     },
     {
@@ -110,7 +120,12 @@ function loadPartners() {
       address: "University Road, Kampala",
       status: "pending",
       contacts: [
-        { name: "Prof. David Brown", position: "Vice Chancellor", phone: "+256-700-567890", email: "vc@mak.ac.ug" },
+        {
+          name: "Prof. David Brown",
+          position: "Vice Chancellor",
+          phone: "+256-700-567890",
+          email: "vc@mak.ac.ug",
+        },
       ],
     },
     {
@@ -124,14 +139,19 @@ function loadPartners() {
       address: "Plot 17, Buganda Road, Kampala",
       status: "active",
       contacts: [
-        { name: "Mary Johnson", position: "Secretary General", phone: "+256-700-678901", email: "sg@redcrossug.org" },
+        {
+          name: "Mary Johnson",
+          position: "Secretary General",
+          phone: "+256-700-678901",
+          email: "sg@redcrossug.org",
+        },
       ],
     },
-  ]
+  ];
 
-  filteredPartners = [...partnersData]
-  buildTreeView()
-  applyTreeFilters()
+  filteredPartners = [...partnersData];
+  buildTreeView();
+  applyTreeFilters();
 }
 
 function initializeGrid() {
@@ -178,7 +198,7 @@ function initializeGrid() {
             </svg>
             ${params.value.length}
           </button>
-        `
+        `;
       },
     },
     {
@@ -212,7 +232,7 @@ function initializeGrid() {
         </div>
       `,
     },
-  ]
+  ];
 
   const gridOptions = {
     columnDefs: columnDefs,
@@ -226,22 +246,22 @@ function initializeGrid() {
       filter: true,
       resizable: true,
     },
-  }
+  };
 
-  const gridDiv = $("#partnersGrid")[0]
+  const gridDiv = $("#partnersGrid")[0];
   if (gridDiv) {
-    gridApi = agGrid.createGrid(gridDiv, gridOptions)
+    gridApi = agGrid.createGrid(gridDiv, gridOptions);
   }
 }
 
 function showContactsDialog(partnerId) {
-  const partner = partnersData.find((p) => p.id === partnerId)
+  const partner = partnersData.find((p) => p.id === partnerId);
   if (!partner || !partner.contacts) {
-    showNotification("Partner or contacts not found", "error")
-    return
+    showNotification("Partner or contacts not found", "error");
+    return;
   }
 
-  $("#contactsModalTitle").text(`${partner.name} - Contacts`)
+  $("#contactsModalTitle").text(`${partner.name} - Contacts`);
 
   const contactsHtml = partner.contacts
     .map(
@@ -278,20 +298,20 @@ function showContactsDialog(partnerId) {
     </div>
   `,
     )
-    .join("")
+    .join("");
 
-  $("#contactsList").html(contactsHtml)
-  $("#contactsModal").addClass("show")
+  $("#contactsList").html(contactsHtml);
+  $("#contactsModal").addClass("show");
 }
 
 function savePartner() {
-  const form = $("#partnerForm")[0]
+  const form = $("#partnerForm")[0];
   if (!form.checkValidity()) {
-    form.reportValidity()
-    return
+    form.reportValidity();
+    return;
   }
 
-  const formData = new FormData(form)
+  const formData = new FormData(form);
   const partnerData = {
     name: formData.get("partnerName"),
     acronym: formData.get("acronym"),
@@ -302,48 +322,48 @@ function savePartner() {
     address: formData.get("address"),
     status: "active",
     contacts: [],
-  }
+  };
 
   if (editingPartnerId) {
-    const index = partnersData.findIndex((p) => p.id === editingPartnerId)
+    const index = partnersData.findIndex((p) => p.id === editingPartnerId);
     if (index !== -1) {
-      partnersData[index] = { ...partnersData[index], ...partnerData }
-      showNotification("Partner updated successfully!", "success")
+      partnersData[index] = { ...partnersData[index], ...partnerData };
+      showNotification("Partner updated successfully!", "success");
     }
   } else {
-    const newId = Math.max(...partnersData.map((p) => p.id), 0) + 1
-    const newPartner = { id: newId, ...partnerData }
-    partnersData.push(newPartner)
-    showNotification("Partner added successfully!", "success")
+    const newId = Math.max(...partnersData.map((p) => p.id), 0) + 1;
+    const newPartner = { id: newId, ...partnerData };
+    partnersData.push(newPartner);
+    showNotification("Partner added successfully!", "success");
   }
 
-  buildTreeView()
-  applyTreeFilters()
-  closePartnerModal()
+  buildTreeView();
+  applyTreeFilters();
+  closePartnerModal();
 }
 
 function deletePartner(id) {
-  const partner = partnersData.find((p) => p.id === id)
-  if (!partner) return
+  const partner = partnersData.find((p) => p.id === id);
+  if (!partner) return;
 
   if (confirm(`Are you sure you want to delete ${partner.name}?`)) {
-    partnersData = partnersData.filter((p) => p.id !== id)
-    buildTreeView()
-    applyTreeFilters()
-    showNotification("Partner deleted successfully!", "success")
+    partnersData = partnersData.filter((p) => p.id !== id);
+    buildTreeView();
+    applyTreeFilters();
+    showNotification("Partner deleted successfully!", "success");
   }
 }
 
 function convertContactToUser() {
-  if (!selectedContact) return
+  if (!selectedContact) return;
 
-  const form = $("#contactToUserForm")[0]
+  const form = $("#contactToUserForm")[0];
   if (!form.checkValidity()) {
-    form.reportValidity()
-    return
+    form.reportValidity();
+    return;
   }
 
-  const formData = new FormData(form)
+  const formData = new FormData(form);
   const userData = {
     firstName: selectedContact.contact.name.split(" ")[0],
     lastName: selectedContact.contact.name.split(" ").slice(1).join(" "),
@@ -356,165 +376,178 @@ function convertContactToUser() {
     status: "active",
     createdFrom: "contact_conversion",
     partnerId: selectedContact.partnerId,
-  }
+  };
 
-  console.log("Converting contact to user:", userData)
-  showNotification(`Successfully converted ${selectedContact.contact.name} to user account!`, "success")
-  closeContactToUserModal()
+  console.log("Converting contact to user:", userData);
+  showNotification(
+    `Successfully converted ${selectedContact.contact.name} to user account!`,
+    "success",
+  );
+  closeContactToUserModal();
 }
 
 function buildTreeView() {
-  const $treeContainer = $("#partnerTree")
-  if (!$treeContainer.length) return
+  const $treeContainer = $("#partnerTree");
+  if (!$treeContainer.length) return;
 
-  const treeData = buildTreeData()
-  $treeContainer.empty()
+  const treeData = buildTreeData();
+  $treeContainer.empty();
 
   Object.keys(treeData).forEach((type) => {
-    const typeNode = createTreeNode(type, "type", treeData[type])
-    $treeContainer.append(typeNode)
-  })
+    const typeNode = createTreeNode(type, "type", treeData[type]);
+    $treeContainer.append(typeNode);
+  });
 }
 
 function buildTreeData() {
-  const tree = {}
+  const tree = {};
 
   partnersData.forEach((partner) => {
     if (!tree[partner.type]) {
-      tree[partner.type] = {}
+      tree[partner.type] = {};
     }
     if (!tree[partner.type][partner.category]) {
-      tree[partner.type][partner.category] = []
+      tree[partner.type][partner.category] = [];
     }
-    tree[partner.type][partner.category].push(partner)
-  })
+    tree[partner.type][partner.category].push(partner);
+  });
 
-  return tree
+  return tree;
 }
 
 function createTreeNode(label, level, children) {
-  const $nodeDiv = $("<div>").addClass("tree-node")
-  const $headerDiv = $("<div>").addClass("tree-node-header")
+  const $nodeDiv = $("<div>").addClass("tree-node");
+  const $headerDiv = $("<div>").addClass("tree-node-header");
 
-  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label))
+  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label));
 
-  const hasChildren = level !== "acronym" && Object.keys(children).length > 0
+  const hasChildren = level !== "acronym" && Object.keys(children).length > 0;
 
   $headerDiv.html(`
     <span class="tree-toggle">${hasChildren ? "▶" : ""}</span>
     <span>${label} ${level === "type" ? `(${Object.values(children).flat().length})` : level === "category" ? `(${children.length})` : ""}</span>
-  `)
+  `);
 
-  $nodeDiv.append($headerDiv)
+  $nodeDiv.append($headerDiv);
 
   if (hasChildren) {
-    const $childrenDiv = $("<div>").addClass("tree-children")
+    const $childrenDiv = $("<div>").addClass("tree-children");
 
     if (level === "type") {
       Object.keys(children).forEach((category) => {
-        const categoryNode = createTreeNode(category, "category", children[category])
-        $childrenDiv.append(categoryNode)
-      })
+        const categoryNode = createTreeNode(
+          category,
+          "category",
+          children[category],
+        );
+        $childrenDiv.append(categoryNode);
+      });
     } else if (level === "category") {
       children.forEach((partner) => {
-        const $acronymDiv = $("<div>").addClass("tree-leaf").text(partner.acronym)
-        $acronymDiv.on("click", () => selectTreeLeaf($acronymDiv[0], "acronym", partner.acronym))
-        $childrenDiv.append($acronymDiv)
-      })
+        const $acronymDiv = $("<div>")
+          .addClass("tree-leaf")
+          .text(partner.acronym);
+        $acronymDiv.on("click", () =>
+          selectTreeLeaf($acronymDiv[0], "acronym", partner.acronym),
+        );
+        $childrenDiv.append($acronymDiv);
+      });
     }
 
-    $nodeDiv.append($childrenDiv)
+    $nodeDiv.append($childrenDiv);
   }
 
-  return $nodeDiv[0]
+  return $nodeDiv[0];
 }
 
 function toggleTreeNode(header, level, value) {
-  const $header = $(header)
-  const $children = $header.parent().find(".tree-children").first()
-  const $toggle = $header.find(".tree-toggle")
+  const $header = $(header);
+  const $children = $header.parent().find(".tree-children").first();
+  const $toggle = $header.find(".tree-toggle");
 
   if ($children.length) {
-    const isExpanded = $children.hasClass("expanded")
-    $children.toggleClass("expanded")
-    $toggle.text(isExpanded ? "▶" : "▼")
+    const isExpanded = $children.hasClass("expanded");
+    $children.toggleClass("expanded");
+    $toggle.text(isExpanded ? "▶" : "▼");
   }
 
   if (level === "type") {
-    treeFilters.type = treeFilters.type === value ? null : value
-    treeFilters.category = null
-    treeFilters.acronym = null
+    treeFilters.type = treeFilters.type === value ? null : value;
+    treeFilters.category = null;
+    treeFilters.acronym = null;
   } else if (level === "category") {
-    treeFilters.category = treeFilters.category === value ? null : value
-    treeFilters.acronym = null
+    treeFilters.category = treeFilters.category === value ? null : value;
+    treeFilters.acronym = null;
   }
 
-  updateTreeSelection()
-  applyTreeFilters()
+  updateTreeSelection();
+  applyTreeFilters();
 }
 
 function selectTreeLeaf(leaf, level, value) {
-  $(".tree-leaf.selected").removeClass("selected")
+  $(".tree-leaf.selected").removeClass("selected");
 
   if (treeFilters.acronym === value) {
-    treeFilters.acronym = null
+    treeFilters.acronym = null;
   } else {
-    $(leaf).addClass("selected")
-    treeFilters.acronym = value
+    $(leaf).addClass("selected");
+    treeFilters.acronym = value;
   }
 
-  applyTreeFilters()
+  applyTreeFilters();
 }
 
 function updateTreeSelection() {
-  $(".tree-node-header").removeClass("active")
+  $(".tree-node-header").removeClass("active");
 
   if (treeFilters.type) {
     $(".tree-node-header").each(function () {
       if ($(this).text().includes(treeFilters.type)) {
-        $(this).addClass("active")
+        $(this).addClass("active");
       }
-    })
+    });
   }
 }
 
 function applyTreeFilters() {
   filteredPartners = partnersData.filter((partner) => {
-    if (treeFilters.type && partner.type !== treeFilters.type) return false
-    if (treeFilters.category && partner.category !== treeFilters.category) return false
-    if (treeFilters.acronym && partner.acronym !== treeFilters.acronym) return false
-    return true
-  })
+    if (treeFilters.type && partner.type !== treeFilters.type) return false;
+    if (treeFilters.category && partner.category !== treeFilters.category)
+      return false;
+    if (treeFilters.acronym && partner.acronym !== treeFilters.acronym)
+      return false;
+    return true;
+  });
 
   if (gridApi) {
-    gridApi.setGridOption("rowData", filteredPartners)
+    gridApi.setGridOption("rowData", filteredPartners);
   }
 }
 
 function searchTree() {
-  const searchTerm = $("#treeSearch").val().toLowerCase()
+  const searchTerm = $("#treeSearch").val().toLowerCase();
   $(".tree-node-header, .tree-leaf").each(function () {
-    const text = $(this).text().toLowerCase()
-    const match = text.includes(searchTerm)
-    $(this).css("display", match || searchTerm === "" ? "flex" : "none")
-  })
+    const text = $(this).text().toLowerCase();
+    const match = text.includes(searchTerm);
+    $(this).css("display", match || searchTerm === "" ? "flex" : "none");
+  });
 }
 
 function clearTreeFilters() {
-  treeFilters = { type: null, category: null, acronym: null }
-  $(".tree-node-header.active").removeClass("active")
-  $(".tree-leaf.selected").removeClass("selected")
-  $("#treeSearch").val("")
-  searchTree()
-  applyTreeFilters()
+  treeFilters = { type: null, category: null, acronym: null };
+  $(".tree-node-header.active").removeClass("active");
+  $(".tree-leaf.selected").removeClass("selected");
+  $("#treeSearch").val("");
+  searchTree();
+  applyTreeFilters();
 }
 
 function editContact(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId)
-  const contact = partner.contacts[contactIndex]
-  const $contactCard = $(`#contact-${partnerId}-${contactIndex}`)
+  const partner = partnersData.find((p) => p.id === partnerId);
+  const contact = partner.contacts[contactIndex];
+  const $contactCard = $(`#contact-${partnerId}-${contactIndex}`);
 
-  editingContactIndex = contactIndex
+  editingContactIndex = contactIndex;
 
   $contactCard.html(`
     <div class="contact-details">
@@ -529,41 +562,41 @@ function editContact(partnerId, contactIndex) {
         </div>
       </div>
     </div>
-  `)
+  `);
 }
 
 function saveContactEdit(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId)
+  const partner = partnersData.find((p) => p.id === partnerId);
 
   const updatedContact = {
     name: $("#editContactName").val(),
     position: $("#editContactPosition").val(),
     phone: $("#editContactPhone").val(),
     email: $("#editContactEmail").val(),
-  }
+  };
 
-  partner.contacts[contactIndex] = updatedContact
-  editingContactIndex = null
+  partner.contacts[contactIndex] = updatedContact;
+  editingContactIndex = null;
 
-  showNotification("Contact updated successfully!", "success")
-  showContactsDialog(partnerId) // Refresh the dialog
+  showNotification("Contact updated successfully!", "success");
+  showContactsDialog(partnerId); // Refresh the dialog
 }
 
 function cancelContactEdit(partnerId) {
-  editingContactIndex = null
-  showContactsDialog(partnerId) // Refresh the dialog
+  editingContactIndex = null;
+  showContactsDialog(partnerId); // Refresh the dialog
 }
 
 function closeContactsModal() {
-  $("#contactsModal").removeClass("show")
-  editingContactIndex = null
+  $("#contactsModal").removeClass("show");
+  editingContactIndex = null;
 }
 
 function openContactToUserModal(partnerId, contactIndex) {
-  const partner = partnersData.find((p) => p.id === partnerId)
-  const contact = partner.contacts[contactIndex]
+  const partner = partnersData.find((p) => p.id === partnerId);
+  const contact = partner.contacts[contactIndex];
 
-  selectedContact = { partnerId, contactIndex, contact }
+  selectedContact = { partnerId, contactIndex, contact };
 
   $("#contactDetails").html(`
     <strong>${contact.name}</strong><br>
@@ -571,64 +604,66 @@ function openContactToUserModal(partnerId, contactIndex) {
     Phone: ${contact.phone}<br>
     Email: ${contact.email}<br>
     Partner: ${partner.name}
-  `)
+  `);
 
-  $("#contactToUserForm")[0].reset()
-  $("#contactToUserModal").addClass("show")
-  closeContactsModal()
+  $("#contactToUserForm")[0].reset();
+  $("#contactToUserModal").addClass("show");
+  closeContactsModal();
 }
 
 function closeContactToUserModal() {
-  $("#contactToUserModal").removeClass("show")
-  selectedContact = null
+  $("#contactToUserModal").removeClass("show");
+  selectedContact = null;
 }
 
 function openAddPartnerModal() {
-  editingPartnerId = null
-  $("#modalTitle").text("Add New Partner")
-  $("#partnerForm")[0].reset()
-  $("#partnerModal").addClass("show")
+  editingPartnerId = null;
+  $("#modalTitle").text("Add New Partner");
+  $("#partnerForm")[0].reset();
+  $("#partnerModal").addClass("show");
 }
 
 function editPartner(id) {
-  const partner = partnersData.find((p) => p.id === id)
-  if (!partner) return
+  const partner = partnersData.find((p) => p.id === id);
+  if (!partner) return;
 
-  editingPartnerId = id
-  $("#modalTitle").text("Edit Partner")
-  $("#partnerName").val(partner.name)
-  $("#acronym").val(partner.acronym)
-  $("#partnerType").val(partner.type)
-  $("#category").val(partner.category)
-  $("#phone").val(partner.phone)
-  $("#email").val(partner.email)
-  $("#address").val(partner.address || "")
-  $("#partnerModal").addClass("show")
+  editingPartnerId = id;
+  $("#modalTitle").text("Edit Partner");
+  $("#partnerName").val(partner.name);
+  $("#acronym").val(partner.acronym);
+  $("#partnerType").val(partner.type);
+  $("#category").val(partner.category);
+  $("#phone").val(partner.phone);
+  $("#email").val(partner.email);
+  $("#address").val(partner.address || "");
+  $("#partnerModal").addClass("show");
 }
 
 function closePartnerModal() {
-  $("#partnerModal").removeClass("show")
-  editingPartnerId = null
+  $("#partnerModal").removeClass("show");
+  editingPartnerId = null;
 }
 
 function viewPartner(id) {
-  const partner = partnersData.find((p) => p.id === id)
-  if (!partner) return
+  const partner = partnersData.find((p) => p.id === id);
+  if (!partner) return;
 
-  const contactsList = partner.contacts.map((c) => `${c.name} (${c.position}) - ${c.phone}`).join("\n")
+  const contactsList = partner.contacts
+    .map((c) => `${c.name} (${c.position}) - ${c.phone}`)
+    .join("\n");
   alert(
     `Partner Details:\n\nName: ${partner.name}\nAcronym: ${partner.acronym}\nType: ${partner.type}\nCategory: ${partner.category}\nPhone: ${partner.phone}\nEmail: ${partner.email}\nAddress: ${partner.address || "Not provided"}\nStatus: ${partner.status}\n\nContacts:\n${contactsList}`,
-  )
+  );
 }
 
 function setActiveMenuItem(menuItem) {
-  console.log(`Setting active menu item to: ${menuItem}`)
+  console.log(`Setting active menu item to: ${menuItem}`);
 }
 
 function showNotification(message, type) {
-  console.log(`Notification (${type}): ${message}`)
+  console.log(`Notification (${type}): ${message}`);
 
-  let $notification = $("#notification")
+  let $notification = $("#notification");
   if (!$notification.length) {
     $notification = $("<div>").attr("id", "notification").css({
       position: "fixed",
@@ -641,18 +676,21 @@ function showNotification(message, type) {
       zIndex: "10000",
       opacity: "0",
       transition: "opacity 0.3s ease",
-    })
-    $("body").append($notification)
+    });
+    $("body").append($notification);
   }
 
   $notification
     .text(message)
     .removeClass()
     .addClass(`notification-${type}`)
-    .css("backgroundColor", type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8")
-    .css("opacity", "1")
+    .css(
+      "backgroundColor",
+      type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8",
+    )
+    .css("opacity", "1");
 
   setTimeout(() => {
-    $notification.css("opacity", "0")
-  }, 3000)
+    $notification.css("opacity", "0");
+  }, 3000);
 }

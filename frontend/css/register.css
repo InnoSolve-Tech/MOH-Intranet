@@ -1,26 +1,95 @@
 /* Removed overlapping styles, kept only registration-specific styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: white;
+  min-height: 100vh;
+  margin-bottom: 30px;
+  display: initial;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+/* Combined branding and stepper into unified page header */
+.page-header {
+  background: linear-gradient(135deg, #1e7e34, #28a745);
+  color: white;
+  padding: 5px 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative;
+  top: 0;
+  left: 0;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+}
+
+.ministry-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  background: white;
+  padding: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.branding-text h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+}
+
+.branding-text p {
+  margin: 4px 0 0 0;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 400;
+}
+
+/* Updated stepper container to be part of header */
+.stepper-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+}
+
 /* Registration Specific Styles */
 .registration-container {
-  max-width: 80vw;
-  width: 80vw;
+  max-width: 85vw; /* Changed from 1000px to 85% of viewport width */
+  width: 85vw;
+  margin: 0 auto;
+  position: relative;
 }
 
 .stepper {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 30px;
   position: relative;
-  padding: 0 20px;
+  padding: 20px 40px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 300px;
 }
 
 .stepper::before {
   content: "";
   position: absolute;
-  top: 20px;
-  left: 0;
-  right: 0;
+  top: 40px;
+  left: 80px;
+  right: 80px;
   height: 2px;
-  background-color: #e0e0e0;
+  background-color: rgba(255, 255, 255, 0.3);
   z-index: 1;
 }
 
@@ -30,7 +99,7 @@
   align-items: center;
   position: relative;
   z-index: 2;
-  background: white;
+  background: transparent;
   padding: 0 10px;
 }
 
@@ -38,40 +107,46 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #e0e0e0;
-  color: #666;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
   margin-bottom: 6px;
+  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .step.active .step-number {
-  background-color: #007bff;
-  color: white;
+  background-color: white;
+  color: #28a745;
+  transform: scale(1.1);
+  border-color: white;
 }
 
 .step.completed .step-number {
-  background-color: #28a745;
-  color: white;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #1e7e34;
+  border-color: rgba(255, 255, 255, 0.9);
 }
 
 .step-title {
   font-size: 12px;
   text-align: center;
-  color: #666;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
 }
 
 .step.active .step-title {
-  color: #007bff;
-  font-weight: 500;
+  color: white;
+  font-weight: 600;
 }
 
 .form-step {
   display: none;
   min-height: 500px; /* Ensures consistent height across all steps */
-  padding: 30px; /* Increased padding from 20px to 30px */
+  padding: 20px; /* Reduced from 30px for more compact design */
   border: 1px solid #e9ecef;
   border-radius: 8px;
   background: #fafbfc;
@@ -85,7 +160,7 @@
 .dynamic-section {
   border: 2px solid #e9ecef;
   border-radius: 8px;
-  padding: 25px; /* Increased padding from 20px to 25px */
+  padding: 15px; /* Reduced from 25px for more compact design */
   margin-bottom: 20px;
   background: white;
 }
@@ -102,10 +177,81 @@
 .dynamic-item {
   border: 1px solid #dee2e6;
   border-radius: 6px;
-  padding: 20px; /* Increased padding from 15px to 20px */
+  padding: 15px; /* Reduced from 20px for more compact design */
   margin-bottom: 15px;
   position: relative;
   background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+/* Added styling for address and contact cards */
+.address-card,
+.contact-card {
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  position: relative;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.address-card:hover,
+.contact-card:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+/* Added styling for simplified address and contact items */
+.address-item,
+.contact-item {
+  position: relative;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.address-item:hover,
+.contact-item:hover {
+  border-color: #007bff;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.1);
+}
+
+.address-item input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.address-item .remove-btn,
+.contact-item .remove-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.address-item .remove-btn:hover,
+.contact-item .remove-btn:hover {
+  background: #c82333;
+  transform: scale(1.1);
 }
 
 .form-group.error input,
@@ -156,31 +302,47 @@
 }
 
 .add-btn {
-background-color: #007bff;
-color: white;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 16px; /* Reduced padding for more compact design */
   border-radius: 6px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 500;
-  margin-top: 5px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.add-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .remove-btn {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 8px; /* Reduced from 10px */
+  right: 8px; /* Reduced from 10px */
   background: #dc3545;
   color: white;
   border: none;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 24px; /* Reduced from 28px */
+  height: 24px; /* Reduced from 28px */
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px; /* Reduced from 14px */
   font-weight: bold;
   transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .remove-btn:hover {
@@ -191,12 +353,15 @@ color: white;
 .form-navigation {
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
-  padding: 0px;
+  margin-top: 25px;
+  padding: 20px; /* Reduced from 25px for more compact design */
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
 }
 
 .nav-btn {
-  padding: 12px 24px;
+  padding: 10px 20px; /* Reduced from 12px 24px */
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -218,14 +383,14 @@ color: white;
 
 .next-btn,
 .submit-btn {
-  background: linear-gradient(135deg, #007bff, #0056b3);
+  background: linear-gradient(135deg, #28a745, #1e7e34);
   color: white;
 }
 
 .next-btn:hover,
 .submit-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
 }
 
 .nav-btn:disabled {
@@ -249,7 +414,7 @@ color: white;
 .checkbox-group input[type="checkbox"] {
   width: 18px;
   height: 18px;
-  accent-color: #007bff;
+  accent-color: #28a745;
 }
 
 .checkbox-group label {
@@ -267,13 +432,14 @@ input[type="file"] {
 }
 
 input[type="file"]:hover {
-  border-color: #007bff;
-  background: #e3f2fd;
+  border-color: #28a745;
+  background: #e8f5e8;
 }
 
 .form-row {
   display: flex;
-  gap: 20px;
+  gap: 15px; /* Reduced from 20px for more compact design */
+  margin-bottom: 15px;
 }
 
 .form-row .form-group {
@@ -282,8 +448,8 @@ input[type="file"]:hover {
 
 .form-row-three {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px; /* Reduced from 20px */
   margin-bottom: 15px;
 }
 
@@ -294,41 +460,26 @@ input[type="file"]:hover {
   margin-bottom: 15px;
 }
 
-/* Added ag-grid specific styling */
-.ag-theme-alpine {
-  --ag-grid-size: 6px;
-  --ag-list-item-height: 40px;
-  font-size: 14px;
-}
-
-.ag-theme-alpine .ag-header-cell-label {
-  font-weight: 600;
-  color: #495057;
-}
-
-.ag-theme-alpine .ag-cell {
-  display: flex;
-  align-items: center;
-}
-
-.ag-theme-alpine .ag-cell-edit-input {
-  height: 50%;
-  padding: 4px 8px;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-}
-
-.grid-container {
-  margin-bottom: 15px;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  overflow: hidden;
-}
-
+/* Updated responsive design for new header layout */
 @media (max-width: 1024px) {
   .registration-container {
-    max-width: 90vw; /* Updated for responsive design */
+    max-width: 90vw;
     width: 90vw;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+  }
+
+  .logo-section,
+  .stepper-container {
+    padding: 0 20px;
+  }
+
+  .stepper {
+    min-width: 250px;
   }
 
   .form-row-three {
@@ -338,26 +489,41 @@ input[type="file"]:hover {
   .form-row-four {
     grid-template-columns: 1fr 1fr;
   }
-}
 
-.back-link {
-  text-align: center;
+  .branding-text h1 {
+    font-size: 24px;
+  }
+
+  .branding-text p {
+    font-size: 14px;
+  }
 }
 
 @media (max-width: 768px) {
   .form-row,
   .form-row-three,
   .form-row-four {
-    /* Updated to handle new grid layouts */
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
 
   .registration-container {
-    max-width: 95vw; /* Updated for mobile */
+    max-width: 95vw;
     width: 95vw;
-    margin: 10px auto;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 0;
+  }
+
+  .logo-section,
+  .stepper-container {
+    padding: 0 15px;
   }
 
   .form-step {
@@ -366,11 +532,43 @@ input[type="file"]:hover {
   }
 
   .stepper {
-    padding: 0 10px;
-    margin-bottom: 20px;
+    padding: 15px 20px;
+    min-width: 200px;
+  }
+
+  .stepper::before {
+    left: 40px;
+    right: 40px;
   }
 
   .step-title {
     font-size: 10px;
+  }
+
+  .dynamic-section {
+    padding: 12px;
+  }
+
+  .address-card,
+  .contact-card,
+  .dynamic-item {
+    padding: 12px;
+  }
+
+  .branding-text h1 {
+    font-size: 20px;
+  }
+
+  .branding-text p {
+    font-size: 12px;
+  }
+
+  .logo-section {
+    gap: 15px;
+  }
+
+  .ministry-logo {
+    width: 50px;
+    height: 50px;
   }
 }

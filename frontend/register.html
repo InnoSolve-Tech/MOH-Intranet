@@ -1,187 +1,316 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Partner Registration</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Partner Registration - Ministry of Health Uganda</title>
     <!-- Added global.css import before specific styles -->
-    <link rel="stylesheet" href="css/global.css">
-    <link rel="stylesheet" href="css/register.css">
-    <!-- Added ag-grid CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-grid.css">
-    <link rel="stylesheet" href="https://unpkg.com/ag-grid-community/styles/ag-theme-alpine.css">
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="css/global.css" />
+    <link rel="stylesheet" href="css/register.css" />
+  </head>
+  <body>
+    <!-- Combined branding and stepper into a single header at the top -->
+    <div class="page-header">
+      <div class="branding-header">
+        <div class="logo-section">
+          <img
+            src="./images/logo.png?height=60&width=60"
+            alt="Ministry of Health Uganda"
+            class="ministry-logo"
+          />
+          <div class="branding-text">
+            <h1>Ministry of Health Uganda</h1>
+            <p>Partner Registration System</p>
+          </div>
+        </div>
+      </div>
 
-</head>
-<body>
-    <!-- Added container class alongside registration-container -->
-    <div class="container registration-container">
-        <h2>Partner Registration</h2>
-        
-        <!-- Stepper -->
+      <div class="stepper-container">
         <div class="stepper">
-            <div class="step active" data-step="1">
-                <div class="step-number">1</div>
-                <div class="step-title">Basic Info</div>
+          <div class="step active" data-step="1">
+            <div class="step-number">1</div>
+            <div class="step-title">Basic Info</div>
+          </div>
+          <div class="step" data-step="2">
+            <div class="step-number">2</div>
+            <div class="step-title">Contacts & MoU</div>
+          </div>
+          <div class="step" data-step="3">
+            <div class="step-number">3</div>
+            <div class="step-title">Support Details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+
+    <!-- Removed stepper from inside the card and simplified header -->
+    <div class="container registration-container">
+      <form id="registrationForm">
+        <!-- Step 1: Basic Information -->
+        <div class="form-step active" data-step="1">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="partnerName">Partner Name *</label>
+              <input type="text" id="partnerName" name="partnerName" required />
             </div>
-            <div class="step" data-step="2">
-                <div class="step-number">2</div>
-                <div class="step-title">Contacts & MoU</div>
+            <div class="form-group">
+              <label for="acronym">Acronym *</label>
+              <input type="text" id="acronym" name="acronym" required />
             </div>
-            <div class="step" data-step="3">
-                <div class="step-number">3</div>
-                <div class="step-title">Support Details</div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="partnerType">Partner Type *</label>
+              <select id="partnerType" name="partnerType" required>
+                <option value="">Select Type</option>
+                <option value="NGO">NGO</option>
+                <option value="Government">Government</option>
+                <option value="Private">Private</option>
+                <option value="International">International</option>
+              </select>
             </div>
+            <div class="form-group">
+              <label for="category">Category *</label>
+              <select id="category" name="category" required>
+                <option value="">Select Category</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Technology">Technology</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="officialPhone">Official Phone Number *</label>
+              <input
+                type="tel"
+                id="officialPhone"
+                name="officialPhone"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="officialEmail">Official Email *</label>
+              <input
+                type="email"
+                id="officialEmail"
+                name="officialEmail"
+                required
+              />
+            </div>
+          </div>
+
+          <!-- Simplified address capture to single input field -->
+          <div class="dynamic-section">
+            <h4>Addresses</h4>
+            <div id="addressesContainer">
+              <div class="address-item">
+                <input
+                  type="text"
+                  name="addresses[0]"
+                  placeholder="Enter full address (e.g., 123 Main St, Kampala, Uganda)"
+                  required
+                />
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addAddress()">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+              Add Address
+            </button>
+          </div>
         </div>
 
-        <form id="registrationForm">
-            <!-- Step 1: Basic Information -->
-            <div class="form-step active" data-step="1">
+        <!-- Step 2: Contacts and MoU -->
+        <div class="form-step" data-step="2">
+          <div class="dynamic-section">
+            <h4>Additional Contacts</h4>
+            <div id="contactsContainer">
+              <div class="contact-item">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="partnerName">Partner Name *</label>
-                        <input type="text" id="partnerName" name="partnerName" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="acronym">Acronym *</label>
-                        <input type="text" id="acronym" name="acronym" required>
-                    </div>
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      name="contacts[0][name]"
+                      placeholder="Contact Name *"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <input
+                      type="text"
+                      name="contacts[0][position]"
+                      placeholder="Position *"
+                      required
+                    />
+                  </div>
                 </div>
-
                 <div class="form-row">
-                    <div class="form-group">
-                        <label for="partnerType">Partner Type *</label>
-                        <select id="partnerType" name="partnerType" required>
-                            <option value="">Select Type</option>
-                            <option value="NGO">NGO</option>
-                            <option value="Government">Government</option>
-                            <option value="Private">Private</option>
-                            <option value="International">International</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="category">Category *</label>
-                        <select id="category" name="category" required>
-                            <option value="">Select Category</option>
-                            <option value="Health">Health</option>
-                            <option value="Education">Education</option>
-                            <option value="Agriculture">Agriculture</option>
-                            <option value="Technology">Technology</option>
-                        </select>
-                    </div>
+                  <div class="form-group">
+                    <input
+                      type="tel"
+                      name="contacts[0][phone]"
+                      placeholder="Phone Number *"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <input
+                      type="email"
+                      name="contacts[0][email]"
+                      placeholder="Email Address *"
+                      required
+                    />
+                  </div>
                 </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="officialPhone">Official Phone Number *</label>
-                        <input type="tel" id="officialPhone" name="officialPhone" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="officialEmail">Official Email *</label>
-                        <input type="email" id="officialEmail" name="officialEmail" required>
-                    </div>
-                </div>
-
-                <!-- Addresses Section -->
-                <div class="dynamic-section">
-                    <!-- Replaced form inputs with ag-grid -->
-                    <div id="addressesGrid" class="ag-theme-alpine" style="height: 150px; width: 100%;"></div>
-                    <button type="button" class="add-btn" onclick="addAddressRow()">Add Address</button>
-                </div>
+              </div>
             </div>
+            <button type="button" class="add-btn" onclick="addContact()">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+              Add Contact
+            </button>
+          </div>
 
-            <!-- Step 2: Contacts and MoU -->
-            <div class="form-step" data-step="2">
-                <div class="dynamic-section">
-                    <h4>Additional Contacts</h4>
-                    <!-- Replaced form inputs with ag-grid -->
-                    <div id="contactsGrid" class="ag-theme-alpine" style="height: 200px; width: 100%;"></div>
-                    <button type="button" class="add-btn" onclick="addContactRow()">Add Contact</button>
-                </div>
+          <div class="checkbox-group">
+            <input type="checkbox" id="hasMou" name="hasMou" />
+            <label for="hasMou">We have signed an MoU</label>
+          </div>
 
-                <div class="checkbox-group">
-                    <input type="checkbox" id="hasMou" name="hasMou">
-                    <label for="hasMou">We have signed an MoU</label>
-                </div>
-
-                <div class="form-group" id="mouUpload" style="display: none;">
-                    <label for="mouFile">Upload MoU Document</label>
-                    <input type="file" id="mouFile" name="mouFile" accept=".pdf,.doc,.docx">
-                </div>
-            </div>
-
-            <!-- Step 3: Support Details -->
-            <div class="form-step" data-step="3">
-                <div class="dynamic-section">
-                    <h4>Support Years</h4>
-                    <div id="supportYearsContainer">
-                        <div class="dynamic-item">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Year *</label>
-                                    <input type="number" name="supportYears[0][year]" min="2020" max="2030" required>
-                                </div>
-                                <div class="form-group">
-                                    <label>Level of Support *</label>
-                                    <select name="supportYears[0][level]" required>
-                                        <option value="">Select Level</option>
-                                        <option value="Primary">Primary</option>
-                                        <option value="Secondary">Secondary</option>
-                                        <option value="Tertiary">Tertiary</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Thematic Areas Supported *</label>
-                                <input type="text" name="supportYears[0][thematicAreas]" placeholder="e.g., Health, Education, Agriculture" required>
-                            </div>
-                            <!-- Changed districts from text input to searchable multi-select dropdown -->
-                            <div class="form-group">
-                                <label>Districts Supported *</label>
-                                <select name="supportYears[0][districts]" multiple class="districts-select" required>
-                                    <option value="Kampala">Kampala</option>
-                                    <option value="Wakiso">Wakiso</option>
-                                    <option value="Mukono">Mukono</option>
-                                    <option value="Jinja">Jinja</option>
-                                    <option value="Mbale">Mbale</option>
-                                    <option value="Gulu">Gulu</option>
-                                    <option value="Lira">Lira</option>
-                                    <option value="Mbarara">Mbarara</option>
-                                    <option value="Kasese">Kasese</option>
-                                    <option value="Fort Portal">Fort Portal</option>
-                                    <option value="Hoima">Hoima</option>
-                                    <option value="Masaka">Masaka</option>
-                                    <option value="Soroti">Soroti</option>
-                                    <option value="Arua">Arua</option>
-                                    <option value="Kabale">Kabale</option>
-                                    <option value="Moroto">Moroto</option>
-                                    <option value="Kitgum">Kitgum</option>
-                                    <option value="Pader">Pader</option>
-                                    <option value="Adjumani">Adjumani</option>
-                                    <option value="Moyo">Moyo</option>
-                                </select>
-                                <small>Hold Ctrl/Cmd to select multiple districts</small>
-                            </div>
-                        </div>
-                    </div>
-                    <button type="button" class="add-btn" onclick="addSupportYear()">Add Another Year</button>
-                </div>
-            </div>
-
-            <!-- Navigation -->
-            <div class="form-navigation">
-                <button type="button" class="nav-btn prev-btn" onclick="previousStep()" style="display: none;">Previous</button>
-                <button type="button" class="nav-btn next-btn" onclick="nextStep()">Next</button>
-                <button type="submit" class="nav-btn submit-btn" style="display: none;">Submit Registration</button>
-            </div>
-        </form>
-          <div class="back-link">
-            <a href="/" class="link">← Back to Login</a>
+          <div class="form-group" id="mouUpload" style="display: none">
+            <label for="mouFile">Upload MoU Document</label>
+            <input
+              type="file"
+              id="mouFile"
+              name="mouFile"
+              accept=".pdf,.doc,.docx"
+            />
+          </div>
         </div>
+
+        <!-- Step 3: Support Details -->
+        <div class="form-step" data-step="3">
+          <div class="dynamic-section">
+            <h4>Support Years</h4>
+            <div id="supportYearsContainer">
+              <div class="dynamic-item">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>Year *</label>
+                    <input
+                      type="number"
+                      name="supportYears[0][year]"
+                      min="2020"
+                      max="2030"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label>Level of Support *</label>
+                    <select name="supportYears[0][level]" required>
+                      <option value="">Select Level</option>
+                      <option value="Primary">Primary</option>
+                      <option value="Secondary">Secondary</option>
+                      <option value="Tertiary">Tertiary</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Thematic Areas Supported *</label>
+                  <input
+                    type="text"
+                    name="supportYears[0][thematicAreas]"
+                    placeholder="e.g., Health, Education, Agriculture"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label>Districts Supported *</label>
+                  <select
+                    name="supportYears[0][districts]"
+                    multiple
+                    class="districts-select"
+                    required
+                  >
+                    <option value="Kampala">Kampala</option>
+                    <option value="Wakiso">Wakiso</option>
+                    <option value="Mukono">Mukono</option>
+                    <option value="Jinja">Jinja</option>
+                    <option value="Mbale">Mbale</option>
+                    <option value="Gulu">Gulu</option>
+                    <option value="Lira">Lira</option>
+                    <option value="Mbarara">Mbarara</option>
+                    <option value="Kasese">Kasese</option>
+                    <option value="Fort Portal">Fort Portal</option>
+                    <option value="Hoima">Hoima</option>
+                    <option value="Masaka">Masaka</option>
+                    <option value="Soroti">Soroti</option>
+                    <option value="Arua">Arua</option>
+                    <option value="Kabale">Kabale</option>
+                    <option value="Moroto">Moroto</option>
+                    <option value="Kitgum">Kitgum</option>
+                    <option value="Pader">Pader</option>
+                    <option value="Adjumani">Adjumani</option>
+                    <option value="Moyo">Moyo</option>
+                  </select>
+                  <small>Hold Ctrl/Cmd to select multiple districts</small>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="add-btn" onclick="addSupportYear()">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+              </svg>
+              Add Another Year
+            </button>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="form-navigation">
+          <button
+            type="button"
+            class="nav-btn prev-btn"
+            onclick="previousStep()"
+            style="display: none"
+          >
+            Previous
+          </button>
+          <button type="button" class="nav-btn next-btn" onclick="nextStep()">
+            Next
+          </button>
+          <button
+            type="submit"
+            class="nav-btn submit-btn"
+            style="display: none"
+          >
+            Submit Registration
+          </button>
+        </div>
+      </form>
     </div>
 
-    <!-- Added ag-grid JavaScript -->
-    <script src="https://unpkg.com/ag-grid-community/dist/ag-grid-community.min.js"></script>
     <script src="js/register.js"></script>
-</body>
+  </body>
 </html>

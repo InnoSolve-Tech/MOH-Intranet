@@ -1,392 +1,600 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Settings - Partner Management System</title>
-    <link rel="stylesheet" href="../css/global.css">
-    <link rel="stylesheet" href="../css/dashboard.css">
-    <link rel="stylesheet" href="../css/settings.css">
-</head>
-<body>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/settings.css" />
+  </head>
+  <body>
     <div class="dashboard-container">
-         <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>Dashboard</h2>
-            </div>
-            <ul class="sidebar-menu">
-                <li class="menu-item" data-page="partners">
-                    <a href="partners.html">
-                        <span class="menu-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 7c-.8 0-1.54.5-1.85 1.26l-1.92 5.77c-.24.71.11 1.49.81 1.73.71.24 1.49-.11 1.73-.81L16.5 12H18v10h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm1.5 2h-2C3.57 8 2.5 9.57 2.5 11.5V22h2v-6h2v6h2v-10.5C8.5 9.57 7.43 8 6 8z"/>
-                            </svg>
-                        </span>
-                        <span class="menu-text">Partners</span>
-                    </a>
-                </li>
-                <li class="menu-item" data-page="users">
-                    <a href="users.html">
-                        <span class="menu-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M16 13c1.66 0 2.99-1.34 2.99-3S17.66 7 16 7s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 7 8 7 5 8.34 5 10s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-1.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-1.5c0-2.33-4.67-3.5-7-3.5z"/>
-                            </svg>
-                        </span>
-                        <span class="menu-text">Users</span>
-                    </a>
-                </li>
-                <li class="menu-item active" data-page="settings">
-                    <a href="settings.html">
-                        <span class="menu-icon">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
-                            </svg>
-                        </span>
-                        <span class="menu-text">Settings</span>
-                    </a>
-                </li>
-            </ul>
-            <div class="sidebar-footer">
-                <button class="logout-btn" onclick="logout()">
-                    <span class="menu-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
-                        </svg>
-                    </span>
-                    <span class="menu-text">Logout</span>
-                </button>
-            </div>
-        </nav>
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <center>
+            <img
+              src="../images/logo.png"
+              width="100"
+              height="100"
+              alt="MoH logo"
+            />
+          </center>
+        </div>
+        <ul class="sidebar-menu">
+          <li class="menu-item" data-page="partners">
+            <a href="partners.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 7c-.8 0-1.54.5-1.85 1.26l-1.92 5.77c-.24.71.11 1.49.81 1.73.71.24 1.49-.11 1.73-.81L16.5 12H18v10h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm1.5 2h-2C3.57 8 2.5 9.57 2.5 11.5V22h2v-6h2v6h2v-10.5C8.5 9.57 7.43 8 6 8z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Partners</span>
+            </a>
+          </li>
+          <li class="menu-item" data-page="users">
+            <a href="users.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M16 13c1.66 0 2.99-1.34 2.99-3S17.66 7 16 7s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 7 8 7 5 8.34 5 10s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-1.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V20h6v-1.5c0-2.33-4.67-3.5-7-3.5z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Users</span>
+            </a>
+          </li>
+          <li class="menu-item active" data-page="settings">
+            <a href="settings.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Settings</span>
+            </a>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <button class="logout-btn" onclick="logout()">
+            <span class="menu-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+                />
+              </svg>
+            </span>
+            <span class="menu-text">Logout</span>
+          </button>
+        </div>
+      </nav>
 
-        <!-- Main Content -->
-        <main class="main-content">
-            <header class="content-header">
-                <h1>System Settings</h1>
-                <div class="header-actions">
-                    <button class="btn btn-primary" onclick="saveAllSettings()">
-                        💾 Save Changes
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="content-header">
+          <h1>System Settings</h1>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveAllSettings()">
+              💾 Save Changes
+            </button>
+          </div>
+        </header>
+
+        <div class="content-body">
+          <!-- Settings Navigation -->
+          <div class="settings-nav">
+            <button
+              class="nav-btn active"
+              onclick="showSettingsSection('general')"
+            >
+              General
+            </button>
+            <button class="nav-btn" onclick="showSettingsSection('security')">
+              Security
+            </button>
+            <button
+              class="nav-btn"
+              onclick="showSettingsSection('notifications')"
+            >
+              Notifications
+            </button>
+            <button class="nav-btn" onclick="showSettingsSection('system')">
+              System
+            </button>
+            <button class="nav-btn" onclick="showSettingsSection('backup')">
+              Backup
+            </button>
+          </div>
+
+          <!-- General Settings -->
+          <div id="general-settings" class="settings-section active">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>General Settings</h3>
+                <p>
+                  Configure basic system preferences and organization details
+                </p>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="orgName">Organization Name</label>
+                    <input
+                      type="text"
+                      id="orgName"
+                      name="orgName"
+                      value="Partner Management System"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="orgEmail">Organization Email</label>
+                    <input
+                      type="email"
+                      id="orgEmail"
+                      name="orgEmail"
+                      value="admin@partnersystem.org"
+                    />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="timezone">Timezone</label>
+                    <select id="timezone" name="timezone">
+                      <option value="UTC">UTC</option>
+                      <option value="Africa/Kampala" selected>
+                        Africa/Kampala (EAT)
+                      </option>
+                      <option value="Africa/Nairobi">
+                        Africa/Nairobi (EAT)
+                      </option>
+                      <option value="Africa/Cairo">Africa/Cairo (EET)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="language">Default Language</label>
+                    <select id="language" name="language">
+                      <option value="en" selected>English</option>
+                      <option value="sw">Swahili</option>
+                      <option value="fr">French</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="dateFormat">Date Format</label>
+                    <select id="dateFormat" name="dateFormat">
+                      <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
+                      <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                      <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="currency">Default Currency</label>
+                    <select id="currency" name="currency">
+                      <option value="UGX" selected>
+                        UGX (Ugandan Shilling)
+                      </option>
+                      <option value="USD">USD (US Dollar)</option>
+                      <option value="EUR">EUR (Euro)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Settings -->
+          <div id="security-settings" class="settings-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Security Settings</h3>
+                <p>Manage authentication and security policies</p>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="requireStrongPassword"
+                      name="requireStrongPassword"
+                      checked
+                    />
+                    Require strong passwords (minimum 8 characters, mixed case,
+                    numbers, symbols)
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="enableTwoFactor"
+                      name="enableTwoFactor"
+                    />
+                    Enable two-factor authentication for all users
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="forcePasswordChange"
+                      name="forcePasswordChange"
+                      checked
+                    />
+                    Force password change every 90 days
+                  </label>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="sessionTimeout"
+                      >Session Timeout (minutes)</label
+                    >
+                    <input
+                      type="number"
+                      id="sessionTimeout"
+                      name="sessionTimeout"
+                      value="30"
+                      min="5"
+                      max="480"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="maxLoginAttempts">Max Login Attempts</label>
+                    <input
+                      type="number"
+                      id="maxLoginAttempts"
+                      name="maxLoginAttempts"
+                      value="5"
+                      min="3"
+                      max="10"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="logSecurityEvents"
+                      name="logSecurityEvents"
+                      checked
+                    />
+                    Log all security events and failed login attempts
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Notifications Settings -->
+          <div id="notifications-settings" class="settings-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Notification Settings</h3>
+                <p>Configure email notifications and alerts</p>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="smtpServer">SMTP Server</label>
+                    <input
+                      type="text"
+                      id="smtpServer"
+                      name="smtpServer"
+                      value="smtp.gmail.com"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="smtpPort">SMTP Port</label>
+                    <input
+                      type="number"
+                      id="smtpPort"
+                      name="smtpPort"
+                      value="587"
+                    />
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="smtpUsername">SMTP Username</label>
+                    <input
+                      type="email"
+                      id="smtpUsername"
+                      name="smtpUsername"
+                      placeholder="your-email@gmail.com"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="smtpPassword">SMTP Password</label>
+                    <input
+                      type="password"
+                      id="smtpPassword"
+                      name="smtpPassword"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </div>
+                <div class="notification-types">
+                  <h4>Email Notifications</h4>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyNewPartner"
+                        name="notifyNewPartner"
+                        checked
+                      />
+                      New partner registration
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyNewUser"
+                        name="notifyNewUser"
+                        checked
+                      />
+                      New user account created
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyMouUpload"
+                        name="notifyMouUpload"
+                        checked
+                      />
+                      MoU document uploaded
+                    </label>
+                  </div>
+                  <div class="form-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifySecurityAlert"
+                        name="notifySecurityAlert"
+                        checked
+                      />
+                      Security alerts and suspicious activity
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- System Settings -->
+          <div id="system-settings" class="settings-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>System Settings</h3>
+                <p>Configure system performance and maintenance options</p>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="maxFileSize"
+                      >Maximum File Upload Size (MB)</label
+                    >
+                    <input
+                      type="number"
+                      id="maxFileSize"
+                      name="maxFileSize"
+                      value="10"
+                      min="1"
+                      max="100"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="recordsPerPage">Records Per Page</label>
+                    <input
+                      type="number"
+                      id="recordsPerPage"
+                      name="recordsPerPage"
+                      value="10"
+                      min="5"
+                      max="100"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="allowedFileTypes">Allowed File Types</label>
+                  <input
+                    type="text"
+                    id="allowedFileTypes"
+                    name="allowedFileTypes"
+                    value="pdf,doc,docx,jpg,png,xlsx"
+                  />
+                  <small>Comma-separated list of file extensions</small>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="enableMaintenance"
+                      name="enableMaintenance"
+                    />
+                    Enable maintenance mode
+                  </label>
+                </div>
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="enableDebugMode"
+                      name="enableDebugMode"
+                    />
+                    Enable debug mode (development only)
+                  </label>
+                </div>
+                <div class="system-info">
+                  <h4>System Information</h4>
+                  <div class="info-grid">
+                    <div class="info-item">
+                      <span class="info-label">System Version:</span>
+                      <span class="info-value">v1.2.0</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Database Version:</span>
+                      <span class="info-value">PostgreSQL 14.2</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Last Updated:</span>
+                      <span class="info-value">2024-01-15</span>
+                    </div>
+                    <div class="info-item">
+                      <span class="info-label">Server Status:</span>
+                      <span class="info-value status-active">Online</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Backup Settings -->
+          <div id="backup-settings" class="settings-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Backup & Recovery</h3>
+                <p>Manage data backup and recovery options</p>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      id="enableAutoBackup"
+                      name="enableAutoBackup"
+                      checked
+                    />
+                    Enable automatic backups
+                  </label>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="backupFrequency">Backup Frequency</label>
+                    <select id="backupFrequency" name="backupFrequency">
+                      <option value="daily" selected>Daily</option>
+                      <option value="weekly">Weekly</option>
+                      <option value="monthly">Monthly</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="backupTime">Backup Time</label>
+                    <input
+                      type="time"
+                      id="backupTime"
+                      name="backupTime"
+                      value="02:00"
+                    />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="retentionPeriod"
+                    >Backup Retention Period (days)</label
+                  >
+                  <input
+                    type="number"
+                    id="retentionPeriod"
+                    name="retentionPeriod"
+                    value="30"
+                    min="7"
+                    max="365"
+                  />
+                </div>
+                <div class="backup-actions">
+                  <h4>Backup Actions</h4>
+                  <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="createBackup()">
+                      📦 Create Backup Now
                     </button>
+                    <button
+                      class="btn btn-secondary"
+                      onclick="downloadBackup()"
+                    >
+                      ⬇️ Download Latest Backup
+                    </button>
+                    <button class="btn btn-warning" onclick="restoreBackup()">
+                      🔄 Restore from Backup
+                    </button>
+                  </div>
                 </div>
-            </header>
-
-            <div class="content-body">
-                <!-- Settings Navigation -->
-                <div class="settings-nav">
-                    <button class="nav-btn active" onclick="showSettingsSection('general')">General</button>
-                    <button class="nav-btn" onclick="showSettingsSection('security')">Security</button>
-                    <button class="nav-btn" onclick="showSettingsSection('notifications')">Notifications</button>
-                    <button class="nav-btn" onclick="showSettingsSection('system')">System</button>
-                    <button class="nav-btn" onclick="showSettingsSection('backup')">Backup</button>
-                </div>
-
-                <!-- General Settings -->
-                <div id="general-settings" class="settings-section active">
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <h3>General Settings</h3>
-                            <p>Configure basic system preferences and organization details</p>
+                <div class="backup-history">
+                  <h4>Recent Backups</h4>
+                  <div class="backup-list">
+                    <div class="backup-item">
+                      <div class="backup-info">
+                        <div class="backup-name">
+                          backup_2024-01-15_02-00.sql
                         </div>
-                        <div class="card-body">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="orgName">Organization Name</label>
-                                    <input type="text" id="orgName" name="orgName" value="Partner Management System">
-                                </div>
-                                <div class="form-group">
-                                    <label for="orgEmail">Organization Email</label>
-                                    <input type="email" id="orgEmail" name="orgEmail" value="admin@partnersystem.org">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="timezone">Timezone</label>
-                                    <select id="timezone" name="timezone">
-                                        <option value="UTC">UTC</option>
-                                        <option value="Africa/Kampala" selected>Africa/Kampala (EAT)</option>
-                                        <option value="Africa/Nairobi">Africa/Nairobi (EAT)</option>
-                                        <option value="Africa/Cairo">Africa/Cairo (EET)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="language">Default Language</label>
-                                    <select id="language" name="language">
-                                        <option value="en" selected>English</option>
-                                        <option value="sw">Swahili</option>
-                                        <option value="fr">French</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="dateFormat">Date Format</label>
-                                    <select id="dateFormat" name="dateFormat">
-                                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY</option>
-                                        <option value="MM/DD/YYYY">MM/DD/YYYY</option>
-                                        <option value="YYYY-MM-DD">YYYY-MM-DD</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="currency">Default Currency</label>
-                                    <select id="currency" name="currency">
-                                        <option value="UGX" selected>UGX (Ugandan Shilling)</option>
-                                        <option value="USD">USD (US Dollar)</option>
-                                        <option value="EUR">EUR (Euro)</option>
-                                    </select>
-                                </div>
-                            </div>
+                        <div class="backup-date">
+                          January 15, 2024 at 2:00 AM
                         </div>
+                      </div>
+                      <div class="backup-size">2.4 MB</div>
+                      <button class="btn btn-sm btn-secondary">Download</button>
                     </div>
-                </div>
-
-                <!-- Security Settings -->
-                <div id="security-settings" class="settings-section">
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <h3>Security Settings</h3>
-                            <p>Manage authentication and security policies</p>
+                    <div class="backup-item">
+                      <div class="backup-info">
+                        <div class="backup-name">
+                          backup_2024-01-14_02-00.sql
                         </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="requireStrongPassword" name="requireStrongPassword" checked>
-                                    Require strong passwords (minimum 8 characters, mixed case, numbers, symbols)
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="enableTwoFactor" name="enableTwoFactor">
-                                    Enable two-factor authentication for all users
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="forcePasswordChange" name="forcePasswordChange" checked>
-                                    Force password change every 90 days
-                                </label>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="sessionTimeout">Session Timeout (minutes)</label>
-                                    <input type="number" id="sessionTimeout" name="sessionTimeout" value="30" min="5" max="480">
-                                </div>
-                                <div class="form-group">
-                                    <label for="maxLoginAttempts">Max Login Attempts</label>
-                                    <input type="number" id="maxLoginAttempts" name="maxLoginAttempts" value="5" min="3" max="10">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="logSecurityEvents" name="logSecurityEvents" checked>
-                                    Log all security events and failed login attempts
-                                </label>
-                            </div>
+                        <div class="backup-date">
+                          January 14, 2024 at 2:00 AM
                         </div>
+                      </div>
+                      <div class="backup-size">2.3 MB</div>
+                      <button class="btn btn-sm btn-secondary">Download</button>
                     </div>
-                </div>
-
-                <!-- Notifications Settings -->
-                <div id="notifications-settings" class="settings-section">
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <h3>Notification Settings</h3>
-                            <p>Configure email notifications and alerts</p>
+                    <div class="backup-item">
+                      <div class="backup-info">
+                        <div class="backup-name">
+                          backup_2024-01-13_02-00.sql
                         </div>
-                        <div class="card-body">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="smtpServer">SMTP Server</label>
-                                    <input type="text" id="smtpServer" name="smtpServer" value="smtp.gmail.com">
-                                </div>
-                                <div class="form-group">
-                                    <label for="smtpPort">SMTP Port</label>
-                                    <input type="number" id="smtpPort" name="smtpPort" value="587">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="smtpUsername">SMTP Username</label>
-                                    <input type="email" id="smtpUsername" name="smtpUsername" placeholder="your-email@gmail.com">
-                                </div>
-                                <div class="form-group">
-                                    <label for="smtpPassword">SMTP Password</label>
-                                    <input type="password" id="smtpPassword" name="smtpPassword" placeholder="••••••••">
-                                </div>
-                            </div>
-                            <div class="notification-types">
-                                <h4>Email Notifications</h4>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="notifyNewPartner" name="notifyNewPartner" checked>
-                                        New partner registration
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="notifyNewUser" name="notifyNewUser" checked>
-                                        New user account created
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="notifyMouUpload" name="notifyMouUpload" checked>
-                                        MoU document uploaded
-                                    </label>
-                                </div>
-                                <div class="form-group">
-                                    <label class="checkbox-label">
-                                        <input type="checkbox" id="notifySecurityAlert" name="notifySecurityAlert" checked>
-                                        Security alerts and suspicious activity
-                                    </label>
-                                </div>
-                            </div>
+                        <div class="backup-date">
+                          January 13, 2024 at 2:00 AM
                         </div>
+                      </div>
+                      <div class="backup-size">2.2 MB</div>
+                      <button class="btn btn-sm btn-secondary">Download</button>
                     </div>
+                  </div>
                 </div>
-
-                <!-- System Settings -->
-                <div id="system-settings" class="settings-section">
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <h3>System Settings</h3>
-                            <p>Configure system performance and maintenance options</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="maxFileSize">Maximum File Upload Size (MB)</label>
-                                    <input type="number" id="maxFileSize" name="maxFileSize" value="10" min="1" max="100">
-                                </div>
-                                <div class="form-group">
-                                    <label for="recordsPerPage">Records Per Page</label>
-                                    <input type="number" id="recordsPerPage" name="recordsPerPage" value="10" min="5" max="100">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="allowedFileTypes">Allowed File Types</label>
-                                <input type="text" id="allowedFileTypes" name="allowedFileTypes" value="pdf,doc,docx,jpg,png,xlsx">
-                                <small>Comma-separated list of file extensions</small>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="enableMaintenance" name="enableMaintenance">
-                                    Enable maintenance mode
-                                </label>
-                            </div>
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="enableDebugMode" name="enableDebugMode">
-                                    Enable debug mode (development only)
-                                </label>
-                            </div>
-                            <div class="system-info">
-                                <h4>System Information</h4>
-                                <div class="info-grid">
-                                    <div class="info-item">
-                                        <span class="info-label">System Version:</span>
-                                        <span class="info-value">v1.2.0</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Database Version:</span>
-                                        <span class="info-value">PostgreSQL 14.2</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Last Updated:</span>
-                                        <span class="info-value">2024-01-15</span>
-                                    </div>
-                                    <div class="info-item">
-                                        <span class="info-label">Server Status:</span>
-                                        <span class="info-value status-active">Online</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Backup Settings -->
-                <div id="backup-settings" class="settings-section">
-                    <div class="settings-card">
-                        <div class="card-header">
-                            <h3>Backup & Recovery</h3>
-                            <p>Manage data backup and recovery options</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="form-group">
-                                <label class="checkbox-label">
-                                    <input type="checkbox" id="enableAutoBackup" name="enableAutoBackup" checked>
-                                    Enable automatic backups
-                                </label>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label for="backupFrequency">Backup Frequency</label>
-                                    <select id="backupFrequency" name="backupFrequency">
-                                        <option value="daily" selected>Daily</option>
-                                        <option value="weekly">Weekly</option>
-                                        <option value="monthly">Monthly</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="backupTime">Backup Time</label>
-                                    <input type="time" id="backupTime" name="backupTime" value="02:00">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="retentionPeriod">Backup Retention Period (days)</label>
-                                <input type="number" id="retentionPeriod" name="retentionPeriod" value="30" min="7" max="365">
-                            </div>
-                            <div class="backup-actions">
-                                <h4>Backup Actions</h4>
-                                <div class="action-buttons">
-                                    <button class="btn btn-primary" onclick="createBackup()">
-                                        📦 Create Backup Now
-                                    </button>
-                                    <button class="btn btn-secondary" onclick="downloadBackup()">
-                                        ⬇️ Download Latest Backup
-                                    </button>
-                                    <button class="btn btn-warning" onclick="restoreBackup()">
-                                        🔄 Restore from Backup
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="backup-history">
-                                <h4>Recent Backups</h4>
-                                <div class="backup-list">
-                                    <div class="backup-item">
-                                        <div class="backup-info">
-                                            <div class="backup-name">backup_2024-01-15_02-00.sql</div>
-                                            <div class="backup-date">January 15, 2024 at 2:00 AM</div>
-                                        </div>
-                                        <div class="backup-size">2.4 MB</div>
-                                        <button class="btn btn-sm btn-secondary">Download</button>
-                                    </div>
-                                    <div class="backup-item">
-                                        <div class="backup-info">
-                                            <div class="backup-name">backup_2024-01-14_02-00.sql</div>
-                                            <div class="backup-date">January 14, 2024 at 2:00 AM</div>
-                                        </div>
-                                        <div class="backup-size">2.3 MB</div>
-                                        <button class="btn btn-sm btn-secondary">Download</button>
-                                    </div>
-                                    <div class="backup-item">
-                                        <div class="backup-info">
-                                            <div class="backup-name">backup_2024-01-13_02-00.sql</div>
-                                            <div class="backup-date">January 13, 2024 at 2:00 AM</div>
-                                        </div>
-                                        <div class="backup-size">2.2 MB</div>
-                                        <button class="btn btn-sm btn-secondary">Download</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-        </main>
+          </div>
+        </div>
+      </main>
     </div>
 
     <script src="../js/dashboard.js"></script>
     <script src="../js/settings.js"></script>
-</body>
+  </body>
 </html>
