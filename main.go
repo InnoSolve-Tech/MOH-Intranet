@@ -29,6 +29,7 @@ func main() {
 		},
 	})
 	database.ConnectDB()
+	database.InitDB()
 	routes.SetupRoutes(app)
 
 	fmt.Println("Server starting on port 7088...")

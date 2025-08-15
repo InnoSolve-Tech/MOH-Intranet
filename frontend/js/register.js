@@ -612,7 +612,7 @@ async function submitRegistration(formData) {
       }
     });
 
-    const response = await fetch("/partners", {
+    const response = await fetch("/api/v1/partners", {
       method: "POST",
       body: submitData
     });

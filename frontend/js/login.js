@@ -6,19 +6,36 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-function handleLogin(e) {
-  e.preventDefault(); // stop GET submission
+async function handleLogin(e) {
+  e.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
+  const userid = document.getElementById("userid").value.trim();
   const password = document.getElementById("password").value.trim();
 
-  // Mock validation
-  if (!email || !password) {
+  if (!userid || !password) {
     alert("Please fill in all fields");
     return;
   }
 
-  // Simulate login success
-  alert("Mock login successful");
-  window.location.href = "/menu/partners.html";
+  try {
+    const response = await fetch("/api/v1/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userid, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      alert(error.message || "Login failed");
+      return;
+    }
+
+    // Redirect on success
+    window.location.href = "/menu/partners.html";
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("An error occurred. Please try again.");
+  }
 }

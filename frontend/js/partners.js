@@ -47,7 +47,7 @@ function setupPartnersEventListeners() {
 
 async function loadPartners() {
   try {
-    const res = await fetch("/partners")
+    const res = await fetch("/api/v1/partners")
     if (!res.ok) {
       throw new Error(`HTTP error! Status: ${res.status}`)
     }

@@ -401,6 +401,31 @@ func getDistrictSupportType(supportData map[string]interface{}) string {
 	return ""
 }
 
+// Update contact information
+func UpdateContact(c *fiber.Ctx) error {
+	contactID := c.Params("id")
+
+	var updateData models.PartnerContacts
+	if err := c.BodyParser(&updateData); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	var existing models.PartnerContacts
+	if err := database.DB.First(&existing, contactID).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return c.Status(404).JSON(fiber.Map{"error": "Contact not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Database error"})
+	}
+
+	// Update only the provided fields
+	if err := database.DB.Model(&existing).Updates(updateData).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update contact"})
+	}
+
+	return c.JSON(fiber.Map{"message": "Contact updated successfully"})
+}
+
 // GET /partners
 func GetPartners(c *fiber.Ctx) error {
 	var partners []models.Partner

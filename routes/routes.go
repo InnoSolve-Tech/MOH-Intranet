@@ -2,17 +2,40 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"moh-intranet.com/middleware"
 	"moh-intranet.com/service"
 )
 
 func SetupRoutes(app *fiber.App) {
+	// Apply auth middleware to protect /menus/* pages
+	app.Use(middleware.AuthMiddleware())
 
+	// Serve static files
 	app.Static("/", "./frontend")
 
-	partners := app.Group("/partners")
+	api := app.Group("/api/v1")
+
+	// Login Free endpoint
+	api.Post("/signin", service.SignIn)
+
+	// Protected API routes
+	api.Use(middleware.RequireAuth())
+
+	users := api.Group("/users")
+	{
+		users.Post("/register", service.RegisterUser)
+		users.Get("", service.GetUsers)
+		users.Put("/change-scope", service.ChangeScope)
+		users.Put("/reset-password", service.ResetPassword)
+		users.Post("/forgot-password", service.ForgotPassword)
+		users.Post("/set-password", service.SetPassword)
+	}
+
+	partners := api.Group("/partners")
 	{
 		partners.Post("", service.CreatePartner) // Create partner with file upload
 		partners.Get("", service.GetPartners)
+		partners.Put("/contact/:id", service.UpdateContact)
 		partners.Get("/:uuid", service.GetPartnerByID)   // Get partner by UUID
 		partners.Put("/:uuid", service.UpdatePartner)    // Update partner by UUID
 		partners.Delete("/:uuid", service.DeletePartner) // Delete partner by UUID
