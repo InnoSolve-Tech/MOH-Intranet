@@ -6,11 +6,20 @@ import (
 	"gorm.io/gorm"
 )
 
+type Scope string
+
+const (
+	ScopeGlobal     Scope = "global"
+	ScopeDistrict   Scope = "district"
+	ScopeIndividual Scope = "individual"
+)
+
 type Users struct {
 	gorm.Model
 	UUID     string `json:"uuid" gorm:"unique;not null"`
 	Username string `json:"username" gorm:"unique;not null"`
 	Password string `json:"password" gorm:"unique;not null"`
+	Scope    Scope  `json:"scope" gorm:"type:varchar(20)"`
 	RoleID   uint   `json:"role_id"`
 	Role     Roles  `json:"roles" gorm:"foreignKey:RoleID;references:ID"`
 }

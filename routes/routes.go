@@ -17,6 +17,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Login Free endpoint
 	api.Post("/signin", service.SignIn)
+	app.Get("/uploads/:category/:filename", service.ServeUploadedFile)
 
 	// Protected API routes
 	api.Use(middleware.RequireAuth())

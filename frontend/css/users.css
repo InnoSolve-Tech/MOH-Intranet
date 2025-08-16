@@ -1,5 +1,3 @@
-/* Compressed Users Page Styles with Tree View and ag-grid */
-
 /* Tree Filter Panel */
 .tree-filter-panel {
   width: 15%;
@@ -286,19 +284,9 @@
   color: #2e7d32;
 }
 
-.role-manager {
+.role-partner {
   background-color: #fff3e0;
   color: #f57c00;
-}
-
-.role-user {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.role-viewer {
-  background-color: #f3e5f5;
-  color: #7b1fa2;
 }
 
 .status-active {

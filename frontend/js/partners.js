@@ -57,7 +57,7 @@ async function loadPartners() {
     partnersData = apiPartners.map((partner) => ({
       id: partner.ID,
       uuid: partner.uuid,
-      name: partner.acronym, // Using acronym as name since API doesn't have separate name field
+      name: partner.partner_name, // Using acronym as name since API doesn't have separate name field
       acronym: partner.acronym,
       type: partner.partner_type,
       category: partner.partner_category,
@@ -482,13 +482,13 @@ function createTreeNode(label, level, children) {
       });
     } else if (level === "category") {
       children.forEach((partner) => {
-        const $acronymDiv = $("<div>")
+        const $nameDiv = $("<div>")
           .addClass("tree-leaf")
-          .text(partner.acronym);
-        $acronymDiv.on("click", () =>
-          selectTreeLeaf($acronymDiv[0], "acronym", partner.acronym),
+          .text(partner.name);
+        $nameDiv.on("click", () =>
+          selectTreeLeaf($nameDiv[0], "name", partner.name),
         );
-        $childrenDiv.append($acronymDiv);
+        $childrenDiv.append($nameDiv);
       });
     }
 
@@ -525,11 +525,11 @@ function toggleTreeNode(header, level, value) {
 function selectTreeLeaf(leaf, level, value) {
   $(".tree-leaf.selected").removeClass("selected");
 
-  if (treeFilters.acronym === value) {
-    treeFilters.acronym = null;
+  if (treeFilters.name === value) {
+    treeFilters.name = null;
   } else {
     $(leaf).addClass("selected");
-    treeFilters.acronym = value;
+    treeFilters.name = value;
   }
 
   applyTreeFilters();
@@ -572,7 +572,7 @@ function searchTree() {
 }
 
 function clearTreeFilters() {
-  treeFilters = { type: null, category: null, acronym: null };
+  treeFilters = { type: null, category: null, name: null };
   $(".tree-node-header.active").removeClass("active");
   $(".tree-leaf.selected").removeClass("selected");
   $("#treeSearch").val("");

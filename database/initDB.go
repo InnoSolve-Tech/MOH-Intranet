@@ -22,7 +22,6 @@ func InitDB() {
 	adminRole := models.Roles{
 		RoleName: "admin",
 		Function: adminFunctions,
-		Scope:    "global",
 		View:     true,
 		Create:   true,
 		Edit:     true,
@@ -32,7 +31,6 @@ func InitDB() {
 	partnerRole := models.Roles{
 		RoleName: "partner",
 		Function: partnerFunctions,
-		Scope:    "district",
 		View:     true,
 		Create:   false,
 		Edit:     false,
@@ -61,6 +59,7 @@ func InitDB() {
 		Username: adminUsername,
 		Password: string(passwordHash),
 		RoleID:   adminRole.ID,
+		Scope:    "global",
 	}
 
 	if err := DB.FirstOrCreate(&adminUser, models.Users{Username: "admin"}).Error; err != nil {

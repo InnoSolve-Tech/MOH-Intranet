@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"mime"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -100,20 +101,16 @@ func CreatePartner(c *fiber.Ctx) error {
 	// Handle MoU file if provided
 	mouFilePath := ""
 	if submissionData.MoU.HasMoU {
-		// Debug: Log what we're receiving
-		fmt.Printf("MoU File received: %+v\n", submissionData.MoU.File)
 
 		if submissionData.MoU.File != nil {
 			filePath, err := handleMoUFile(submissionData.MoU.File)
 			if err != nil {
-				fmt.Printf("File handling error: %v\n", err)
 				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 					"error":   "Failed to process MoU file",
 					"details": err.Error(),
 				})
 			}
 			mouFilePath = filePath
-			fmt.Printf("File saved to: %s\n", mouFilePath)
 		}
 	}
 
@@ -252,7 +249,6 @@ func handleMoUFile(fileInterface interface{}) (string, error) {
 	if fileInterface == nil {
 		return "", nil
 	}
-	fmt.Printf("Processing file interface: %+v (Type: %T)\n", fileInterface, fileInterface)
 
 	// Create uploads directory first
 	saveDir := "./uploads/mou"
@@ -278,8 +274,6 @@ func handleMoUFile(fileInterface interface{}) (string, error) {
 		}
 
 	case map[string]interface{}:
-		// Handle FormData File object
-		fmt.Printf("File object contents: %+v\n", v)
 
 		// Try to get file name
 		if name, ok := v["name"].(string); ok && name != "" {
@@ -320,8 +314,6 @@ func handleMoUFile(fileInterface interface{}) (string, error) {
 	if err := os.WriteFile(fullPath, fileData, 0644); err != nil {
 		return "", fmt.Errorf("failed to save file: %v", err)
 	}
-
-	fmt.Printf("File successfully saved to: %s\n", fullPath)
 
 	// Return relative path for database storage
 	return "/uploads/mou/" + fileName, nil
@@ -724,4 +716,89 @@ func DeletePartner(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"message": "Partner deleted successfully",
 	})
+}
+
+// ServeUploadedFile serves files from the uploads directory
+func ServeUploadedFile(c *fiber.Ctx) error {
+	// Get the file path from the URL parameters
+	// This handles routes like /uploads/mou/:filename or /uploads/:category/:filename
+	category := c.Params("category") // e.g., "mou"
+	filename := c.Params("filename") // e.g., "mou_1755348223_f8ff0756.docx"
+
+	// Construct the full file path
+	var filePath string
+	if category != "" {
+		filePath = filepath.Join("./uploads", category, filename)
+	} else {
+		// For direct file access without category
+		filePath = filepath.Join("./uploads", filename)
+	}
+
+	// Security check: ensure the file path is within the uploads directory
+	absPath, err := filepath.Abs(filePath)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid file path",
+		})
+	}
+
+	uploadsDir, err := filepath.Abs("./uploads")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Server configuration error",
+		})
+	}
+
+	// Check if the file path is within the uploads directory (prevent directory traversal)
+	if !strings.HasPrefix(absPath, uploadsDir) {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error": "Access denied",
+		})
+	}
+
+	// Check if file exists
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "File not found",
+		})
+	}
+
+	// Read file info
+	fileInfo, err := os.Stat(filePath)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to read file information",
+		})
+	}
+
+	// Determine content type based on file extension
+	ext := filepath.Ext(filename)
+	contentType := mime.TypeByExtension(ext)
+	if contentType == "" {
+		// Default content types for common file types
+		switch strings.ToLower(ext) {
+		case ".pdf":
+			contentType = "application/pdf"
+		case ".doc":
+			contentType = "application/msword"
+		case ".docx":
+			contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+		case ".txt":
+			contentType = "text/plain"
+		case ".jpg", ".jpeg":
+			contentType = "image/jpeg"
+		case ".png":
+			contentType = "image/png"
+		default:
+			contentType = "application/octet-stream"
+		}
+	}
+
+	// Set headers
+	c.Set("Content-Type", contentType)
+	c.Set("Content-Disposition", fmt.Sprintf("inline; filename=\"%s\"", filename))
+	c.Set("Content-Length", fmt.Sprintf("%d", fileInfo.Size()))
+
+	// Serve the file
+	return c.SendFile(filePath)
 }

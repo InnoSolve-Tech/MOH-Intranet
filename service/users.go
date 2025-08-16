@@ -72,6 +72,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		Username: req.Username,
 		Password: string(hashedPassword),
 		RoleID:   role.ID,
+		Scope:    "individual",
 	}
 
 	// Save user to database
@@ -114,6 +115,7 @@ func RegisterUserUsernameAndPassword(c *fiber.Ctx, Username string, Password str
 		Username: Username,
 		Password: string(hashedPassword),
 		RoleID:   role.ID,
+		Scope:    "individual",
 	}
 
 	// Save user to database
@@ -181,7 +183,7 @@ func ChangeScope(c *fiber.Ctx) error {
 	}
 
 	// Update scope in the Role
-	if err := database.DB.Model(&models.Roles{}).Where("id = ?", user.RoleID).Update("scope", req.Scope).Error; err != nil {
+	if err := database.DB.Model(&models.Users{}).Where("id = ?", user.ID).Update("scope", req.Scope).Error; err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": "Failed to update scope"})
 	}
 
