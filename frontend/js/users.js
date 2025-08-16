@@ -1,51 +1,51 @@
-let usersData = []
-let filteredUsers = []
-let gridApi = null
-let editingUserId = null
+let usersData = [];
+let filteredUsers = [];
+let gridApi = null;
+let editingUserId = null;
 let treeFilters = {
   role: null,
   scope: null,
   user: null,
-}
+};
 
-const agGrid = window.agGrid
-const $ = window.jQuery
+const agGrid = window.agGrid;
+const $ = window.jQuery;
 
 $(document).ready(() => {
-  initializeUsersPage()
-  loadUsers()
-  initializeGrid()
-  buildTreeView()
-  setupUsersEventListeners()
-})
+  initializeUsersPage();
+  loadUsers();
+  initializeGrid();
+  buildTreeView();
+  setupUsersEventListeners();
+});
 
 function initializeUsersPage() {
-  setActiveMenuItem("users")
+  setActiveMenuItem("users");
 }
 
 function setupUsersEventListeners() {
   $(window).on("click", (event) => {
     if ($(event.target).hasClass("modal")) {
-      closeUserModal()
+      closeUserModal();
     }
-  })
+  });
 
   $("#userForm").on("submit", (e) => {
-    e.preventDefault()
-    saveUser()
-  })
+    e.preventDefault();
+    saveUser();
+  });
 
-  $("#confirmPassword").on("input", validatePasswordMatch)
+  $("#confirmPassword").on("input", validatePasswordMatch);
 }
 
 async function loadUsers() {
   try {
-    const res = await fetch("/api/v1/users")
+    const res = await fetch("/api/v1/users");
     if (!res.ok) {
-      throw new Error(`HTTP error! Status: ${res.status}`)
+      throw new Error(`HTTP error! Status: ${res.status}`);
     }
-    const apiUsers = await res.json()
-    console.log("API Response:", apiUsers)
+    const apiUsers = await res.json();
+    console.log("API Response:", apiUsers);
 
     // Map database format to UI format
     usersData = apiUsers.map((user) => ({
@@ -70,17 +70,17 @@ async function loadUsers() {
           }
         : null,
       rawData: user, // Keep original data for API operations
-    }))
+    }));
   } catch (error) {
-    console.error("Error loading users:", error)
-    showNotification("Failed to load users from database", "error")
+    console.error("Error loading users:", error);
+    showNotification("Failed to load users from database", "error");
     // Fallback to empty array
-    usersData = []
+    usersData = [];
   }
 
-  filteredUsers = [...usersData]
-  buildTreeView()
-  applyTreeFilters()
+  filteredUsers = [...usersData];
+  buildTreeView();
+  applyTreeFilters();
 }
 
 function initializeGrid() {
@@ -89,9 +89,9 @@ function initializeGrid() {
       headerName: "User",
       field: "firstName",
       width: 150,
-       flex: 1,
+      flex: 1,
       cellRenderer: (params) => {
-        const initials = `${params.data.firstName.charAt(0)}${params.data.lastName.charAt(0)}`
+        const initials = `${params.data.firstName.charAt(0)}${params.data.lastName.charAt(0)}`;
         return `
           <div style="display: flex; align-items: center;">
             <div>
@@ -99,21 +99,21 @@ function initializeGrid() {
               <div style="font-size: 0.7rem; color: #6c757d;">ID: ${params.data.id}</div>
             </div>
           </div>
-        `
+        `;
       },
     },
     {
       headerName: "Email",
       field: "email",
       width: 180,
-       flex: 1,
+      flex: 1,
       cellStyle: { fontSize: "0.75rem" },
     },
     {
       headerName: "Role",
       field: "role",
       width: 80,
-       flex: 1,
+      flex: 1,
       cellRenderer: (params) => `
         <span class="role-badge role-${params.value.toLowerCase()}">${params.value}</span>
       `,
@@ -122,7 +122,7 @@ function initializeGrid() {
       headerName: "Scope",
       field: "scope",
       width: 100,
-       flex: 1,
+      flex: 1,
       cellStyle: { fontSize: "0.75rem" },
       valueFormatter: (params) => params.value || "Not assigned",
     },
@@ -164,7 +164,7 @@ function initializeGrid() {
         </div>
       `,
     },
-  ]
+  ];
 
   const gridOptions = {
     columnDefs: columnDefs,
@@ -178,234 +178,238 @@ function initializeGrid() {
       filter: true,
       resizable: true,
     },
-  }
+  };
 
-  const gridDiv = $("#usersGrid")[0]
+  const gridDiv = $("#usersGrid")[0];
   if (gridDiv) {
-    gridApi = agGrid.createGrid(gridDiv, gridOptions)
+    gridApi = agGrid.createGrid(gridDiv, gridOptions);
   }
 }
 
 function buildTreeView() {
-  const $treeContainer = $("#userTree")
-  if (!$treeContainer.length) return
+  const $treeContainer = $("#userTree");
+  if (!$treeContainer.length) return;
 
-  const treeData = buildTreeData()
-  $treeContainer.empty()
+  const treeData = buildTreeData();
+  $treeContainer.empty();
 
   Object.keys(treeData).forEach((role) => {
-    const roleNode = createTreeNode(role, "role", treeData[role])
-    $treeContainer.append(roleNode)
-  })
+    const roleNode = createTreeNode(role, "role", treeData[role]);
+    $treeContainer.append(roleNode);
+  });
 }
 
 function buildTreeData() {
-  const tree = {}
+  const tree = {};
 
   usersData.forEach((user) => {
     if (!tree[user.role]) {
-      tree[user.role] = {}
+      tree[user.role] = {};
     }
-    const scope = user.scope || "No Scope"
+    const scope = user.scope || "No Scope";
     if (!tree[user.role][scope]) {
-      tree[user.role][scope] = []
+      tree[user.role][scope] = [];
     }
-    tree[user.role][scope].push(user)
-  })
+    tree[user.role][scope].push(user);
+  });
 
-  return tree
+  return tree;
 }
 
 function createTreeNode(label, level, children) {
-  const $nodeDiv = $("<div>").addClass("tree-node")
-  const $headerDiv = $("<div>").addClass("tree-node-header")
+  const $nodeDiv = $("<div>").addClass("tree-node");
+  const $headerDiv = $("<div>").addClass("tree-node-header");
 
-  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label))
+  $headerDiv.on("click", () => toggleTreeNode($headerDiv[0], level, label));
 
-  const hasChildren = level !== "user" && Object.keys(children).length > 0
+  const hasChildren = level !== "user" && Object.keys(children).length > 0;
 
   $headerDiv.html(`
     <span class="tree-toggle">${hasChildren ? "▶" : ""}</span>
     <span>${label} ${level === "role" ? `(${Object.values(children).flat().length})` : level === "scope" ? `(${children.length})` : ""}</span>
-  `)
+  `);
 
-  $nodeDiv.append($headerDiv)
+  $nodeDiv.append($headerDiv);
 
   if (hasChildren) {
-    const $childrenDiv = $("<div>").addClass("tree-children")
+    const $childrenDiv = $("<div>").addClass("tree-children");
 
     if (level === "role") {
       Object.keys(children).forEach((scope) => {
-        const scopeNode = createTreeNode(scope, "scope", children[scope])
-        $childrenDiv.append(scopeNode)
-      })
+        const scopeNode = createTreeNode(scope, "scope", children[scope]);
+        $childrenDiv.append(scopeNode);
+      });
     } else if (level === "scope") {
       children.forEach((user) => {
-        const $userDiv = $("<div>").addClass("tree-leaf").text(`${user.firstName}`)
-        $userDiv.on("click", () => selectTreeLeaf($userDiv[0], "user", user.id))
-        $childrenDiv.append($userDiv)
-      })
+        const $userDiv = $("<div>")
+          .addClass("tree-leaf")
+          .text(`${user.firstName}`);
+        $userDiv.on("click", () =>
+          selectTreeLeaf($userDiv[0], "user", user.id),
+        );
+        $childrenDiv.append($userDiv);
+      });
     }
 
-    $nodeDiv.append($childrenDiv)
+    $nodeDiv.append($childrenDiv);
   }
 
-  return $nodeDiv[0]
+  return $nodeDiv[0];
 }
 
 function toggleTreeNode(header, level, value) {
-  const $header = $(header)
-  const $children = $header.parent().find(".tree-children").first()
-  const $toggle = $header.find(".tree-toggle")
+  const $header = $(header);
+  const $children = $header.parent().find(".tree-children").first();
+  const $toggle = $header.find(".tree-toggle");
 
   if ($children.length) {
-    const isExpanded = $children.hasClass("expanded")
-    $children.toggleClass("expanded")
-    $toggle.text(isExpanded ? "▶" : "▼")
+    const isExpanded = $children.hasClass("expanded");
+    $children.toggleClass("expanded");
+    $toggle.text(isExpanded ? "▶" : "▼");
   }
 
   if (level === "role") {
-    treeFilters.role = treeFilters.role === value ? null : value
-    treeFilters.scope = null
-    treeFilters.user = null
+    treeFilters.role = treeFilters.role === value ? null : value;
+    treeFilters.scope = null;
+    treeFilters.user = null;
   } else if (level === "scope") {
-    treeFilters.scope = treeFilters.scope === value ? null : value
-    treeFilters.user = null
+    treeFilters.scope = treeFilters.scope === value ? null : value;
+    treeFilters.user = null;
   }
 
-  updateTreeSelection()
-  applyTreeFilters()
+  updateTreeSelection();
+  applyTreeFilters();
 }
 
 function selectTreeLeaf(leaf, level, value) {
-  $(".tree-leaf.selected").removeClass("selected")
+  $(".tree-leaf.selected").removeClass("selected");
 
   if (treeFilters.user === value) {
-    treeFilters.user = null
+    treeFilters.user = null;
   } else {
-    $(leaf).addClass("selected")
-    treeFilters.user = value
+    $(leaf).addClass("selected");
+    treeFilters.user = value;
   }
 
-  applyTreeFilters()
+  applyTreeFilters();
 }
 
 function updateTreeSelection() {
-  $(".tree-node-header").removeClass("active")
+  $(".tree-node-header").removeClass("active");
 
   if (treeFilters.role) {
     $(".tree-node-header").each(function () {
       if ($(this).text().includes(treeFilters.role)) {
-        $(this).addClass("active")
+        $(this).addClass("active");
       }
-    })
+    });
   }
 }
 
 function applyTreeFilters() {
   filteredUsers = usersData.filter((user) => {
-    if (treeFilters.role && user.role !== treeFilters.role) return false
+    if (treeFilters.role && user.role !== treeFilters.role) return false;
     if (treeFilters.scope) {
-      const scope = user.scope || "No Scope"
-      if (scope !== treeFilters.scope) return false
+      const scope = user.scope || "No Scope";
+      if (scope !== treeFilters.scope) return false;
     }
-    if (treeFilters.user && user.id !== treeFilters.user) return false
-    return true
-  })
+    if (treeFilters.user && user.id !== treeFilters.user) return false;
+    return true;
+  });
 
   if (gridApi) {
-    gridApi.setGridOption("rowData", filteredUsers)
+    gridApi.setGridOption("rowData", filteredUsers);
   }
 }
 
 function searchTree() {
-  const searchTerm = $("#treeSearch").val().toLowerCase()
+  const searchTerm = $("#treeSearch").val().toLowerCase();
   $(".tree-node-header, .tree-leaf").each(function () {
-    const text = $(this).text().toLowerCase()
-    const match = text.includes(searchTerm)
-    $(this).css("display", match || searchTerm === "" ? "flex" : "none")
-  })
+    const text = $(this).text().toLowerCase();
+    const match = text.includes(searchTerm);
+    $(this).css("display", match || searchTerm === "" ? "flex" : "none");
+  });
 }
 
 function clearTreeFilters() {
-  treeFilters = { role: null, scope: null, user: null }
-  $(".tree-node-header.active").removeClass("active")
-  $(".tree-leaf.selected").removeClass("selected")
-  $("#treeSearch").val("")
-  searchTree()
-  applyTreeFilters()
+  treeFilters = { role: null, scope: null, user: null };
+  $(".tree-node-header.active").removeClass("active");
+  $(".tree-leaf.selected").removeClass("selected");
+  $("#treeSearch").val("");
+  searchTree();
+  applyTreeFilters();
 }
 
 function openAddUserModal() {
-  editingUserId = null
-  $("#modalTitle").text("Add New User")
-  $("#userForm")[0].reset()
-  $("#passwordRow").show()
-  $("#password").prop("required", true)
-  $("#confirmPassword").prop("required", true)
-  $("#userModal").addClass("show")
+  editingUserId = null;
+  $("#modalTitle").text("Add New User");
+  $("#userForm")[0].reset();
+  $("#passwordRow").show();
+  $("#password").prop("required", true);
+  $("#confirmPassword").prop("required", true);
+  $("#userModal").addClass("show");
 }
 
 function editUser(id) {
-  const user = usersData.find((u) => u.id === id)
-  if (!user) return
+  const user = usersData.find((u) => u.id === id);
+  if (!user) return;
 
-  editingUserId = id
-  $("#modalTitle").text("Edit User")
-  $("#firstName").val(user.firstName)
-  $("#lastName").val(user.lastName)
-  $("#email").val(user.email)
-  $("#phone").val(user.phone || "")
-  $("#role").val(user.role)
-  $("#scope").val(user.scope || "")
-  $("#passwordRow").hide()
-  $("#password").prop("required", false)
-  $("#confirmPassword").prop("required", false)
-  $("#userModal").addClass("show")
+  editingUserId = id;
+  $("#modalTitle").text("Edit User");
+  $("#firstName").val(user.firstName);
+  $("#lastName").val(user.lastName);
+  $("#email").val(user.email);
+  $("#phone").val(user.phone || "");
+  $("#role").val(user.role);
+  $("#scope").val(user.scope || "");
+  $("#passwordRow").hide();
+  $("#password").prop("required", false);
+  $("#confirmPassword").prop("required", false);
+  $("#userModal").addClass("show");
 }
 
 function closeUserModal() {
-  $("#userModal").removeClass("show")
-  editingUserId = null
+  $("#userModal").removeClass("show");
+  editingUserId = null;
 }
 
 function validatePasswordMatch() {
-  const password = $("#password").val()
-  const confirmPassword = $("#confirmPassword").val()
+  const password = $("#password").val();
+  const confirmPassword = $("#confirmPassword").val();
 
   if (password !== confirmPassword) {
-    $("#confirmPassword")[0].setCustomValidity("Passwords do not match")
+    $("#confirmPassword")[0].setCustomValidity("Passwords do not match");
   } else {
-    $("#confirmPassword")[0].setCustomValidity("")
+    $("#confirmPassword")[0].setCustomValidity("");
   }
 }
 
 async function saveUser() {
-  const form = $("#userForm")[0]
+  const form = $("#userForm")[0];
   if (!form.checkValidity()) {
-    form.reportValidity()
-    return
+    form.reportValidity();
+    return;
   }
 
-  const formData = new FormData(form)
+  const formData = new FormData(form);
   const userData = {
     username: formData.get("firstName"), // Using firstName as username
     password: formData.get("password"),
     scope: formData.get("scope") || "global",
     role_name: formData.get("role"),
-  }
+  };
 
   try {
-    let response
+    let response;
     if (editingUserId) {
-      const user = usersData.find((u) => u.id === editingUserId)
+      const user = usersData.find((u) => u.id === editingUserId);
       response = await fetch(`/api/v1/users/${user.uuid}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
-      })
+      });
     } else {
       response = await fetch("/api/v1/users", {
         method: "POST",
@@ -413,41 +417,44 @@ async function saveUser() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(userData),
-      })
+      });
     }
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`)
+      throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const result = await response.json()
-    console.log("User save result:", result)
+    const result = await response.json();
+    console.log("User save result:", result);
 
-    showNotification(editingUserId ? "User updated successfully!" : "User added successfully!", "success")
+    showNotification(
+      editingUserId ? "User updated successfully!" : "User added successfully!",
+      "success",
+    );
 
-    await loadUsers()
-    closeUserModal()
+    await loadUsers();
+    closeUserModal();
   } catch (error) {
-    console.error("Error saving user:", error)
-    showNotification("Failed to save user", "error")
+    console.error("Error saving user:", error);
+    showNotification("Failed to save user", "error");
   }
 }
 
 function viewUser(id) {
-  const user = usersData.find((u) => u.id === id)
-  if (!user) return
+  const user = usersData.find((u) => u.id === id);
+  if (!user) return;
 
   alert(
     `User Details:\n\nName: ${user.firstName}\nEmail: ${user.email}\nPhone: ${user.phone || "Not provided"}\nRole: ${user.role}\nScope: ${user.scope || "Not assigned"}\nStatus: ${user.status}\nLast Login: ${user.lastLogin}\nCreated: ${user.createdAt}`,
-  )
+  );
 }
 
 async function toggleUserStatus(id) {
-  const user = usersData.find((u) => u.id === id)
-  if (!user) return
+  const user = usersData.find((u) => u.id === id);
+  if (!user) return;
 
-  const newStatus = user.status === "active" ? "inactive" : "active"
-  const action = newStatus === "active" ? "activate" : "deactivate"
+  const newStatus = user.status === "active" ? "inactive" : "active";
+  const action = newStatus === "active" ? "activate" : "deactivate";
 
   if (confirm(`Are you sure you want to ${action} ${user.firstName}?`)) {
     try {
@@ -457,58 +464,62 @@ async function toggleUserStatus(id) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ status: newStatus }),
-      })
+      });
 
       if (!response.ok) {
-        console.warn("Status toggle endpoint not available, updating locally")
-        user.status = newStatus
-        applyTreeFilters()
+        console.warn("Status toggle endpoint not available, updating locally");
+        user.status = newStatus;
+        applyTreeFilters();
       } else {
-        await loadUsers()
+        await loadUsers();
       }
 
-      showNotification(`User ${action}d successfully!`, "success")
+      showNotification(`User ${action}d successfully!`, "success");
     } catch (error) {
-      console.error("Error toggling user status:", error)
-      user.status = newStatus
-      applyTreeFilters()
-      showNotification(`User ${action}d locally (API unavailable)`, "success")
+      console.error("Error toggling user status:", error);
+      user.status = newStatus;
+      applyTreeFilters();
+      showNotification(`User ${action}d locally (API unavailable)`, "success");
     }
   }
 }
 
 async function deleteUser(id) {
-  const user = usersData.find((u) => u.id === id)
-  if (!user) return
+  const user = usersData.find((u) => u.id === id);
+  if (!user) return;
 
-  if (confirm(`Are you sure you want to delete ${user.firstName}? This action cannot be undone.`)) {
+  if (
+    confirm(
+      `Are you sure you want to delete ${user.firstName}? This action cannot be undone.`,
+    )
+  ) {
     try {
       const response = await fetch(`/api/v1/users/${user.uuid}`, {
         method: "DELETE",
-      })
+      });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`)
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
 
-      showNotification("User deleted successfully!", "success")
+      showNotification("User deleted successfully!", "success");
 
-      await loadUsers()
+      await loadUsers();
     } catch (error) {
-      console.error("Error deleting user:", error)
-      showNotification("Failed to delete user", "error")
+      console.error("Error deleting user:", error);
+      showNotification("Failed to delete user", "error");
     }
   }
 }
 
 function setActiveMenuItem(menuItem) {
-  console.log(`Setting active menu item to: ${menuItem}`)
+  console.log(`Setting active menu item to: ${menuItem}`);
 }
 
 function showNotification(message, type) {
-  console.log(`Notification (${type}): ${message}`)
+  console.log(`Notification (${type}): ${message}`);
 
-  let $notification = $("#notification")
+  let $notification = $("#notification");
   if (!$notification.length) {
     $notification = $("<div>").attr("id", "notification").css({
       position: "fixed",
@@ -521,18 +532,21 @@ function showNotification(message, type) {
       zIndex: "10000",
       opacity: "0",
       transition: "opacity 0.3s ease",
-    })
-    $("body").append($notification)
+    });
+    $("body").append($notification);
   }
 
   $notification
     .text(message)
     .removeClass()
     .addClass(`notification-${type}`)
-    .css("backgroundColor", type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8")
-    .css("opacity", "1")
+    .css(
+      "backgroundColor",
+      type === "success" ? "#28a745" : type === "error" ? "#dc3545" : "#17a2b8",
+    )
+    .css("opacity", "1");
 
   setTimeout(() => {
-    $notification.css("opacity", "0")
-  }, 3000)
+    $notification.css("opacity", "0");
+  }, 3000);
 }

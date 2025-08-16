@@ -482,9 +482,7 @@ function createTreeNode(label, level, children) {
       });
     } else if (level === "category") {
       children.forEach((partner) => {
-        const $nameDiv = $("<div>")
-          .addClass("tree-leaf")
-          .text(partner.name);
+        const $nameDiv = $("<div>").addClass("tree-leaf").text(partner.name);
         $nameDiv.on("click", () =>
           selectTreeLeaf($nameDiv[0], "name", partner.name),
         );
