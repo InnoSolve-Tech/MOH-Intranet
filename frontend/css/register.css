@@ -554,34 +554,56 @@ input[type="file"]:hover {
   }
 }
 
-.district-coverage-container {
-  padding: 10px;
-}
+/* Added mobile responsive design for district coverage */
+  .district-coverage-container {
+    padding: 10px;
+  }
 
-.coverage-item {
-  padding: 6px 8px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-}
+  .coverage-item {
+    padding: 6px 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
 
-.coverage-label {
-  font-size: 12px;
-  min-width: auto;
-}
+  .coverage-label {
+    font-size: 12px;
+    min-width: auto;
+  }
 
-.coverage-radios {
-  gap: 10px;
-  align-self: stretch;
-  justify-content: space-around;
-}
+  .coverage-radios {
+    gap: 10px;
+    align-self: stretch;
+    justify-content: space-around;
+  }
 
-.radio-option {
-  font-size: 12px;
-  gap: 4px;
-}
+  .radio-option {
+    font-size: 12px;
+    gap: 4px;
+  }
 
-.radio-option input[type="radio"] {
-  width: 14px;
-  height: 14px;
-}
+  .radio-option input[type="radio"] {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Mobile responsive styling for user creation modal */
+  .contact-user-item {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .contact-info {
+    margin-right: 0;
+  }
+
+  .user-creation-fields {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .user-fields .form-row {
+    flex-direction: column;
+    gap: 8px;
+  }
+

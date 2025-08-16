@@ -49,7 +49,6 @@ func InitDB() {
 
 	adminUsername := getEnv("ADMIN_USERNAME", ptr("admin"))
 	adminPassword := getEnv("ADMIN_PASSWORD", ptr("admin@123"))
-	adminEmail := getEnv("ADMIN_EMAIL", ptr("admin@example.com"))
 
 	// Create default admin user
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(adminPassword), bcrypt.DefaultCost)
@@ -60,7 +59,6 @@ func InitDB() {
 	adminUser := models.Users{
 		UUID:     uuid.New().String(),
 		Username: adminUsername,
-		Email:    adminEmail,
 		Password: string(passwordHash),
 		RoleID:   adminRole.ID,
 	}

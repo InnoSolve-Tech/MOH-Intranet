@@ -49,8 +49,8 @@ func RegisterUser(c *fiber.Ctx) error {
 	}
 
 	// If ContactID is provided, validate the contact exists and link to user
+	var contact models.PartnerContacts
 	if req.ContactID != "" {
-		var contact models.PartnerContacts
 		if err := database.DB.Where("id = ?", req.ContactID).First(&contact).Error; err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Contact not found"})
 		}
@@ -80,12 +80,48 @@ func RegisterUser(c *fiber.Ctx) error {
 	}
 
 	// Start a session
-	middleware.CreateSession(c, req.Username, req.Email, user.UUID, user.Role.RoleName)
+	email := req.Email
+	if req.ContactID != "" {
+		email = contact.OfficialEmail
+	}
+	middleware.CreateSession(c, req.Username, email, user.UUID, role.RoleName)
 
 	return c.JSON(fiber.Map{
 		"message": "User registered successfully",
 		"uuid":    user.UUID,
 	})
+}
+
+func RegisterUserUsernameAndPassword(c *fiber.Ctx, Username string, Password string, Email string) (models.Users, error) {
+
+	// Determine role: admin if ContactID provided, otherwise partner
+	roleName := "partner"
+
+	var role models.Roles
+	if err := database.DB.Where("role_name = ?", roleName).First(&role).Error; err != nil {
+		return models.Users{}, err
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(Password), bcrypt.DefaultCost)
+	if err != nil {
+		return models.Users{}, err
+	}
+
+	// Create user record
+	user := models.Users{
+		UUID:     uuid.New().String(),
+		Username: Username,
+		Password: string(hashedPassword),
+		RoleID:   role.ID,
+	}
+
+	// Save user to database
+	if err := database.DB.Create(&user).Error; err != nil {
+		return models.Users{}, err
+	}
+
+	return user, nil
 }
 
 // Sign in
@@ -98,16 +134,27 @@ func SignIn(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	var user models.Users
-	if err := database.DB.Preload("Role").Where("username = ? or email = ?", req.UserID, req.UserID).First(&user).Error; err != nil {
+	var contact models.PartnerContacts
+	err := database.DB.
+		Joins("JOIN users ON users.id = partner_contacts.user_id").
+		Preload("User.Role").
+		Where("users.username = ? OR partner_contacts.official_email = ?", req.UserID, req.UserID).
+		First(&contact).Error
+	if err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(contact.User.Password), []byte(req.Password)) != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
 	}
 
-	middleware.CreateSession(c, user.Username, user.Email, user.UUID, user.Role.RoleName)
+	middleware.CreateSession(c,
+		contact.User.Username,
+		contact.OfficialEmail,
+		contact.User.UUID,
+		contact.User.Role.RoleName,
+	)
+
 	return c.JSON(fiber.Map{
 		"message": "Signed in successfully",
 	})

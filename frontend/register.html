@@ -33,10 +33,14 @@
           </div>
           <div class="step" data-step="2">
             <div class="step-number">2</div>
-            <div class="step-title">Contacts & MoU</div>
+            <div class="step-title">Contacts</div>
           </div>
           <div class="step" data-step="3">
             <div class="step-number">3</div>
+            <div class="step-title">MoU</div>
+          </div>
+          <div class="step" data-step="4">
+            <div class="step-number">4</div>
             <div class="step-title">Support Details</div>
           </div>
         </div>
@@ -54,25 +58,23 @@
               <input type="text" id="partnerName" name="partnerName" required />
             </div>
             <div class="form-group">
-              <label for="acronym">Acronym *</label>
-              <input type="text" id="acronym" name="acronym" required />
+              <label for="acronym">Acronym</label>
+              <input type="text" id="acronym" name="acronym" />
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="partnerType">Partner Type *</label>
-              <!-- Updated Partner Type options to only Local and International -->
-              <select id="partnerType" name="partnerType" required>
-                <option value="">Select Type</option>
-                <option value="Local">Local</option>
-                <option value="International">International</option>
-              </select>
+              <label>Partner Type *</label>
+              <div id="partnerTypeGroup">
+                <label><input type="radio" name="partnerType" value="Local" required> Local</label>
+                <label><input type="radio" name="partnerType" value="International" required> International</label>
+              </div>
             </div>
+
             <div class="form-group">
               <label for="category">Category *</label>
-              <!-- Updated Category dropdown to be dynamically populated -->
-              <select id="category" name="category" required>
+              <select id="category" name="category" disabled>
                 <option value="">Select Category</option>
               </select>
             </div>
@@ -85,6 +87,7 @@
                 type="tel"
                 id="officialPhone"
                 name="officialPhone"
+                value="+256"
                 required
               />
             </div>
@@ -126,7 +129,7 @@
           </div>
         </div>
 
-        <!-- Step 2: Contacts and MoU -->
+        <!-- Step 2: Contacts -->
         <div class="form-step" data-step="2">
           <div class="dynamic-section">
             <h4>Additional Contacts</h4>
@@ -156,6 +159,7 @@
                       type="tel"
                       name="contacts[0][phone]"
                       placeholder="Phone Number *"
+                      value="+256"
                       required
                     />
                   </div>
@@ -182,136 +186,82 @@
               Add Contact
             </button>
           </div>
+        </div>
 
+        <!-- Step 3: MoU -->
+        <div class="form-step" data-step="3">
           <div class="checkbox-group">
             <input type="checkbox" id="hasMou" name="hasMou" />
             <label for="hasMou">We have signed an MoU</label>
           </div>
 
-          <div class="form-group" id="mouUpload" style="display: none">
-            <label for="mouFile">Upload MoU Document</label>
-            <input
-              type="file"
-              id="mouFile"
-              name="mouFile"
-              accept=".pdf,.doc,.docx"
-            />
+          <div class="mou-details" id="mouDetails" style="display: none">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signedBy">Signed By (WHO Representative) *</label>
+                <input
+                  type="text"
+                  id="signedBy"
+                  name="signedBy"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="whoTitle">Title (WHO Representative) *</label>
+                <input
+                  type="text"
+                  id="whoTitle"
+                  name="whoTitle"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signedDate">Signed Date *</label>
+                <input
+                  type="date"
+                  id="signedDate"
+                  name="signedDate"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <label for="expiryDate">Expiry Date</label>
+                <input
+                  type="date"
+                  id="expiryDate"
+                  name="expiryDate"
+                />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mouFile">Upload MoU Document</label>
+              <input
+                type="file"
+                id="mouFile"
+                name="mouFile"
+                accept=".pdf,.doc,.docx"
+              />
+            </div>
           </div>
         </div>
 
-        <!-- Step 3: Support Details -->
-        <div class="form-step" data-step="3">
+        <!-- Step 4: Support Details -->
+        <div class="form-step" data-step="4">
           <div class="dynamic-section">
             <h4>Support Years</h4>
-            <div id="supportYearsContainer">
-              <div class="dynamic-item">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Year *</label>
-                    <input
-                      type="number"
-                      name="supportYears[0][year]"
-                      min="2020"
-                      max="2030"
-                      required
-                    />
-                  </div>
-                  <div class="form-group">
-                    <label>Level of Support *</label>
-                    <!-- Updated Level options to National and District -->
-                    <select
-                      name="supportYears[0][level]"
-                      class="level-select"
-                      required
-                      onchange="handleLevelChange(this, 0)"
-                    >
-                      <option value="">Select Level</option>
-                      <option value="National">National</option>
-                      <option value="District">District</option>
-                    </select>
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Thematic Areas Supported *</label>
-                  <select name="supportYears[0][thematicAreas]" required>
-                    <option value="">Select Thematic Area</option>
-                    <option value="Health">Health</option>
-                    <option value="Education">Education</option>
-                    <option value="Agriculture">Agriculture</option>
-                    <option value="Water and Sanitation">
-                      Water and Sanitation
-                    </option>
-                    <option value="Nutrition">Nutrition</option>
-                    <option value="Child Protection">Child Protection</option>
-                    <option value="Gender Equality">Gender Equality</option>
-                    <option value="Environment">Environment</option>
-                    <option value="Economic Development">
-                      Economic Development
-                    </option>
-                    <option value="Emergency Response">
-                      Emergency Response
-                    </option>
-                    <option value="Governance">Governance</option>
-                    <option value="Human Rights">Human Rights</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Districts Supported *</label>
-                  <!-- Added conditional districts selection with coverage options -->
-                  <select
-                    name="supportYears[0][districts]"
-                    class="districts-select"
-                    required
-                    onchange="handleDistrictChange(this, 0)"
-                  >
-                    <option value="Kampala">Kampala</option>
-                    <option value="Wakiso">Wakiso</option>
-                    <option value="Mukono">Mukono</option>
-                    <option value="Jinja">Jinja</option>
-                    <option value="Mbale">Mbale</option>
-                    <option value="Gulu">Gulu</option>
-                    <option value="Lira">Lira</option>
-                    <option value="Mbarara">Mbarara</option>
-                    <option value="Kasese">Kasese</option>
-                    <option value="Fort Portal">Fort Portal</option>
-                    <option value="Hoima">Hoima</option>
-                    <option value="Masaka">Masaka</option>
-                    <option value="Soroti">Soroti</option>
-                    <option value="Arua">Arua</option>
-                    <option value="Kabale">Kabale</option>
-                    <option value="Moroto">Moroto</option>
-                    <option value="Kitgum">Kitgum</option>
-                    <option value="Pader">Pader</option>
-                    <option value="Adjumani">Adjumani</option>
-                    <option value="Moyo">Moyo</option>
-                  </select>
-                  <small class="district-help-text"
-                    >Select districts based on level of support</small
-                  >
-
-                  <!-- Added district coverage options container -->
-                  <div
-                    class="district-coverage-container"
-                    id="districtCoverage0"
-                    style="display: none"
-                  >
-                    <h5>District Coverage</h5>
-                    <div class="coverage-options" id="coverageOptions0"></div>
-                  </div>
-                </div>
-              </div>
+            <div class="support-years-header">
+              <button type="button" class="add-btn" onclick="openAddSupportYearModal()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                </svg>
+                Add Support Year
+              </button>
             </div>
-            <button type="button" class="add-btn" onclick="addSupportYear()">
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-              </svg>
-              Add Another Year
-            </button>
+            <div id="supportYearsGrid" class="ag-theme-alpine" style="height: 300px; width: 100%; margin-top: 15px;"></div>
           </div>
         </div>
 
@@ -339,6 +289,92 @@
       </form>
     </div>
 
+    <!-- Added modal for adding support years -->
+    <div id="addSupportYearModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add Support Year</h3>
+          <span class="close" onclick="closeAddSupportYearModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+          <form id="supportYearForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Year *</label>
+                <input type="number" id="supportYear" min="2020" max="2030" required>
+              </div>
+              <div class="form-group">
+                <label>Level of Support *</label>
+                <select id="supportLevel" required onchange="handleModalLevelChange()">
+                  <option value="">Select Level</option>
+                  <option value="National">National</option>
+                  <option value="District">District</option>
+                </select>
+              </div>
+            </div>
+            <!-- Added missing thematic areas dropdown -->
+            <div class="form-group">
+              <label>Thematic Areas Supported *</label>
+              <select id="supportThematic" required>
+                <option value="">Select Thematic Area</option>
+                <option value="Health">Health</option>
+                <option value="Education">Education</option>
+                <option value="Agriculture">Agriculture</option>
+                <option value="Water and Sanitation">Water and Sanitation</option>
+                <option value="Nutrition">Nutrition</option>
+                <option value="Child Protection">Child Protection</option>
+                <option value="Gender Equality">Gender Equality</option>
+                <option value="Environment">Environment</option>
+                <option value="Economic Development">Economic Development</option>
+                <option value="Emergency Response">Emergency Response</option>
+                <option value="Governance">Governance</option>
+                <option value="Human Rights">Human Rights</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Districts Supported *</label>
+              <!-- Added multiple attribute to enable multi-select for districts -->
+              <select id="supportDistricts" multiple required onchange="handleModalDistrictChange()">
+                <option value="Kampala">Kampala</option>
+                <option value="Wakiso">Wakiso</option>
+                <option value="Mukono">Mukono</option>
+                <option value="Jinja">Jinja</option>
+                <option value="Mbale">Mbale</option>
+                <option value="Gulu">Gulu</option>
+                <option value="Lira">Lira</option>
+                <option value="Mbarara">Mbarara</option>
+                <option value="Kasese">Kasese</option>
+                <option value="Fort Portal">Fort Portal</option>
+                <option value="Hoima">Hoima</option>
+                <option value="Masaka">Masaka</option>
+                <option value="Soroti">Soroti</option>
+                <option value="Arua">Arua</option>
+                <option value="Kabale">Kabale</option>
+                <option value="Moroto">Moroto</option>
+                <option value="Kitgum">Kitgum</option>
+                <option value="Pader">Pader</option>
+                <option value="Adjumani">Adjumani</option>
+                <option value="Moyo">Moyo</option>
+              </select>
+              <!-- Updated help text to reflect new logic -->
+              <small class="district-help-text">Hold Ctrl/Cmd to select multiple districts when level is District</small>
+              
+              <div class="district-coverage-container" id="modalDistrictCoverage" style="display: none;">
+                <h5>District Coverage</h5>
+                <div class="coverage-options" id="modalCoverageOptions"></div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="nav-btn" onclick="closeAddSupportYearModal()">Cancel</button>
+          <button type="button" class="nav-btn" onclick="saveSupportYear()">Add Support Year</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Added ag-grid CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
     <script src="js/register.js"></script>
   </body>
 </html>

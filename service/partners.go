@@ -1,9 +1,12 @@
+// service/partner.go
 package service
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"mime/multipart"
+	"io"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,33 +21,104 @@ import (
 )
 
 // CreatePartner creates a new partner record with all related data
+// CreatePartner creates a new partner record with all related data
 func CreatePartner(c *fiber.Ctx) error {
-	// Parse multipart form
-	form, err := c.MultipartForm()
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "Invalid form data",
-			"details": err.Error(),
-		})
+	var submissionData models.PartnerSubmissionData
+
+	// Check content type to determine parsing method
+	contentType := c.Get("Content-Type")
+
+	if strings.Contains(contentType, "multipart/form-data") {
+		// Handle FormData submission
+
+		// Parse the JSON data from form field
+		dataField := c.FormValue("data")
+		if dataField == "" {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Missing data field in form submission",
+			})
+		}
+
+		if err := json.Unmarshal([]byte(dataField), &submissionData); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "Invalid JSON data in form field",
+				"details": err.Error(),
+			})
+		}
+
+		// Handle file from FormData
+		if submissionData.MoU.HasMoU {
+			file, err := c.FormFile("mouFile")
+			if err == nil && file != nil {
+				// Process the multipart file
+				fileHandle, err := file.Open()
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to open uploaded file",
+						"details": err.Error(),
+					})
+				}
+				defer fileHandle.Close()
+
+				// Read file content
+				fileContent, err := io.ReadAll(fileHandle)
+				if err != nil {
+					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+						"error":   "Failed to read uploaded file",
+						"details": err.Error(),
+					})
+				}
+
+				// Create file object for processing
+				fileObj := map[string]interface{}{
+					"name":    file.Filename,
+					"content": base64.StdEncoding.EncodeToString(fileContent),
+				}
+
+				submissionData.MoU.File = fileObj
+			}
+		}
+
+	} else {
+		// Handle JSON submission (your existing code)
+		if err := c.BodyParser(&submissionData); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error":   "Invalid JSON data",
+				"details": err.Error(),
+			})
+		}
 	}
 
-	// Extract and validate basic info
-	basicInfo, err := extractBasicInfo(form.Value)
-	if err != nil {
+	// Validate basic information
+	if err := validateBasicInfo(submissionData.BasicInfo); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   "Invalid basic information",
 			"details": err.Error(),
 		})
 	}
 
-	// Handle MoU file upload
-	mouFilePath, err := handleMoUUpload(c, form)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "Failed to upload MoU file",
-			"details": err.Error(),
-		})
+	// Handle MoU file if provided
+	mouFilePath := ""
+	if submissionData.MoU.HasMoU {
+		// Debug: Log what we're receiving
+		fmt.Printf("MoU File received: %+v\n", submissionData.MoU.File)
+
+		if submissionData.MoU.File != nil {
+			filePath, err := handleMoUFile(submissionData.MoU.File)
+			if err != nil {
+				fmt.Printf("File handling error: %v\n", err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Failed to process MoU file",
+					"details": err.Error(),
+				})
+			}
+			mouFilePath = filePath
+			fmt.Printf("File saved to: %s\n", mouFilePath)
+		}
 	}
+
+	// Rest of your existing code remains the same...
+	// [Continue with transaction handling, saving to database, etc.]
 
 	// Start database transaction
 	tx := database.DB.Begin()
@@ -57,12 +131,13 @@ func CreatePartner(c *fiber.Ctx) error {
 	// Create main partner record
 	partner := models.Partner{
 		UUID:            uuid.New().String(),
-		Acronym:         basicInfo.Acronym,
-		PartnerType:     basicInfo.PartnerType,
-		PartnerCategory: basicInfo.Category,
-		OfficialPhone:   basicInfo.OfficialPhone,
-		OfficialEmail:   basicInfo.OfficialEmail,
-		HasMoU:          basicInfo.HasMoU,
+		PartnerName:     submissionData.BasicInfo.PartnerName,
+		Acronym:         submissionData.BasicInfo.Acronym,
+		PartnerType:     submissionData.BasicInfo.PartnerType,
+		PartnerCategory: submissionData.BasicInfo.Category,
+		OfficialPhone:   submissionData.BasicInfo.OfficialPhone,
+		OfficialEmail:   submissionData.BasicInfo.OfficialEmail,
+		HasMoU:          submissionData.MoU.HasMoU,
 		MoULink:         mouFilePath,
 	}
 
@@ -74,8 +149,8 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Process and save addresses
-	if err := savePartnerAddresses(tx, form.Value, partner.ID); err != nil {
+	// Save addresses
+	if err := saveAddresses(tx, submissionData.Addresses, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "Failed to save addresses",
@@ -83,8 +158,8 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Process and save contacts
-	if err := savePartnerContacts(tx, form.Value, partner.ID); err != nil {
+	// Save contacts
+	if err := saveContacts(tx, submissionData.Contacts, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "Failed to save contacts",
@@ -92,13 +167,35 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Process and save support years
-	if err := savePartnerSupportYears(tx, form.Value, partner.ID); err != nil {
+	// Save MoU details if exists
+	if submissionData.MoU.HasMoU {
+		if err := saveMoUDetails(tx, submissionData.MoU, partner.ID, mouFilePath); err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to save MoU details",
+				"details": err.Error(),
+			})
+		}
+	}
+
+	// Save support years
+	if err := saveSupportYears(tx, submissionData.SupportYears, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error":   "Failed to save support years",
 			"details": err.Error(),
 		})
+	}
+
+	// Handle user accounts if provided
+	if len(submissionData.UserAccounts) > 0 {
+		if err := handleUserAccounts(c, tx, submissionData.UserAccounts, submissionData.Contacts, partner.ID); err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to create user accounts",
+				"details": err.Error(),
+			})
+		}
 	}
 
 	// Commit transaction
@@ -114,6 +211,7 @@ func CreatePartner(c *fiber.Ctx) error {
 	database.DB.Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("PartnerMoU").
 		First(&completePartner, partner.ID)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
@@ -122,117 +220,155 @@ func CreatePartner(c *fiber.Ctx) error {
 	})
 }
 
-// extractBasicInfo extracts basic partner information from form
-func extractBasicInfo(form map[string][]string) (*struct {
-	Acronym       string
-	PartnerType   string
-	Category      string
-	OfficialPhone string
-	OfficialEmail string
-	HasMoU        bool
-}, error) {
-	// Validate required fields exist
-	requiredFields := []string{"acronym", "partnerType", "category", "officialPhone", "officialEmail"}
-	for _, field := range requiredFields {
-		if values, exists := form[field]; !exists || len(values) == 0 || strings.TrimSpace(values[0]) == "" {
-			return nil, fmt.Errorf("missing required field: %s", field)
-		}
+// validateBasicInfo validates the basic partner information
+func validateBasicInfo(basicInfo struct {
+	PartnerName   string `json:"partnerName"`
+	Acronym       string `json:"acronym"`
+	PartnerType   string `json:"partnerType"`
+	Category      string `json:"category"`
+	OfficialPhone string `json:"officialPhone"`
+	OfficialEmail string `json:"officialEmail"`
+}) error {
+	if strings.TrimSpace(basicInfo.PartnerName) == "" {
+		return errors.New("partner name is required")
 	}
-
-	hasMoU := false
-	if hasMoUValue, exists := form["hasMoU"]; exists && len(hasMoUValue) > 0 {
-		hasMoU = hasMoUValue[0] == "on" || hasMoUValue[0] == "true"
+	if strings.TrimSpace(basicInfo.PartnerType) == "" {
+		return errors.New("partner type is required")
 	}
-
-	return &struct {
-		Acronym       string
-		PartnerType   string
-		Category      string
-		OfficialPhone string
-		OfficialEmail string
-		HasMoU        bool
-	}{
-		Acronym:       strings.TrimSpace(form["acronym"][0]),
-		PartnerType:   strings.TrimSpace(form["partnerType"][0]),
-		Category:      strings.TrimSpace(form["category"][0]),
-		OfficialPhone: strings.TrimSpace(form["officialPhone"][0]),
-		OfficialEmail: strings.TrimSpace(form["officialEmail"][0]),
-		HasMoU:        hasMoU,
-	}, nil
+	if strings.TrimSpace(basicInfo.Category) == "" {
+		return errors.New("category is required")
+	}
+	if strings.TrimSpace(basicInfo.OfficialPhone) == "" {
+		return errors.New("official phone is required")
+	}
+	if strings.TrimSpace(basicInfo.OfficialEmail) == "" {
+		return errors.New("official email is required")
+	}
+	return nil
 }
 
-func handleMoUUpload(c *fiber.Ctx, form *multipart.Form) (string, error) {
-	mouFiles, hasFile := form.File["mouFile"]
-	if !hasFile || len(mouFiles) == 0 {
-		// No file uploaded, which is fine if HasMoU is false
+// handleMoUFile processes the MoU file from FormData
+func handleMoUFile(fileInterface interface{}) (string, error) {
+	if fileInterface == nil {
 		return "", nil
 	}
+	fmt.Printf("Processing file interface: %+v (Type: %T)\n", fileInterface, fileInterface)
 
-	mouFile := mouFiles[0]
-	if mouFile.Size == 0 {
-		// Empty file
-		return "", nil
-	}
-
-	// Validate file type (optional - add your allowed types)
-	allowedTypes := []string{".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"}
-	ext := strings.ToLower(filepath.Ext(mouFile.Filename))
-	isValidType := false
-	for _, allowedType := range allowedTypes {
-		if ext == allowedType {
-			isValidType = true
-			break
-		}
-	}
-	if !isValidType {
-		return "", fmt.Errorf("invalid file type: %s. Allowed types: %v", ext, allowedTypes)
-	}
-
-	// Create uploads directory
+	// Create uploads directory first
 	saveDir := "./uploads/mou"
 	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
 		return "", fmt.Errorf("failed to create upload directory: %v", err)
 	}
 
-	// Generate unique filename
-	fileName := fmt.Sprintf("mou_%d_%s%s",
-		time.Now().Unix(),
-		uuid.New().String()[:8], // Shorter UUID for filename
-		ext,
-	)
+	var fileName string
+	var fileData []byte
+	var err error
 
+	// Handle different file input types
+	switch v := fileInterface.(type) {
+	case string:
+		// Handle base64 string
+		if v == "" {
+			return "", nil
+		}
+		fileName = fmt.Sprintf("mou_%d_%s.pdf", time.Now().Unix(), uuid.New().String()[:8])
+		fileData, err = handleBase64String(v)
+		if err != nil {
+			return "", err
+		}
+
+	case map[string]interface{}:
+		// Handle FormData File object
+		fmt.Printf("File object contents: %+v\n", v)
+
+		// Try to get file name
+		if name, ok := v["name"].(string); ok && name != "" {
+			ext := filepath.Ext(name)
+			if ext == "" {
+				ext = ".pdf"
+			}
+			fileName = fmt.Sprintf("mou_%d_%s%s", time.Now().Unix(), uuid.New().String()[:8], ext)
+		} else {
+			fileName = fmt.Sprintf("mou_%d_%s.pdf", time.Now().Unix(), uuid.New().String()[:8])
+		}
+
+		// Try to get file data from various possible fields
+		if data, ok := v["data"].(string); ok && data != "" {
+			fileData, err = handleBase64String(data)
+		} else if content, ok := v["content"].(string); ok && content != "" {
+			fileData, err = handleBase64String(content)
+		} else if buffer, ok := v["buffer"].([]byte); ok && len(buffer) > 0 {
+			fileData = buffer
+		} else {
+			return "", fmt.Errorf("no valid file data found in file object")
+		}
+
+		if err != nil {
+			return "", err
+		}
+
+	default:
+		return "", fmt.Errorf("unsupported file type: %T", fileInterface)
+	}
+
+	if len(fileData) == 0 {
+		return "", fmt.Errorf("no file data to save")
+	}
+
+	// Save file to disk
 	fullPath := filepath.Join(saveDir, fileName)
-
-	// Save file
-	if err := c.SaveFile(mouFile, fullPath); err != nil {
+	if err := os.WriteFile(fullPath, fileData, 0644); err != nil {
 		return "", fmt.Errorf("failed to save file: %v", err)
 	}
+
+	fmt.Printf("File successfully saved to: %s\n", fullPath)
 
 	// Return relative path for database storage
 	return "/uploads/mou/" + fileName, nil
 }
 
-// savePartnerAddresses saves partner addresses
-func savePartnerAddresses(tx *gorm.DB, form map[string][]string, partnerID uint) error {
-	var addresses []models.PartnerAddress
+// handleBase64String processes base64 encoded file data
+func handleBase64String(data string) ([]byte, error) {
+	if data == "" {
+		return nil, errors.New("empty file data")
+	}
 
-	// Look for address fields in form
-	for key, values := range form {
-		if strings.Contains(key, "addresses") && len(values) > 0 {
-			for _, address := range values {
-				if trimmedAddress := strings.TrimSpace(address); trimmedAddress != "" {
-					addresses = append(addresses, models.PartnerAddress{
-						Address:   trimmedAddress,
-						PartnerID: partnerID,
-					})
-				}
-			}
+	if strings.HasPrefix(data, "data:") {
+		// Extract base64 data (remove data:application/pdf;base64, prefix)
+		parts := strings.Split(data, ",")
+		if len(parts) != 2 {
+			return nil, errors.New("invalid base64 file format")
+		}
+		data = parts[1]
+	}
+
+	decoded, err := base64.StdEncoding.DecodeString(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64 file: %v", err)
+	}
+
+	if len(decoded) == 0 {
+		return nil, errors.New("decoded file is empty")
+	}
+
+	return decoded, nil
+}
+
+// saveAddresses saves partner addresses
+func saveAddresses(tx *gorm.DB, addresses []string, partnerID uint) error {
+	var addressRecords []models.PartnerAddress
+
+	for _, address := range addresses {
+		if trimmedAddress := strings.TrimSpace(address); trimmedAddress != "" {
+			addressRecords = append(addressRecords, models.PartnerAddress{
+				Address:   trimmedAddress,
+				PartnerID: partnerID,
+			})
 		}
 	}
 
-	// Batch create addresses if any exist
-	if len(addresses) > 0 {
-		if err := tx.Create(&addresses).Error; err != nil {
+	if len(addressRecords) > 0 {
+		if err := tx.Create(&addressRecords).Error; err != nil {
 			return fmt.Errorf("failed to create addresses: %v", err)
 		}
 	}
@@ -240,50 +376,35 @@ func savePartnerAddresses(tx *gorm.DB, form map[string][]string, partnerID uint)
 	return nil
 }
 
-// savePartnerContacts saves partner contacts
-func savePartnerContacts(tx *gorm.DB, form map[string][]string, partnerID uint) error {
-	contactGroups := make(map[string]map[string]string)
+// saveContacts saves partner contacts
+func saveContacts(tx *gorm.DB, contacts []struct {
+	Name     string `json:"name"`
+	Position string `json:"position"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+}, partnerID uint) error {
+	var contactRecords []models.PartnerContacts
 
-	// Group contact fields by index
-	for key, values := range form {
-		if strings.Contains(key, "contacts[") && len(values) > 0 {
-			// Parse contact field pattern: contacts[0][name], contacts[0][position], etc.
-			if parts := strings.Split(key, "]["); len(parts) >= 2 {
-				indexPart := strings.Replace(parts[0], "contacts[", "", 1)
-				fieldName := strings.Replace(parts[1], "]", "", 1)
-
-				if contactGroups[indexPart] == nil {
-					contactGroups[indexPart] = make(map[string]string)
-				}
-				contactGroups[indexPart][fieldName] = strings.TrimSpace(values[0])
-			}
-		}
-	}
-
-	var contacts []models.PartnerContacts
-
-	// Create contact records
-	for _, contactData := range contactGroups {
-		// Validate required fields
-		if contactData["name"] == "" || contactData["position"] == "" ||
-			contactData["phone"] == "" || contactData["email"] == "" {
+	for _, contact := range contacts {
+		// Validate required contact fields
+		if strings.TrimSpace(contact.Name) == "" ||
+			strings.TrimSpace(contact.Position) == "" ||
+			strings.TrimSpace(contact.Phone) == "" ||
+			strings.TrimSpace(contact.Email) == "" {
 			continue // Skip incomplete contacts
 		}
 
-		contacts = append(contacts, models.PartnerContacts{
-			Names:          contactData["name"],
-			Title:          contactData["position"],
-			PhoneNumber:    contactData["phone"],
-			AltPhoneNumber: contactData["alternatePhone"],
-			OfficialEmail:  contactData["email"],
-			Address:        contactData["address"],
-			PartnerID:      partnerID,
+		contactRecords = append(contactRecords, models.PartnerContacts{
+			Names:         strings.TrimSpace(contact.Name),
+			Title:         strings.TrimSpace(contact.Position),
+			PhoneNumber:   strings.TrimSpace(contact.Phone),
+			OfficialEmail: strings.TrimSpace(contact.Email),
+			PartnerID:     partnerID,
 		})
 	}
 
-	// Batch create contacts if any exist
-	if len(contacts) > 0 {
-		if err := tx.Create(&contacts).Error; err != nil {
+	if len(contactRecords) > 0 {
+		if err := tx.Create(&contactRecords).Error; err != nil {
 			return fmt.Errorf("failed to create contacts: %v", err)
 		}
 	}
@@ -291,92 +412,101 @@ func savePartnerContacts(tx *gorm.DB, form map[string][]string, partnerID uint) 
 	return nil
 }
 
-// savePartnerSupportYears saves partner support years data
-func savePartnerSupportYears(tx *gorm.DB, form map[string][]string, partnerID uint) error {
-	supportGroups := make(map[string]map[string]interface{})
+// saveMoUDetails saves MoU details to the database
+func saveMoUDetails(tx *gorm.DB, mouData struct {
+	HasMoU     bool        `json:"hasMou"`
+	SignedBy   string      `json:"signedBy"`
+	WhoTitle   string      `json:"whoTitle"`
+	SignedDate string      `json:"signedDate"`
+	ExpiryDate string      `json:"expiryDate"`
+	File       interface{} `json:"file"`
+}, partnerID uint, filePath string) error {
 
-	// Group support year fields by index
-	for key, values := range form {
-		if strings.Contains(key, "supportYears[") && len(values) > 0 {
-			// Parse field pattern: supportYears[0][year], supportYears[0][level], etc.
-			if parts := strings.Split(key, "]["); len(parts) >= 2 {
-				indexPart := strings.Replace(parts[0], "supportYears[", "", 1)
-				fieldName := strings.Replace(parts[1], "]", "", 1)
+	mou := models.PartnerMoU{
+		SignedBy:  strings.TrimSpace(mouData.SignedBy),
+		WhoTitle:  strings.TrimSpace(mouData.WhoTitle),
+		FilePath:  filePath,
+		PartnerID: partnerID,
+	}
 
-				if supportGroups[indexPart] == nil {
-					supportGroups[indexPart] = make(map[string]interface{})
-				}
-
-				// Handle different field types
-				switch fieldName {
-				case "districts":
-					// Handle multiple district selection
-					var cleanDistricts []string
-					for _, district := range values {
-						if trimmed := strings.TrimSpace(district); trimmed != "" {
-							cleanDistricts = append(cleanDistricts, trimmed)
-						}
-					}
-					supportGroups[indexPart][fieldName] = cleanDistricts
-				case "year":
-					if year, err := strconv.Atoi(strings.TrimSpace(values[0])); err == nil {
-						supportGroups[indexPart][fieldName] = year
-					}
-				default:
-					supportGroups[indexPart][fieldName] = strings.TrimSpace(values[0])
-				}
-			}
+	// Parse dates
+	if mouData.SignedDate != "" {
+		if signedDate, err := time.Parse("2006-01-02", mouData.SignedDate); err == nil {
+			mou.SignedDate = &signedDate
 		}
 	}
 
-	var supportYears []models.PartnerSupportYears
+	if mouData.ExpiryDate != "" {
+		if expiryDate, err := time.Parse("2006-01-02", mouData.ExpiryDate); err == nil {
+			mou.ExpiryDate = &expiryDate
+		}
+	}
 
-	// Create support year records
-	for _, supportData := range supportGroups {
-		year, yearOk := supportData["year"].(int)
-		level, levelOk := supportData["level"].(string)
-		thematic, thematicOk := supportData["thematic"].(string)
+	if err := tx.Create(&mou).Error; err != nil {
+		return fmt.Errorf("failed to create MoU details: %v", err)
+	}
 
-		if !yearOk || !levelOk || !thematicOk || level == "" || thematic == "" {
+	return nil
+}
+
+// saveSupportYears saves partner support years data
+func saveSupportYears(tx *gorm.DB, supportYears []struct {
+	Year          int               `json:"year"`
+	Level         string            `json:"level"`
+	ThematicAreas string            `json:"thematicAreas"` // Updated to match frontend
+	Districts     []string          `json:"districts"`
+	Coverage      map[string]string `json:"coverage"`
+}, partnerID uint) error {
+	var supportYearRecords []models.PartnerSupportYears
+
+	for _, support := range supportYears {
+		// Validate required fields
+		if support.Year == 0 ||
+			strings.TrimSpace(support.Level) == "" ||
+			strings.TrimSpace(support.ThematicAreas) == "" {
 			continue // Skip incomplete support year data
 		}
 
-		// Handle districts (could be multiple)
-		var districts []string
-		if districtData, exists := supportData["districts"]; exists {
-			if districtSlice, ok := districtData.([]string); ok {
-				districts = districtSlice
-			}
-		}
+		// Create records for each district if districts are provided
+		if len(support.Districts) > 0 {
+			for _, district := range support.Districts {
+				district = strings.TrimSpace(district)
+				if district == "" {
+					continue
+				}
 
-		// Create separate records for each district if multiple districts
-		if len(districts) > 0 {
-			for _, district := range districts {
-				supportYears = append(supportYears, models.PartnerSupportYears{
-					Year:                uint(year),
-					LevelOfSupport:      level,
-					ThematicAreas:       thematic,
+				// Get coverage type for this district
+				coverageType := ""
+				if support.Coverage != nil {
+					if coverage, exists := support.Coverage[district]; exists {
+						coverageType = coverage
+					}
+				}
+
+				supportYearRecords = append(supportYearRecords, models.PartnerSupportYears{
+					Year:                uint(support.Year),
+					LevelOfSupport:      strings.TrimSpace(support.Level),
+					ThematicAreas:       strings.TrimSpace(support.ThematicAreas), // Updated field name
 					District:            district,
-					DistrictSupportType: getDistrictSupportType(supportData),
-					PartnerID:           partnerID, // ADD THIS LINE - Set the foreign key
+					DistrictSupportType: coverageType,
+					PartnerID:           partnerID,
 				})
 			}
 		} else {
 			// Create single record without district
-			supportYears = append(supportYears, models.PartnerSupportYears{
-				Year:                uint(year),
-				LevelOfSupport:      level,
-				ThematicAreas:       thematic,
+			supportYearRecords = append(supportYearRecords, models.PartnerSupportYears{
+				Year:                uint(support.Year),
+				LevelOfSupport:      strings.TrimSpace(support.Level),
+				ThematicAreas:       strings.TrimSpace(support.ThematicAreas), // Updated field name
 				District:            "",
-				DistrictSupportType: getDistrictSupportType(supportData),
-				PartnerID:           partnerID, // ADD THIS LINE - Set the foreign key
+				DistrictSupportType: "",
+				PartnerID:           partnerID,
 			})
 		}
 	}
 
-	// Batch create support years if any exist
-	if len(supportYears) > 0 {
-		if err := tx.Create(&supportYears).Error; err != nil {
+	if len(supportYearRecords) > 0 {
+		if err := tx.Create(&supportYearRecords).Error; err != nil {
 			return fmt.Errorf("failed to create support years: %v", err)
 		}
 	}
@@ -384,21 +514,53 @@ func savePartnerSupportYears(tx *gorm.DB, form map[string][]string, partnerID ui
 	return nil
 }
 
-// getDistrictSupportType extracts district support type from coverage data
-func getDistrictSupportType(supportData map[string]interface{}) string {
-	if coverage, exists := supportData["coverage"]; exists {
-		if coverageStr, ok := coverage.(string); ok && coverageStr != "" {
-			return coverageStr
+// handleUserAccounts creates user accounts for contacts
+func handleUserAccounts(c *fiber.Ctx, tx *gorm.DB, userAccounts []struct {
+	ContactIndex string `json:"contactIndex"`
+	Username     string `json:"username"`
+	Password     string `json:"password"`
+	AssignedUser string `json:"assignedUser"`
+}, contacts []struct {
+	Name     string `json:"name"`
+	Position string `json:"position"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+}, partnerID uint) error {
+
+	for _, userAccount := range userAccounts {
+		if strings.TrimSpace(userAccount.Username) == "" || strings.TrimSpace(userAccount.Password) == "" {
+			continue
 		}
-		if coverageMap, ok := coverage.(map[string]string); ok {
-			for _, value := range coverageMap {
-				if value != "" {
-					return value
-				}
-			}
+
+		// Parse contact index
+		contactIdx, err := strconv.Atoi(userAccount.ContactIndex)
+		if err != nil || contactIdx < 0 || contactIdx >= len(contacts) {
+			continue // Skip invalid contact index
+		}
+
+		var contact models.PartnerContacts
+		if err := tx.Where("partner_id = ? AND official_email = ?",
+			partnerID, contacts[contactIdx].Email).First(&contact).Error; err != nil {
+			continue // Skip if contact not found
+		}
+
+		_, err = RegisterUserUsernameAndPassword(c, userAccount.Username, userAccount.Password, contact.OfficialEmail)
+		if err != nil {
+			return fmt.Errorf("failed to register user: %v", err)
+		}
+
+		var createdUser models.Users
+		if err := tx.Where("username = ?", userAccount.Username).First(&createdUser).Error; err != nil {
+			return fmt.Errorf("failed to find created user: %v", err)
+		}
+
+		// Update contact with user ID
+		if err := tx.Model(&contact).Update("user_id", createdUser.ID).Error; err != nil {
+			return fmt.Errorf("failed to link user to contact: %v", err)
 		}
 	}
-	return ""
+
+	return nil
 }
 
 // Update contact information
@@ -434,6 +596,7 @@ func GetPartners(c *fiber.Ctx) error {
 		Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("PartnerMoU").
 		Find(&partners).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -463,6 +626,7 @@ func GetPartnerByID(c *fiber.Ctx) error {
 	if err := database.DB.Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("PartnerMoU").
 		Where("uuid = ?", partnerUUID).
 		First(&partner).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
