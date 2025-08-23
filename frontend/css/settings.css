@@ -1,4 +1,4 @@
-/* Enhanced Settings Page Styles with improved layout */
+/* Completely rebuilt CSS for dropdown management and SMTP configuration */
 .header-actions {
   display: flex;
   gap: 8px;
@@ -36,13 +36,13 @@
   background-color: #7f8c8d;
 }
 
-.btn-warning {
-  background-color: #f39c12;
+.btn-danger {
+  background-color: #e74c3c;
   color: white;
 }
 
-.btn-warning:hover {
-  background-color: #e67e22;
+.btn-danger:hover {
+  background-color: #c0392b;
 }
 
 .btn-sm {
@@ -50,7 +50,7 @@
   font-size: 0.7rem;
 }
 
-/* Compressed Settings Navigation */
+/* Settings Navigation */
 .settings-nav {
   display: flex;
   gap: 6px;
@@ -63,16 +63,19 @@
 }
 
 .nav-btn {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: none;
   background: transparent;
   color: #6c757d;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 500;
   transition: all 0.2s ease;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-btn:hover {
@@ -85,6 +88,11 @@
   color: white;
 }
 
+.nav-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 /* Settings Sections */
 .settings-section {
   display: none;
@@ -94,7 +102,7 @@
   display: block;
 }
 
-/* Compressed Settings Cards */
+/* Settings Cards */
 .settings-card {
   background: white;
   border-radius: 6px;
@@ -124,7 +132,176 @@
   padding: 16px;
 }
 
-/* Compressed Form Styles */
+/* Added dropdown management specific styles */
+.dropdown-selector {
+  margin-bottom: 20px;
+}
+
+.dropdown-selector label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.dropdown-selector select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: white;
+}
+
+.add-item-form {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.add-item-form .form-row {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 0;
+}
+
+.add-item-form .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.add-item-form input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Added internal groups specific styling */
+.add-group-form {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.add-group-form .form-row {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 0;
+}
+
+.add-group-form .form-group {
+  margin-bottom: 0;
+}
+
+.add-group-form input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+/* Badge styling for partner count */
+.badge {
+  background-color: #3498db;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Added dropdown cards container and individual card styling */
+.dropdown-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 16px;
+}
+
+.dropdown-card {
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.dropdown-card .card-header {
+  padding: 16px 16px 8px 16px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.dropdown-card .card-header h3 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.dropdown-card .card-header p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.8rem;
+}
+
+.dropdown-card .card-body {
+  padding: 16px;
+}
+
+.dropdown-card .add-item-form {
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border: 1px solid #e9ecef;
+}
+
+.dropdown-card .add-item-form .form-row {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  margin-bottom: 0;
+}
+
+.dropdown-card .add-item-form .form-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.dropdown-card .add-item-form .form-row select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background-color: white;
+  min-width: 120px;
+}
+
+.dropdown-card .add-item-form .form-row button {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.dropdown-grid {
+  height: 300px;
+  width: 100%;
+}
+
+/* Form Styles */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -146,8 +323,9 @@
 }
 
 .form-group input,
-.form-group select {
-  padding: 6px 8px;
+.form-group select,
+.form-group textarea {
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 0.85rem;
@@ -155,174 +333,187 @@
 }
 
 .form-group input:focus,
-.form-group select:focus {
+.form-group select:focus,
+.form-group textarea:focus {
   outline: none;
   border-color: #3498db;
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
 }
 
+/* Added styling for multi-select dropdowns in group modal */
+.form-group select[multiple] {
+  min-height: 120px;
+  resize: vertical;
+}
+
 .form-group small {
-  margin-top: 3px;
+  margin-top: 4px;
   color: #6c757d;
   font-size: 0.75rem;
+}
+
+.form-group input[type="color"] {
+  width: 60px;
+  height: 40px;
+  padding: 2px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* Added SMTP specific styles */
+.smtp-test-section {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 6px;
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+}
+
+.smtp-test-section h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.notification-settings {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e9ecef;
+}
+
+.notification-settings h4 {
+  margin: 0 0 12px 0;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.checkbox-group {
+  margin-bottom: 12px;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
   cursor: pointer;
-  font-weight: normal !important;
-  margin-bottom: 8px;
   font-size: 0.85rem;
+  color: #2c3e50;
+  position: relative;
+  padding-left: 28px;
 }
 
 .checkbox-label input[type="checkbox"] {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  width: 16px;
+  height: 16px;
   margin: 0;
-  transform: scale(1.1);
 }
 
-/* Notification Types */
-.notification-types {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #e9ecef;
+.checkmark {
+  margin-left: 8px;
 }
 
-.notification-types h4 {
-  margin: 0 0 8px 0;
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.modal-header h3 {
+  margin: 0;
   color: #2c3e50;
-  font-size: 1rem;
+  font-size: 1.1rem;
 }
 
-/* System Information */
-.system-info {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #e9ecef;
+.close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #6c757d;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.system-info h4 {
-  margin: 0 0 8px 0;
+.close:hover {
   color: #2c3e50;
-  font-size: 1rem;
 }
 
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+.modal-body {
+  padding: 20px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
   gap: 8px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-}
-
-.info-label {
-  font-weight: 500;
-  color: #6c757d;
-  font-size: 0.8rem;
-}
-
-.info-value {
-  font-weight: 600;
-  color: #2c3e50;
-  font-size: 0.8rem;
-}
-
-.info-value.status-active {
-  color: #27ae60;
-}
-
-/* Backup Actions */
-.backup-actions {
-  margin-top: 16px;
-  padding-top: 12px;
+  padding: 16px 20px;
   border-top: 1px solid #e9ecef;
 }
 
-.backup-actions h4 {
-  margin: 0 0 8px 0;
-  color: #2c3e50;
-  font-size: 1rem;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-
-/* Backup History */
-.backup-history {
-  margin-top: 16px;
-  padding-top: 12px;
-  border-top: 1px solid #e9ecef;
-}
-
-.backup-history h4 {
-  margin: 0 0 8px 0;
-  color: #2c3e50;
-  font-size: 1rem;
-}
-
-.backup-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.backup-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px;
-  background-color: #f8f9fa;
+/* Notification Styles */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 16px;
   border-radius: 4px;
-  border: 1px solid #e9ecef;
-}
-
-.backup-info {
-  flex: 1;
-}
-
-.backup-name {
-  font-weight: 500;
-  color: #2c3e50;
+  color: white;
+  z-index: 1001;
   font-size: 0.85rem;
-  margin-bottom: 2px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.backup-date {
-  color: #6c757d;
-  font-size: 0.75rem;
+.notification.info {
+  background-color: #3498db;
 }
 
-.backup-size {
-  color: #6c757d;
-  font-size: 0.8rem;
-  margin-right: 8px;
-  min-width: 50px;
-  text-align: right;
+.notification.success {
+  background-color: #27ae60;
 }
 
-/* Status Badges */
-.status-badge {
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 0.7rem;
-  font-weight: 500;
-  text-transform: uppercase;
+.notification.warning {
+  background-color: #f39c12;
 }
 
-.status-active {
-  background-color: #d4edda;
-  color: #155724;
+.notification.error {
+  background-color: #e74c3c;
 }
 
 /* Responsive Design */
@@ -333,8 +524,8 @@
   }
 
   .nav-btn {
-    padding: 4px 8px;
-    font-size: 0.75rem;
+    padding: 6px 12px;
+    font-size: 0.8rem;
   }
 
   .card-header {
@@ -350,23 +541,39 @@
     gap: 8px;
   }
 
-  .info-grid {
+  .add-item-form .form-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* Added responsive styling for internal groups form */
+  .add-group-form .form-row {
     grid-template-columns: 1fr;
+    gap: 8px;
   }
 
-  .action-buttons {
+  .modal-content {
+    width: 95%;
+    margin: 10px;
+  }
+
+  .dropdown-cards-container {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .dropdown-card .add-item-form .form-row {
     flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
   }
 
-  .backup-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
+  .dropdown-card .add-item-form .form-row select {
+    min-width: auto;
   }
 
-  .backup-size {
-    margin-right: 0;
-    text-align: left;
+  .dropdown-grid {
+    height: 250px;
   }
 }
 
@@ -378,6 +585,7 @@
 
   .nav-btn {
     text-align: left;
+    justify-content: flex-start;
   }
 
   .card-header h3 {
@@ -386,6 +594,35 @@
 
   .form-group input,
   .form-group select {
-    padding: 5px 6px;
+    padding: 6px 8px;
+  }
+
+  .dropdown-cards-container {
+    gap: 12px;
+  }
+
+  .dropdown-card .card-header {
+    padding: 12px 12px 6px 12px;
+  }
+
+  .dropdown-card .card-body {
+    padding: 12px;
+  }
+
+  .dropdown-card .add-item-form {
+    padding: 10px;
+  }
+
+  .dropdown-grid {
+    height: 200px;
+  }
+
+  /* Added mobile responsive styling for internal groups */
+  .add-group-form {
+    padding: 12px;
+  }
+
+  .add-group-form input {
+    padding: 6px 8px;
   }
 }

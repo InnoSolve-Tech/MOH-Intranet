@@ -1,469 +1,623 @@
-// Settings management functionality
-let currentSettings = {};
-let hasUnsavedChanges = false;
+// Import jQuery and agGrid - using global variables instead of imports
+const $ = window.jQuery;
+const agGrid = window.agGrid;
 
-document.addEventListener("DOMContentLoaded", () => {
-  initializeSettingsPage();
-  loadCurrentSettings();
-  setupSettingsEventListeners();
-});
+const dropdownData = {
+  thematicAreas: [
+    "Health",
+    "Education",
+    "Agriculture",
+    "Water and Sanitation",
+    "Nutrition",
+    "Child Protection",
+    "Gender Equality",
+    "Environment",
+    "Economic Development",
+    "Emergency Response",
+    "Governance",
+    "Human Rights",
+  ],
+  partnerCategories: {
+    Local: ["Local NGO", "CBO"],
+    International: ["Bi-Lateral", "Multilateral", "UN", "International NGO"],
+  },
+  districts: [
+    "Kampala",
+    "Wakiso",
+    "Mukono",
+    "Jinja",
+    "Mbale",
+    "Gulu",
+    "Lira",
+    "Mbarara",
+    "Kasese",
+    "Fort Portal",
+    "Hoima",
+    "Masaka",
+    "Soroti",
+    "Arua",
+    "Kabale",
+    "Moroto",
+    "Kitgum",
+    "Pader",
+    "Adjumani",
+    "Moyo",
+  ],
+  supportLevels: ["National", "District"],
+};
 
-function initializeSettingsPage() {
-  setActiveMenuItem("settings");
-  showSettingsSection("general");
-}
+const internalGroupsData = [];
+let internalGroupsGrid = null;
+let editingGroupIndex = -1;
 
-function setupSettingsEventListeners() {
-  const inputs = document.querySelectorAll("input, select");
-  inputs.forEach((input) => {
-    input.addEventListener("change", () => {
-      hasUnsavedChanges = true;
-      updateSaveButtonState();
-    });
-  });
+const dropdownGrids = {};
+let editingItemIndex = -1;
+let editingDropdownType = "";
+let smtpSettings = {};
 
-  window.addEventListener("beforeunload", (e) => {
-    if (hasUnsavedChanges) {
-      e.preventDefault();
-      e.returnValue = "";
-    }
-  });
+window.showSettingsSection = (sectionName) => {
+  $(".settings-section").removeClass("active");
+  $(`#${sectionName}-settings`).addClass("active");
 
-  document
-    .getElementById("smtpServer")
-    .addEventListener("blur", validateSmtpSettings);
-}
+  $(".nav-btn").removeClass("active");
+  const buttonText =
+    sectionName === "dropdowns"
+      ? "Dropdown Management"
+      : sectionName === "groups"
+        ? "Internal Groups"
+        : "SMTP Configuration";
+  $(`.nav-btn:contains("${buttonText}")`).addClass("active");
+};
 
-function loadCurrentSettings() {
-  const savedSettings = localStorage.getItem("systemSettings");
-  if (savedSettings) {
-    currentSettings = JSON.parse(savedSettings);
-    populateSettingsForm();
-  } else {
-    currentSettings = getDefaultSettings();
-  }
-}
+function addDropdownItem(dropdownType) {
+  let inputId, newValue;
 
-function getDefaultSettings() {
-  return {
-    general: {
-      orgName: "Partner Management System",
-      orgEmail: "admin@partnersystem.org",
-      timezone: "Africa/Kampala",
-      language: "en",
-      dateFormat: "DD/MM/YYYY",
-      currency: "UGX",
-    },
-    security: {
-      requireStrongPassword: true,
-      enableTwoFactor: false,
-      forcePasswordChange: true,
-      sessionTimeout: 30,
-      maxLoginAttempts: 5,
-      logSecurityEvents: true,
-    },
-    notifications: {
-      smtpServer: "smtp.gmail.com",
-      smtpPort: 587,
-      smtpUsername: "",
-      smtpPassword: "",
-      notifyNewPartner: true,
-      notifyNewUser: true,
-      notifyMouUpload: true,
-      notifySecurityAlert: true,
-    },
-    system: {
-      maxFileSize: 10,
-      recordsPerPage: 10,
-      allowedFileTypes: "pdf,doc,docx,jpg,png,xlsx",
-      enableMaintenance: false,
-      enableDebugMode: false,
-    },
-    backup: {
-      enableAutoBackup: true,
-      backupFrequency: "daily",
-      backupTime: "02:00",
-      retentionPeriod: 30,
-    },
-  };
-}
-
-function populateSettingsForm() {
-  // Populate general settings
-  if (currentSettings.general) {
-    Object.keys(currentSettings.general).forEach((key) => {
-      const element = document.getElementById(key);
-      if (element) {
-        element.value = currentSettings.general[key];
-      }
-    });
+  switch (dropdownType) {
+    case "thematicAreas":
+      inputId = "newThematicArea";
+      break;
+    case "partnerCategories":
+      inputId = "newPartnerCategory";
+      break;
+    case "districts":
+      inputId = "newDistrict";
+      break;
+    case "supportLevels":
+      inputId = "newSupportLevel";
+      break;
   }
 
-  // Populate security settings
-  if (currentSettings.security) {
-    Object.keys(currentSettings.security).forEach((key) => {
-      const element = document.getElementById(key);
-      if (element) {
-        if (element.type === "checkbox") {
-          element.checked = currentSettings.security[key];
-        } else {
-          element.value = currentSettings.security[key];
-        }
-      }
-    });
-  }
-
-  // Populate notification settings
-  if (currentSettings.notifications) {
-    Object.keys(currentSettings.notifications).forEach((key) => {
-      const element = document.getElementById(key);
-      if (element) {
-        if (element.type === "checkbox") {
-          element.checked = currentSettings.notifications[key];
-        } else {
-          element.value = currentSettings.notifications[key];
-        }
-      }
-    });
-  }
-
-  // Populate system settings
-  if (currentSettings.system) {
-    Object.keys(currentSettings.system).forEach((key) => {
-      const element = document.getElementById(key);
-      if (element) {
-        if (element.type === "checkbox") {
-          element.checked = currentSettings.system[key];
-        } else {
-          element.value = currentSettings.system[key];
-        }
-      }
-    });
-  }
-
-  // Populate backup settings
-  if (currentSettings.backup) {
-    Object.keys(currentSettings.backup).forEach((key) => {
-      const element = document.getElementById(key);
-      if (element) {
-        if (element.type === "checkbox") {
-          element.checked = currentSettings.backup[key];
-        } else {
-          element.value = currentSettings.backup[key];
-        }
-      }
-    });
-  }
-}
-
-function showSettingsSection(sectionName) {
-  const sections = document.querySelectorAll(".settings-section");
-  sections.forEach((section) => {
-    section.classList.remove("active");
-  });
-
-  const targetSection = document.getElementById(`${sectionName}-settings`);
-  if (targetSection) {
-    targetSection.classList.add("active");
-  }
-
-  const navButtons = document.querySelectorAll(".nav-btn");
-  navButtons.forEach((btn) => {
-    btn.classList.remove("active");
-  });
-
-  const activeBtn = Array.from(navButtons).find(
-    (btn) => btn.textContent.toLowerCase() === sectionName,
-  );
-  if (activeBtn) {
-    activeBtn.classList.add("active");
-  }
-}
-
-function saveAllSettings() {
-  if (!hasUnsavedChanges) {
-    showNotification("No changes to save", "info");
+  newValue = $(`#${inputId}`).val().trim();
+  if (!newValue) {
+    showNotification("Please enter a value", "error");
     return;
   }
 
-  const formData = collectFormData();
+  if (dropdownType === "partnerCategories") {
+    const type = $("#categoryType").val();
+    if (!dropdownData.partnerCategories[type].includes(newValue)) {
+      dropdownData.partnerCategories[type].push(newValue);
+      showNotification("Category added successfully", "success");
+    } else {
+      showNotification("Category already exists", "error");
+      return;
+    }
+  } else {
+    if (!dropdownData[dropdownType].includes(newValue)) {
+      dropdownData[dropdownType].push(newValue);
+      showNotification("Item added successfully", "success");
+    } else {
+      showNotification("Item already exists", "error");
+      return;
+    }
+  }
 
-  if (!validateSettings(formData)) {
+  $(`#${inputId}`).val("");
+  initializeDropdownGrid(dropdownType);
+  saveDropdownData();
+}
+
+function editDropdownItem(dropdownType, rowIndex) {
+  editingItemIndex = rowIndex;
+  editingDropdownType = dropdownType;
+  const rowData =
+    dropdownGrids[dropdownType].getDisplayedRowAtIndex(rowIndex).data;
+
+  $("#editItemValue").val(rowData.value);
+  $("#editItemModal").addClass("show");
+}
+
+function deleteDropdownItem(dropdownType, rowIndex) {
+  if (!confirm("Are you sure you want to delete this item?")) return;
+
+  const rowData =
+    dropdownGrids[dropdownType].getDisplayedRowAtIndex(rowIndex).data;
+
+  if (dropdownType === "partnerCategories") {
+    const typeCategories = dropdownData.partnerCategories[rowData.type];
+    const index = typeCategories.indexOf(rowData.value);
+    if (index !== -1) {
+      typeCategories.splice(index, 1);
+    }
+  } else {
+    const index = dropdownData[dropdownType].indexOf(rowData.value);
+    if (index !== -1) {
+      dropdownData[dropdownType].splice(index, 1);
+    }
+  }
+
+  initializeDropdownGrid(dropdownType);
+  saveDropdownData();
+  showNotification("Item deleted successfully", "success");
+}
+
+function closeEditItemModal() {
+  $("#editItemModal").removeClass("show");
+  editingItemIndex = -1;
+  editingDropdownType = "";
+}
+
+function saveEditedItem() {
+  const newValue = $("#editItemValue").val().trim();
+  if (!newValue) {
+    showNotification("Please enter a value", "error");
     return;
   }
 
-  localStorage.setItem("systemSettings", JSON.stringify(formData));
-  currentSettings = formData;
+  const rowData =
+    dropdownGrids[editingDropdownType].getDisplayedRowAtIndex(
+      editingItemIndex,
+    ).data;
 
-  hasUnsavedChanges = false;
-  updateSaveButtonState();
-
-  showNotification("Settings saved successfully!", "success");
-  console.log("Settings saved:", formData);
-}
-
-function collectFormData() {
-  const formData = {
-    general: {},
-    security: {},
-    notifications: {},
-    system: {},
-    backup: {},
-  };
-
-  const generalFields = [
-    "orgName",
-    "orgEmail",
-    "timezone",
-    "language",
-    "dateFormat",
-    "currency",
-  ];
-  generalFields.forEach((field) => {
-    const element = document.getElementById(field);
-    if (element) {
-      formData.general[field] = element.value;
+  if (editingDropdownType === "partnerCategories") {
+    const typeCategories = dropdownData.partnerCategories[rowData.type];
+    const oldIndex = typeCategories.indexOf(rowData.value);
+    if (oldIndex !== -1) {
+      typeCategories[oldIndex] = newValue;
     }
-  });
-
-  const securityFields = [
-    "requireStrongPassword",
-    "enableTwoFactor",
-    "forcePasswordChange",
-    "sessionTimeout",
-    "maxLoginAttempts",
-    "logSecurityEvents",
-  ];
-  securityFields.forEach((field) => {
-    const element = document.getElementById(field);
-    if (element) {
-      formData.security[field] =
-        element.type === "checkbox" ? element.checked : element.value;
-    }
-  });
-
-  const notificationFields = [
-    "smtpServer",
-    "smtpPort",
-    "smtpUsername",
-    "smtpPassword",
-    "notifyNewPartner",
-    "notifyNewUser",
-    "notifyMouUpload",
-    "notifySecurityAlert",
-  ];
-  notificationFields.forEach((field) => {
-    const element = document.getElementById(field);
-    if (element) {
-      formData.notifications[field] =
-        element.type === "checkbox" ? element.checked : element.value;
-    }
-  });
-
-  const systemFields = [
-    "maxFileSize",
-    "recordsPerPage",
-    "allowedFileTypes",
-    "enableMaintenance",
-    "enableDebugMode",
-  ];
-  systemFields.forEach((field) => {
-    const element = document.getElementById(field);
-    if (element) {
-      formData.system[field] =
-        element.type === "checkbox" ? element.checked : element.value;
-    }
-  });
-
-  const backupFields = [
-    "enableAutoBackup",
-    "backupFrequency",
-    "backupTime",
-    "retentionPeriod",
-  ];
-  backupFields.forEach((field) => {
-    const element = document.getElementById(field);
-    if (element) {
-      formData.backup[field] =
-        element.type === "checkbox" ? element.checked : element.value;
-    }
-  });
-
-  return formData;
-}
-
-function validateSettings(settings) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (
-    settings.general.orgEmail &&
-    !emailRegex.test(settings.general.orgEmail)
-  ) {
-    showNotification("Please enter a valid organization email", "error");
-    showSettingsSection("general");
-    document.getElementById("orgEmail").focus();
-    return false;
-  }
-
-  if (
-    settings.security.sessionTimeout < 5 ||
-    settings.security.sessionTimeout > 480
-  ) {
-    showNotification(
-      "Session timeout must be between 5 and 480 minutes",
-      "error",
-    );
-    showSettingsSection("security");
-    document.getElementById("sessionTimeout").focus();
-    return false;
-  }
-
-  if (
-    settings.security.maxLoginAttempts < 3 ||
-    settings.security.maxLoginAttempts > 10
-  ) {
-    showNotification("Max login attempts must be between 3 and 10", "error");
-    showSettingsSection("security");
-    document.getElementById("maxLoginAttempts").focus();
-    return false;
-  }
-
-  if (
-    settings.notifications.notifyNewPartner ||
-    settings.notifications.notifyNewUser ||
-    settings.notifications.notifyMouUpload ||
-    settings.notifications.notifySecurityAlert
-  ) {
-    if (
-      !settings.notifications.smtpServer ||
-      !settings.notifications.smtpUsername
-    ) {
-      showNotification(
-        "SMTP server and username are required for email notifications",
-        "error",
-      );
-      showSettingsSection("notifications");
-      return false;
-    }
-  }
-
-  if (settings.system.maxFileSize < 1 || settings.system.maxFileSize > 100) {
-    showNotification("Maximum file size must be between 1 and 100 MB", "error");
-    showSettingsSection("system");
-    document.getElementById("maxFileSize").focus();
-    return false;
-  }
-
-  return true;
-}
-
-function updateSaveButtonState() {
-  const saveButton = document.querySelector(".btn-primary");
-  if (hasUnsavedChanges) {
-    saveButton.textContent = "💾 Save Changes *";
-    saveButton.style.backgroundColor = "#e74c3c";
   } else {
-    saveButton.textContent = "💾 Save Changes";
-    saveButton.style.backgroundColor = "#3498db";
+    const oldIndex = dropdownData[editingDropdownType].indexOf(rowData.value);
+    if (oldIndex !== -1) {
+      dropdownData[editingDropdownType][oldIndex] = newValue;
+    }
   }
+
+  closeEditItemModal();
+  initializeDropdownGrid(editingDropdownType);
+  saveDropdownData();
+  showNotification("Item updated successfully", "success");
 }
 
-function validateSmtpSettings() {
-  const smtpServer = document.getElementById("smtpServer").value;
-  const smtpPort = document.getElementById("smtpPort").value;
-
-  if (smtpServer && smtpPort) {
-    console.log(`Testing SMTP connection to ${smtpServer}:${smtpPort}`);
-    showNotification("SMTP settings appear valid", "success");
+function testSmtpConnection() {
+  const testEmail = $("#testEmail").val();
+  if (!testEmail) {
+    showNotification("Please enter a test email address", "error");
+    return;
   }
-}
 
-// Backup functions
-function createBackup() {
-  showNotification("Creating backup...", "info");
+  const smtpData = collectSmtpData();
+  if (!smtpData.host || !smtpData.username || !smtpData.password) {
+    showNotification("Please fill in all required SMTP fields", "error");
+    return;
+  }
 
+  showNotification("Testing SMTP connection...", "info");
+
+  // Simulate SMTP test
   setTimeout(() => {
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, -5);
-    const backupName = `backup_${timestamp}.sql`;
-
-    console.log(`Backup created: ${backupName}`);
-    showNotification("Backup created successfully!", "success");
-
-    addBackupToList(backupName, new Date(), "2.5 MB");
+    showNotification("Test email sent successfully!", "success");
   }, 2000);
 }
 
-function downloadBackup() {
-  showNotification("Downloading latest backup...", "info");
-
-  setTimeout(() => {
-    console.log("Backup download started");
-    showNotification("Backup download started", "success");
-  }, 1000);
+function saveAllSettings() {
+  saveDropdownData();
+  smtpSettings = collectSmtpData();
+  localStorage.setItem("smtpSettings", JSON.stringify(smtpSettings));
+  showNotification("All settings saved successfully!", "success");
 }
 
-function restoreBackup() {
+function addInternalGroup() {
+  const name = $("#newGroupName").val().trim();
+  const description = $("#newGroupDescription").val().trim();
+
+  if (!name) {
+    showNotification("Please enter a group name", "error");
+    return;
+  }
+
+  // Check if group name already exists
   if (
-    confirm(
-      "Are you sure you want to restore from backup? This will overwrite all current data and cannot be undone.",
+    internalGroupsData.some(
+      (group) => group.name.toLowerCase() === name.toLowerCase(),
     )
   ) {
-    showNotification("Restoring from backup...", "warning");
+    showNotification("Group name already exists", "error");
+    return;
+  }
 
-    setTimeout(() => {
-      console.log("Backup restore completed");
-      showNotification("System restored from backup successfully!", "success");
-    }, 3000);
+  const newGroup = {
+    id: Date.now(),
+    name: name,
+    description: description,
+    thematicAreas: [],
+    districts: [],
+    color: "#3498db",
+    createdAt: new Date().toISOString(),
+    partnerCount: 0,
+  };
+
+  internalGroupsData.push(newGroup);
+  $("#newGroupName").val("");
+  $("#newGroupDescription").val("");
+
+  initializeInternalGroupsGrid();
+  saveInternalGroupsData();
+  showNotification("Internal group added successfully", "success");
+}
+
+function editInternalGroup(groupIndex) {
+  editingGroupIndex = groupIndex;
+  const group = internalGroupsData[groupIndex];
+
+  $("#groupModalTitle").text("Edit Internal Group");
+  $("#groupName").val(group.name);
+  $("#groupDescription").val(group.description);
+  $("#groupColor").val(group.color);
+
+  // Set selected thematic areas
+  $("#groupThematicAreas").val(group.thematicAreas);
+
+  // Set selected districts
+  $("#groupDistricts").val(group.districts);
+
+  $("#groupModal").addClass("show");
+}
+
+function deleteInternalGroup(groupIndex) {
+  const group = internalGroupsData[groupIndex];
+
+  if (!confirm(`Are you sure you want to delete the group "${group.name}"?`))
+    return;
+
+  internalGroupsData.splice(groupIndex, 1);
+  initializeInternalGroupsGrid();
+  saveInternalGroupsData();
+  showNotification("Internal group deleted successfully", "success");
+}
+
+function openAddGroupModal() {
+  editingGroupIndex = -1;
+  $("#groupModalTitle").text("Add Internal Group");
+  $("#groupName").val("");
+  $("#groupDescription").val("");
+  $("#groupColor").val("#3498db");
+  $("#groupThematicAreas").val([]);
+  $("#groupDistricts").val([]);
+  $("#groupModal").addClass("show");
+}
+
+function closeGroupModal() {
+  $("#groupModal").removeClass("show");
+  editingGroupIndex = -1;
+}
+
+function saveInternalGroup() {
+  const name = $("#groupName").val().trim();
+  const description = $("#groupDescription").val().trim();
+  const thematicAreas = $("#groupThematicAreas").val() || [];
+  const districts = $("#groupDistricts").val() || [];
+  const color = $("#groupColor").val();
+
+  if (!name) {
+    showNotification("Please enter a group name", "error");
+    return;
+  }
+
+  // Check for duplicate names (excluding current group if editing)
+  const existingGroup = internalGroupsData.find(
+    (group, index) =>
+      group.name.toLowerCase() === name.toLowerCase() &&
+      index !== editingGroupIndex,
+  );
+
+  if (existingGroup) {
+    showNotification("Group name already exists", "error");
+    return;
+  }
+
+  const groupData = {
+    name: name,
+    description: description,
+    thematicAreas: thematicAreas,
+    districts: districts,
+    color: color,
+  };
+
+  if (editingGroupIndex >= 0) {
+    // Update existing group
+    Object.assign(internalGroupsData[editingGroupIndex], groupData);
+    showNotification("Internal group updated successfully", "success");
+  } else {
+    // Add new group
+    const newGroup = {
+      id: Date.now(),
+      ...groupData,
+      createdAt: new Date().toISOString(),
+      partnerCount: 0,
+    };
+    internalGroupsData.push(newGroup);
+    showNotification("Internal group added successfully", "success");
+  }
+
+  closeGroupModal();
+  initializeInternalGroupsGrid();
+  saveInternalGroupsData();
+}
+
+function initializeDropdownGrid(dropdownType) {
+  let items = [];
+
+  if (dropdownType === "partnerCategories") {
+    Object.keys(dropdownData.partnerCategories).forEach((type) => {
+      dropdownData.partnerCategories[type].forEach((category) => {
+        items.push({ type, value: category });
+      });
+    });
+  } else {
+    items = dropdownData[dropdownType].map((item, index) => ({
+      id: index,
+      value: item,
+    }));
+  }
+
+  if (dropdownGrids[dropdownType]) {
+    dropdownGrids[dropdownType].destroy();
+  }
+
+  const columnDefs =
+    dropdownType === "partnerCategories"
+      ? [
+          {
+            headerName: "Type",
+            field: "type",
+            sortable: true,
+            filter: true,
+            flex: 1,
+          },
+          {
+            headerName: "Category",
+            field: "value",
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            headerName: "Actions",
+            field: "actions",
+            cellRenderer: (params) => `
+        <button class="btn btn-sm btn-primary" onclick="editDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+          </svg>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+        </button>
+      `,
+            flex: 1,
+          },
+        ]
+      : [
+          {
+            headerName: "Value",
+            field: "value",
+            sortable: true,
+            filter: true,
+            flex: 2,
+          },
+          {
+            headerName: "Actions",
+            field: "actions",
+            cellRenderer: (params) => `
+        <button class="btn btn-sm btn-primary" onclick="editDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+          </svg>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+        </button>
+      `,
+            flex: 1,
+          },
+        ];
+
+  const gridOptions = {
+    columnDefs: columnDefs,
+    rowData: items,
+    domLayout: "normal",
+    suppressRowClickSelection: true,
+    rowHeight: 40,
+  };
+
+  const gridDiv = document.getElementById(`${dropdownType}Grid`);
+  dropdownGrids[dropdownType] = window.agGrid.createGrid(gridDiv, gridOptions);
+}
+
+function initializeInternalGroupsGrid() {
+  if (internalGroupsGrid) {
+    internalGroupsGrid.destroy();
+  }
+
+  const columnDefs = [
+    {
+      headerName: "Group Name",
+      field: "name",
+      sortable: true,
+      filter: true,
+      flex: 2,
+      cellRenderer: (params) => `
+        <div style="display: flex; align-items: center;">
+          <div style="width: 12px; height: 12px; background-color: ${params.data.color}; border-radius: 50%; margin-right: 8px;"></div>
+          <strong>${params.data.name}</strong>
+        </div>
+      `,
+    },
+    {
+      headerName: "Description",
+      field: "description",
+      sortable: true,
+      filter: true,
+      flex: 2,
+    },
+    {
+      headerName: "Thematic Areas",
+      field: "thematicAreas",
+      flex: 2,
+      cellRenderer: (params) => params.data.thematicAreas.join(", ") || "None",
+    },
+    {
+      headerName: "Districts",
+      field: "districts",
+      flex: 2,
+      cellRenderer: (params) => params.data.districts.join(", ") || "None",
+    },
+    {
+      headerName: "Partners",
+      field: "partnerCount",
+      sortable: true,
+      flex: 1,
+      cellRenderer: (params) =>
+        `<span class="badge">${params.data.partnerCount}</span>`,
+    },
+    {
+      headerName: "Actions",
+      field: "actions",
+      cellRenderer: (params) => `
+        <button class="btn btn-sm btn-primary" onclick="editInternalGroup(${params.node.rowIndex})" title="Edit Group">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+          </svg>
+        </button>
+        <button class="btn btn-sm btn-danger" onclick="deleteInternalGroup(${params.node.rowIndex})" title="Delete Group">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+          </svg>
+        </button>
+      `,
+      flex: 1,
+    },
+  ];
+
+  const gridOptions = {
+    columnDefs: columnDefs,
+    rowData: internalGroupsData,
+    domLayout: "normal",
+    suppressRowClickSelection: true,
+    rowHeight: 50,
+  };
+
+  const gridDiv = document.getElementById("internalGroupsGrid");
+  internalGroupsGrid = window.agGrid.createGrid(gridDiv, gridOptions);
+}
+
+function loadSmtpSettings() {
+  const saved = localStorage.getItem("smtpSettings");
+  if (saved) {
+    smtpSettings = JSON.parse(saved);
+    populateSmtpForm();
+  } else {
+    smtpSettings = {
+      host: "",
+      port: 587,
+      username: "",
+      password: "",
+      security: "tls",
+      fromName: "Ministry of Health Uganda",
+      fromEmail: "noreply@health.go.ug",
+      notifications: {
+        newPartner: true,
+        newUser: true,
+        mouUpload: true,
+        securityAlert: true,
+      },
+    };
   }
 }
 
-function addBackupToList(name, date, size) {
-  const backupList = document.querySelector(".backup-list");
-  const backupItem = document.createElement("div");
-  backupItem.className = "backup-item";
+function populateSmtpForm() {
+  $("#smtpHost").val(smtpSettings.host || "");
+  $("#smtpPort").val(smtpSettings.port || 587);
+  $("#smtpUsername").val(smtpSettings.username || "");
+  $("#smtpPassword").val(smtpSettings.password || "");
+  $("#smtpSecurity").val(smtpSettings.security || "tls");
+  $("#smtpFromName").val(smtpSettings.fromName || "");
+  $("#smtpFromEmail").val(smtpSettings.fromEmail || "");
 
-  const formattedDate = date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  backupItem.innerHTML = `
-    <div class="backup-info">
-      <div class="backup-name">${name}</div>
-      <div class="backup-date">${formattedDate}</div>
-    </div>
-    <div class="backup-size">${size}</div>
-    <button class="btn btn-sm btn-secondary">Download</button>
-  `;
-
-  backupList.insertBefore(backupItem, backupList.firstChild);
+  if (smtpSettings.notifications) {
+    $("#notifyNewPartner").prop(
+      "checked",
+      smtpSettings.notifications.newPartner,
+    );
+    $("#notifyNewUser").prop("checked", smtpSettings.notifications.newUser);
+    $("#notifyMouUpload").prop("checked", smtpSettings.notifications.mouUpload);
+    $("#notifySecurityAlert").prop(
+      "checked",
+      smtpSettings.notifications.securityAlert,
+    );
+  }
 }
 
-// Utility functions
-function setActiveMenuItem(menuItem) {
-  console.log(`Setting active menu item to: ${menuItem}`);
+function collectSmtpData() {
+  return {
+    host: $("#smtpHost").val(),
+    port: Number.parseInt($("#smtpPort").val()),
+    username: $("#smtpUsername").val(),
+    password: $("#smtpPassword").val(),
+    security: $("#smtpSecurity").val(),
+    fromName: $("#smtpFromName").val(),
+    fromEmail: $("#smtpFromEmail").val(),
+    notifications: {
+      newPartner: $("#notifyNewPartner").is(":checked"),
+      newUser: $("#notifyNewUser").is(":checked"),
+      mouUpload: $("#notifyMouUpload").is(":checked"),
+      securityAlert: $("#notifySecurityAlert").is(":checked"),
+    },
+  };
+}
+
+function saveDropdownData() {
+  localStorage.setItem("dropdownData", JSON.stringify(dropdownData));
+}
+
+function saveInternalGroupsData() {
+  localStorage.setItem(
+    "internalGroupsData",
+    JSON.stringify(internalGroupsData),
+  );
+}
+
+function loadInternalGroupsData() {
+  const saved = localStorage.getItem("internalGroupsData");
+  if (saved) {
+    internalGroupsData.splice(
+      0,
+      internalGroupsData.length,
+      ...JSON.parse(saved),
+    );
+  }
 }
 
 function showNotification(message, type) {
-  const notification = document.createElement("div");
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 16px;
-    border-radius: 4px;
-    color: white;
-    z-index: 1000;
-    transition: all 0.3s ease;
-    font-size: 0.85rem;
-  `;
+  const notification = $(`
+    <div class="notification ${type}">
+      ${message}
+    </div>
+  `);
 
   const colors = {
     info: "#3498db",
@@ -471,16 +625,45 @@ function showNotification(message, type) {
     warning: "#f39c12",
     error: "#e74c3c",
   };
-  notification.style.backgroundColor = colors[type] || colors.info;
 
-  document.body.appendChild(notification);
+  notification.css({
+    position: "fixed",
+    top: "20px",
+    right: "20px",
+    padding: "12px 16px",
+    borderRadius: "4px",
+    color: "white",
+    backgroundColor: colors[type] || colors.info,
+    zIndex: 1000,
+    fontSize: "0.85rem",
+  });
+
+  $("body").append(notification);
 
   setTimeout(() => {
-    notification.style.opacity = "0";
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification);
-      }
-    }, 300);
+    notification.fadeOut(300, () => notification.remove());
   }, 3000);
+}
+
+window.logout = () => {
+  if (confirm("Are you sure you want to logout?")) {
+    localStorage.removeItem("currentUser");
+    window.location.href = "login.html";
+  }
+};
+
+$(document).ready(() => {
+  initializeSettingsPage();
+  loadSmtpSettings();
+  loadInternalGroupsData();
+});
+
+function initializeSettingsPage() {
+  window.showSettingsSection("dropdowns");
+
+  Object.keys(dropdownData).forEach((dropdownType) => {
+    initializeDropdownGrid(dropdownType);
+  });
+
+  initializeInternalGroupsGrid();
 }

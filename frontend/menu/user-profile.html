@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile - Partner Management System</title>
+    <link rel="stylesheet" href="../css/global.css" />
+    <link rel="stylesheet" href="../css/dashboard.css" />
+    <link rel="stylesheet" href="../css/user-profile.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-header">
+          <center>
+            <img
+              src="../images/logo.png"
+              width="100"
+              height="100"
+              alt="MoH logo"
+            />
+          </center>
+        </div>
+        <ul class="sidebar-menu">
+          <li class="menu-item" data-page="partners">
+            <a href="partners.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 18v-6h2.5l-2.54-7.63A2.996 2.996 0 0 0 17.06 7c-.8 0-1.54.5-1.85 1.26l-1.92 5.77c-.24.71.11 1.49.81 1.73.71.24 1.49-.11 1.73-.81L16.5 12H18v10h2zM12.5 11.5c.83 0 1.5-.67 1.5-1.5s-.67-1.5-1.5-1.5S11 9.17 11 10s.67 1.5 1.5 1.5zM5.5 6c1.11 0 2-.89 2-2s-.89-2-2-2-2 .89-2 2 .89 2 2 2zm1.5 2h-2C3.57 8 2.5 9.57 2.5 11.5V22h2v-6h2v6h2v-10.5C8.5 9.57 7.43 8 6 8z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Partners</span>
+            </a>
+          </li>
+
+          <!-- ✅ Partner Profile -->
+          <li class="menu-item" data-page="partner-profile">
+            <a href="partner-profile.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4S14.21 4 12 4 8 5.79 8 8s1.79 4 4 4zm0 2c-2.67 
+              0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Partner Profile</span>
+            </a>
+          </li>
+
+          <li class="menu-item" data-page="users">
+            <a href="users.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M16 13c1.66 0 2.99-1.34 2.99-3S17.66 7 16 7s-3 1.34-3 3 
+              1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 7 8 7 
+              5 8.34 5 10s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 
+              3.5V20h14v-1.5c0-2.33-4.67-3.5-7-3.5zm8 
+              0c-.29 0-.62.02-.97.05 1.16.84 1.97 
+              1.97 1.97 3.45V20h6v-1.5c0-2.33-4.67-3.5-7-3.5z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Users</span>
+            </a>
+          </li>
+
+          <!-- ✅ User Profile -->
+          <li class="menu-item active" data-page="user-profile">
+            <a href="user-profile.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 
+              1.79-4 4 1.79 4 4 4zm0 2c-2.67 
+              0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">User Profile</span>
+            </a>
+          </li>
+
+          <li class="menu-item" data-page="reports">
+            <a href="reports.html">
+              <span class="menu-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M19 3H5c-1.1 0-2 .9-2 2v14c0 
+          1.1.9 2 2 2h14c1.1 0 2-.9 
+          2-2V5c0-1.1-.9-2-2-2zM9 
+          17H7v-7h2v7zm4 0h-2V7h2v10zm4 
+          0h-2v-4h2v4z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Reports</span>
+            </a>
+          </li>
+
+          <li class="menu-item" data-page="settings">
+            <a href="settings.html">
+              <span class="menu-icon">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M19.14,12.94c0.04-0.3,0.06-0.61,
+              0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58
+              c0.18-0.14,0.23-0.41,0.12-0.61l-1.92-3.32
+              c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96
+              c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81
+              c-0.04-0.24-0.24-0.41-0.48-0.41h-3.84
+              c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35
+              C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33
+              c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87
+              C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58
+              C4.84,11.36,4.82,11.69,4.82,12s0.02,0.64,
+              0.07,0.94l-2.03,1.58c-0.18,0.14-0.23,0.41-0.12,0.61
+              l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96
+              c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54c0.05,0.24,
+              0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41
+              l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96
+              c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32
+              c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z
+              M12,15.6c-1.98,0-3.6-1.62-3.6-3.6s1.62-3.6,
+              3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"
+                  />
+                </svg>
+              </span>
+              <span class="menu-text">Settings</span>
+            </a>
+          </li>
+        </ul>
+
+        <div class="sidebar-footer">
+          <button class="logout-btn" onclick="logout()">
+            <span class="menu-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 
+            2.58L17 17l5-5zM4 5h8V3H4c-1.1 
+            0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+                />
+              </svg>
+            </span>
+            <span class="menu-text">Logout</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="content-header">
+          <div class="header-left">
+            <div class="user-avatar">
+              <svg
+                width="40"
+                height="40"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                />
+              </svg>
+            </div>
+            <div class="user-header-info">
+              <h1 id="userName">Loading...</h1>
+              <div class="user-meta">
+                <span class="user-role" id="userRole">-</span>
+                <span class="user-status" id="userStatus">Active</span>
+              </div>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="btn btn-primary" onclick="saveProfile()">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"
+                />
+              </svg>
+              Save Changes
+            </button>
+          </div>
+        </header>
+
+        <div class="content-body">
+          <!-- User Profile Navigation Tabs -->
+          <div class="profile-nav">
+            <button
+              class="nav-btn active"
+              onclick="showProfileSection('account')"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H11V21H5V3H13V9H21Z"
+                />
+              </svg>
+              Account Information
+            </button>
+            <button class="nav-btn" onclick="showProfileSection('security')">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.5 16,12.4 16,13V16C16,17.4 15.4,18 14.8,18H9.2C8.6,18 8,17.4 8,16V13C8,12.4 8.6,11.5 9.2,11.5V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.5,8.7 10.5,10V11.5H13.5V10C13.5,8.7 12.8,8.2 12,8.2Z"
+                />
+              </svg>
+              Security
+            </button>
+            <button class="nav-btn" onclick="showProfileSection('preferences')">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                />
+              </svg>
+              Preferences
+            </button>
+            <button class="nav-btn" onclick="showProfileSection('activity')">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <path
+                  d="M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3Z"
+                />
+              </svg>
+              Activity Log
+            </button>
+          </div>
+
+          <!-- Account Information Section -->
+          <div id="account-section" class="profile-section active">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Account Information</h3>
+                <p>Manage your personal information and account details</p>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input
+                      type="text"
+                      id="firstName"
+                      name="firstName"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastName" required />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input
+                      type="text"
+                      id="username"
+                      name="username"
+                      required
+                      readonly
+                    />
+                    <small>Username cannot be changed</small>
+                  </div>
+                  <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" name="email" required />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" />
+                  </div>
+                  <div class="form-group">
+                    <label for="department">Department/Scope</label>
+                    <input type="text" id="department" name="department" />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="bio">Bio</label>
+                  <textarea
+                    id="bio"
+                    name="bio"
+                    rows="4"
+                    placeholder="Tell us about yourself..."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security Section -->
+          <div id="security-section" class="profile-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Security Settings</h3>
+                <p>Manage your password and security preferences</p>
+              </div>
+              <div class="card-body">
+                <div class="security-section">
+                  <h4>Change Password</h4>
+                  <div class="form-group">
+                    <label for="currentPassword">Current Password *</label>
+                    <input
+                      type="password"
+                      id="currentPassword"
+                      name="currentPassword"
+                      required
+                    />
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="newPassword">New Password *</label>
+                      <input
+                        type="password"
+                        id="newPassword"
+                        name="newPassword"
+                        required
+                      />
+                      <small>Password must be at least 8 characters long</small>
+                    </div>
+                    <div class="form-group">
+                      <label for="confirmPassword"
+                        >Confirm New Password *</label
+                      >
+                      <input
+                        type="password"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+                    onclick="changePassword()"
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11.5C15.4,11.5 16,12.4 16,13V16C16,17.4 15.4,18 14.8,18H9.2C8.6,18 8,17.4 8,16V13C8,12.4 8.6,11.5 9.2,11.5V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.5,8.7 10.5,10V11.5H13.5V10C13.5,8.7 12.8,8.2 12,8.2Z"
+                      />
+                    </svg>
+                    Change Password
+                  </button>
+                </div>
+
+                <div class="security-section">
+                  <h4>Two-Factor Authentication</h4>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input type="checkbox" id="enable2FA" name="enable2FA" />
+                      <span class="checkmark"></span>
+                      Enable Two-Factor Authentication
+                    </label>
+                    <small
+                      >Add an extra layer of security to your account</small
+                    >
+                  </div>
+                </div>
+
+                <div class="security-section">
+                  <h4>Login Notifications</h4>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="emailNotifications"
+                        name="emailNotifications"
+                        checked
+                      />
+                      <span class="checkmark"></span>
+                      Email me when someone logs into my account
+                    </label>
+                  </div>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="suspiciousActivity"
+                        name="suspiciousActivity"
+                        checked
+                      />
+                      <span class="checkmark"></span>
+                      Alert me of suspicious login attempts
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preferences Section -->
+          <div id="preferences-section" class="profile-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>User Preferences</h3>
+                <p>Customize your experience and notification settings</p>
+              </div>
+              <div class="card-body">
+                <div class="preferences-section">
+                  <h4>Display Settings</h4>
+                  <div class="form-group">
+                    <label for="theme">Theme</label>
+                    <select id="theme" name="theme">
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="auto">Auto (System)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="language">Language</label>
+                    <select id="language" name="language">
+                      <option value="en">English</option>
+                      <option value="sw">Swahili</option>
+                      <option value="lg">Luganda</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="timezone">Timezone</label>
+                    <select id="timezone" name="timezone">
+                      <option value="Africa/Kampala">
+                        East Africa Time (EAT)
+                      </option>
+                      <option value="UTC">UTC</option>
+                      <option value="America/New_York">Eastern Time</option>
+                      <option value="Europe/London">Greenwich Mean Time</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="preferences-section">
+                  <h4>Email Notifications</h4>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyNewPartner"
+                        name="notifyNewPartner"
+                        checked
+                      />
+                      <span class="checkmark"></span>
+                      New partner registrations
+                    </label>
+                  </div>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyMouUpdates"
+                        name="notifyMouUpdates"
+                        checked
+                      />
+                      <span class="checkmark"></span>
+                      MoU updates and renewals
+                    </label>
+                  </div>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifySystemUpdates"
+                        name="notifySystemUpdates"
+                      />
+                      <span class="checkmark"></span>
+                      System updates and maintenance
+                    </label>
+                  </div>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="notifyWeeklyReport"
+                        name="notifyWeeklyReport"
+                      />
+                      <span class="checkmark"></span>
+                      Weekly activity reports
+                    </label>
+                  </div>
+                </div>
+
+                <div class="preferences-section">
+                  <h4>Dashboard Settings</h4>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="showWelcomeMessage"
+                        name="showWelcomeMessage"
+                        checked
+                      />
+                      <span class="checkmark"></span>
+                      Show welcome message on dashboard
+                    </label>
+                  </div>
+                  <div class="checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        id="autoRefreshData"
+                        name="autoRefreshData"
+                      />
+                      <span class="checkmark"></span>
+                      Auto-refresh dashboard data
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Activity Log Section -->
+          <div id="activity-section" class="profile-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Activity Log</h3>
+                <p>View your recent account activity and login history</p>
+              </div>
+              <div class="card-body">
+                <div class="activity-filters">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="activityType">Activity Type</label>
+                      <select
+                        id="activityType"
+                        name="activityType"
+                        onchange="filterActivity()"
+                      >
+                        <option value="all">All Activities</option>
+                        <option value="login">Login/Logout</option>
+                        <option value="profile">Profile Changes</option>
+                        <option value="partners">Partner Management</option>
+                        <option value="users">User Management</option>
+                        <option value="settings">Settings Changes</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="activityDate">Date Range</label>
+                      <select
+                        id="activityDate"
+                        name="activityDate"
+                        onchange="filterActivity()"
+                      >
+                        <option value="7">Last 7 days</option>
+                        <option value="30">Last 30 days</option>
+                        <option value="90">Last 90 days</option>
+                        <option value="all">All time</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="activity-list" id="activityList">
+                  <!-- Activity items will be populated here -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script src="../js/dashboard.js"></script>
+    <script src="../js/user-profile.js"></script>
+  </body>
+</html>
