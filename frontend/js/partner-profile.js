@@ -6,18 +6,29 @@ let documentsGrid = null;
 
 // Declare the $ variable
 const $ = window.jQuery;
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
 
+document.addEventListener("DOMContentLoaded", async () => {
+  // Load Partner Profile
+  const partner_uuid = getCookie("user_uuid");
+  await loadPartnerProfile(partner_uuid);
+});
 // Initialize partner profile page
 
 // Load partner profile data
-async function loadPartnerProfile(partnerId) {
+async function loadPartnerProfile(partneruuid) {
   try {
-    const response = await fetch(`/api/v1/partners/${partnerId}`);
+    const response = await fetch(`/api/v1/users/${partneruuid}`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const partner = await response.json();
+    const res = await response.json();
+    const partner = res.partner;
     currentPartner = partner;
 
     populatePartnerInfo(partner);

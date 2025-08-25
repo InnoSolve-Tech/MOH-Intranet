@@ -52,7 +52,6 @@ async function loadPartners() {
       throw new Error(`HTTP error! Status: ${res.status}`);
     }
     const apiPartners = await res.json();
-    console.log("API Response:", apiPartners);
 
     partnersData = apiPartners.map((partner) => ({
       id: partner.ID,
@@ -204,7 +203,7 @@ function initializeGrid() {
       flex: 1.5,
       cellRenderer: (params) => `
         <div class="action-buttons">
-          <button class="action-btn btn-view" onclick="viewPartner(${params.data.id})" title="View">
+          <button class="action-btn btn-view" onclick="openPartnerModal(${params.data.id})" title="View">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
             </svg>
@@ -366,6 +365,89 @@ async function savePartner() {
     console.error("Error saving partner:", error);
     showNotification("Failed to save partner. Please try again.", "error");
   }
+}
+
+async function openPartnerModal(id) {
+  const val = partnersData.find((p) => p.id === id);
+  const res = await fetch(`/api/v1/partners/${val.uuid}`);
+  const data = await res.json();
+  const partner = data.partner;
+  console.log(partner);
+  const modal = document.getElementById("viewPartnerModal");
+  const $modal = $("#viewPartnerModal");
+
+  // Fill tab content
+  document.getElementById("overview").innerHTML = `
+    <p><strong>Name:</strong> ${partner.partner_name}</p>
+    <p><strong>Acronym:</strong> ${partner.acronym}</p>
+    <p><strong>Type:</strong> ${partner.partner_type}</p>
+    <p><strong>Category:</strong> ${partner.partner_category}</p>
+    <p><strong>Phone:</strong> ${partner.official_phone}</p>
+    <p><strong>Email:</strong> ${partner.official_email}</p>
+  `;
+
+  document.getElementById("addresses").innerHTML = partner.partner_address
+    .map((a) => `<p>${a.address}</p>`)
+    .join("");
+
+  document.getElementById("contacts").innerHTML = partner.partner_contacts
+    .map(
+      (c) => `
+      <div>
+        <p><strong>${c.names}</strong> (${c.title})</p>
+        <p>Phone: ${c.phone_number}</p>
+        <p>Email: ${c.official_email}</p>
+      </div>
+    `,
+    )
+    .join("");
+
+  document.getElementById("support").innerHTML = partner.partner_support_years
+    .map(
+      (s) => `
+      <div class="support-item">
+        <p><strong>Year:</strong> ${s.year}</p>
+        <p><strong>Level:</strong> ${s.level_of_support}</p>
+        <p><strong>Thematic Areas:</strong> ${s.thematic_areas}</p>
+        <p><strong>District:</strong> ${s.district} (${s.district_support_type})</p>
+      </div>
+    `,
+    )
+    .join("");
+
+  document.getElementById("mou").innerHTML = partner.partner_mou
+    ? `
+      <p><strong>Signed By:</strong> ${partner.partner_mou.signed_by} (${partner.partner_mou.who_title})</p>
+      <p><strong>Signed Date:</strong> ${new Date(partner.partner_mou.signed_date).toLocaleDateString()}</p>
+      <p><strong>Expiry Date:</strong> ${new Date(partner.partner_mou.expiry_date).toLocaleDateString()}</p>
+      <p><a href="${partner.partner_mou.file_path}" target="_blank">Download MoU</a></p>
+    `
+    : "<p>No MoU available</p>";
+
+  // Show modal
+  $modal.addClass("show");
+
+  // Close button
+  modal.querySelector(".close").onclick = () => {
+    $modal.removeClass("show");
+  };
+
+  // Click outside closes
+  window.onclick = (event) => {
+    if (event.target === modal) modal.style.display = "none";
+  };
+
+  // Tab switching
+  const tabs = modal.querySelectorAll(".tab-btn");
+  const panes = modal.querySelectorAll(".tab-pane");
+  tabs.forEach((tab) => {
+    tab.onclick = () => {
+      tabs.forEach((t) => t.classList.remove("active"));
+      panes.forEach((p) => p.classList.remove("active"));
+      tab.classList.add("active");
+      modal.querySelector(`#${tab.dataset.tab}`).classList.add("active");
+    };
+  });
 }
 
 async function deletePartner(id) {

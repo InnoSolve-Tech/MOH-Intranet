@@ -10,118 +10,94 @@ $(document).ready(() => {
   loadActivityLog();
 });
 
+// Get cookie utility function
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
 // Load current user profile data
 async function loadUserProfile() {
   try {
-    const response = await fetch("/api/v1/user/profile");
+    const user_uuid = getCookie("user_uuid");
+    if (!user_uuid) {
+      throw new Error("User UUID not found in cookies");
+    }
+
+    const response = await fetch(`/api/v1/users/${user_uuid}`);
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    const user = await response.json();
-    currentUser = user;
+    const res = await response.json();
+    currentUser = res.user;
 
-    populateUserInfo(user);
+    populateUserInfo(currentUser);
   } catch (error) {
     console.error("Error loading user profile:", error);
-    // Fallback to session storage or mock data
-    loadMockUserData();
+    showNotification("Failed to load user profile", "error");
+
+    // Set loading indicators to show error state
+    $("#userName").text("Error loading profile");
+    $("#userRole").text("Error");
   }
-}
-
-// Load mock user data as fallback
-function loadMockUserData() {
-  const mockUser = {
-    username: sessionStorage.getItem("username") || "admin",
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@health.go.ug",
-    phone: "+256 700 123456",
-    department: "Health Systems",
-    role: "Administrator",
-    bio: "System administrator for the Partner Management System",
-  };
-
-  currentUser = mockUser;
-  populateUserInfo(mockUser);
 }
 
 // Populate user information in the form
 function populateUserInfo(user) {
-  // Header information
-  $("#userName").text(
-    `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.username,
-  );
-  $("#userRole").text(user.role || "User");
+  // Header information - using only available fields
+  $("#userName").text(user.username || "Unknown User");
+  $("#userRole").text(user.roles ? user.roles.role_name : "User");
 
-  // Account information form
-  $("#firstName").val(user.firstName || "");
-  $("#lastName").val(user.lastName || "");
+  // Account information form - only map available fields
+  $("#firstName").val(""); // Not available in user object
+  $("#lastName").val(""); // Not available in user object
   $("#username").val(user.username || "");
-  $("#email").val(user.email || "");
-  $("#phone").val(user.phone || "");
-  $("#department").val(user.department || user.scope || "");
-  $("#bio").val(user.bio || "");
+  $("#email").val(""); // Not available in user object
+  $("#phone").val(""); // Not available in user object
+  $("#department").val(user.scope || "");
+  $("#bio").val(""); // Not available in user object
+
+  // Set user status
+  $("#userStatus").text("Active");
+
+  // Display user info in a read-only manner since most fields aren't available
+  showUserLimitations();
 }
 
-// Load activity log
+// Show limitations message for unavailable fields
+function showUserLimitations() {
+  // Add placeholder text to unavailable fields
+  $("#firstName").attr("placeholder", "Not available in current user data");
+  $("#lastName").attr("placeholder", "Not available in current user data");
+  $("#email").attr("placeholder", "Not available in current user data");
+  $("#phone").attr("placeholder", "Not available in current user data");
+  $("#bio").attr("placeholder", "Not available in current user data");
+
+  // Make unavailable fields readonly
+  $("#firstName, #lastName, #email, #phone, #bio").prop("readonly", true);
+}
+
+// Load activity log - simplified since no specific activity endpoint mentioned
 async function loadActivityLog() {
   try {
+    // Since there's no specific activity endpoint mentioned,
+    // we'll show a message or try a generic endpoint
     const response = await fetch("/api/v1/user/activity");
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      // If activity endpoint doesn't exist, show empty state
+      populateActivityLog([]);
+      return;
     }
 
     const activities = await response.json();
     populateActivityLog(activities);
   } catch (error) {
-    console.error("Error loading activity log:", error);
-    // Load mock activity data
-    loadMockActivityData();
+    console.error("Activity log not available:", error);
+    // Show empty activity log instead of mock data
+    populateActivityLog([]);
   }
-}
-
-// Load mock activity data
-function loadMockActivityData() {
-  const mockActivities = [
-    {
-      type: "login",
-      title: "Successful Login",
-      description: "Logged in from IP: 192.168.1.100",
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      icon: "🔐",
-    },
-    {
-      type: "profile",
-      title: "Profile Updated",
-      description: "Updated email address and phone number",
-      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: "👤",
-    },
-    {
-      type: "partners",
-      title: "Partner Created",
-      description: "Added new partner: UNICEF Uganda",
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: "🤝",
-    },
-    {
-      type: "settings",
-      title: "Settings Changed",
-      description: "Updated notification preferences",
-      timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: "⚙️",
-    },
-    {
-      type: "login",
-      title: "Password Changed",
-      description: "Successfully changed account password",
-      timestamp: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-      icon: "🔒",
-    },
-  ];
-
-  populateActivityLog(mockActivities);
 }
 
 // Populate activity log
@@ -130,24 +106,31 @@ function populateActivityLog(activities) {
   activityList.empty();
 
   if (activities.length === 0) {
-    activityList.append(
-      '<div class="activity-item"><p>No activity found</p></div>',
-    );
+    activityList.append(`
+      <div class="activity-item">
+        <div class="activity-content">
+          <div class="activity-title">No activity found</div>
+          <div class="activity-description">Your recent activity will appear here when available</div>
+        </div>
+      </div>
+    `);
     return;
   }
 
   activities.forEach((activity) => {
-    const timeAgo = getTimeAgo(new Date(activity.timestamp));
+    const timeAgo = getTimeAgo(
+      new Date(activity.timestamp || activity.CreatedAt),
+    );
     const activityItem = $(`
-            <div class="activity-item" data-type="${activity.type}">
-                <div class="activity-icon">${activity.icon}</div>
-                <div class="activity-content">
-                    <div class="activity-title">${activity.title}</div>
-                    <div class="activity-description">${activity.description}</div>
-                    <div class="activity-time">${timeAgo}</div>
-                </div>
-            </div>
-        `);
+      <div class="activity-item" data-type="${activity.type || "general"}">
+        <div class="activity-icon">${activity.icon || "📝"}</div>
+        <div class="activity-content">
+          <div class="activity-title">${activity.title || "Activity"}</div>
+          <div class="activity-description">${activity.description || "Activity description"}</div>
+          <div class="activity-time">${timeAgo}</div>
+        </div>
+      </div>
+    `);
 
     activityList.append(activityItem);
   });
@@ -166,39 +149,37 @@ function showProfileSection(sectionName) {
   ).addClass("active");
 }
 
-// Save profile changes
+// Save profile changes - only save available fields
 async function saveProfile() {
+  if (!currentUser) {
+    showNotification("User data not loaded", "error");
+    return;
+  }
+
+  // Only include fields that are actually available in the user object
   const profileData = {
-    firstName: $("#firstName").val(),
-    lastName: $("#lastName").val(),
-    email: $("#email").val(),
-    phone: $("#phone").val(),
-    department: $("#department").val(),
-    bio: $("#bio").val(),
-    preferences: {
-      theme: $("#theme").val(),
-      language: $("#language").val(),
-      timezone: $("#timezone").val(),
-      notifications: {
-        newPartner: $("#notifyNewPartner").is(":checked"),
-        mouUpdates: $("#notifyMouUpdates").is(":checked"),
-        systemUpdates: $("#notifySystemUpdates").is(":checked"),
-        weeklyReport: $("#notifyWeeklyReport").is(":checked"),
-      },
-      dashboard: {
-        showWelcomeMessage: $("#showWelcomeMessage").is(":checked"),
-        autoRefreshData: $("#autoRefreshData").is(":checked"),
-      },
-    },
-    security: {
-      enable2FA: $("#enable2FA").is(":checked"),
-      emailNotifications: $("#emailNotifications").is(":checked"),
-      suspiciousActivity: $("#suspiciousActivity").is(":checked"),
-    },
+    username: $("#username").val(), // Available but likely shouldn't be changed
+    scope: $("#department").val(), // Available field
+    // Note: Most other fields are not available in the current user object
   };
 
+  // Show warning about limited updateable fields
+  if (
+    $("#firstName").val() ||
+    $("#lastName").val() ||
+    $("#email").val() ||
+    $("#phone").val() ||
+    $("#bio").val()
+  ) {
+    showNotification(
+      "Note: Only username and scope can be updated with current user data structure",
+      "warning",
+    );
+  }
+
   try {
-    const response = await fetch("/api/v1/user/profile", {
+    const user_uuid = getCookie("user_uuid");
+    const response = await fetch(`/api/v1/users/${user_uuid}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -207,18 +188,25 @@ async function saveProfile() {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`,
+      );
     }
 
-    showNotification("Profile updated successfully", "success");
+    const updatedUser = await response.json();
+    currentUser = updatedUser.user || updatedUser;
 
-    // Update header display
-    $("#userName").text(
-      `${profileData.firstName} ${profileData.lastName}`.trim(),
+    showNotification(
+      "Profile updated successfully (limited fields)",
+      "success",
     );
+
+    // Update header display with available data
+    $("#userName").text(currentUser.username);
   } catch (error) {
     console.error("Error saving profile:", error);
-    showNotification("Failed to update profile", "error");
+    showNotification(error.message || "Failed to update profile", "error");
   }
 }
 
@@ -245,19 +233,23 @@ async function changePassword() {
   }
 
   try {
-    const response = await fetch("/api/v1/user/change-password", {
+    const user_uuid = getCookie("user_uuid");
+    const response = await fetch(`/api/v1/users/${user_uuid}/change-password`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        currentPassword,
-        newPassword,
+        current_password: currentPassword,
+        new_password: newPassword,
       }),
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! Status: ${response.status}`,
+      );
     }
 
     showNotification("Password changed successfully", "success");
@@ -268,7 +260,7 @@ async function changePassword() {
     $("#confirmPassword").val("");
   } catch (error) {
     console.error("Error changing password:", error);
-    showNotification("Failed to change password", "error");
+    showNotification(error.message || "Failed to change password", "error");
   }
 }
 
@@ -287,8 +279,14 @@ function filterActivity() {
       showItem = false;
     }
 
-    // Date filter (simplified - in real implementation, you'd filter by actual dates)
-    // For now, just show/hide based on selection
+    // Date filter implementation would need actual timestamps
+    // For now, just show all items when "all" is selected
+    if (dateFilter === "all") {
+      // Show all items regardless of other filters if "all time" is selected
+      if (typeFilter === "all") {
+        showItem = true;
+      }
+    }
 
     if (showItem) {
       item.show();
@@ -321,20 +319,51 @@ function getTimeAgo(date) {
 function showNotification(message, type = "info") {
   // Create notification element
   const notification = $(`
-        <div class="notification ${type}">
-            <span>${message}</span>
-        </div>
-    `);
+    <div class="notification ${type}" style="
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 5px;
+      color: white;
+      z-index: 1000;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateX(100%);
+    ">
+      <span>${message}</span>
+    </div>
+  `);
+
+  // Set background color based on type
+  const colors = {
+    info: "#3498db",
+    success: "#27ae60",
+    warning: "#f39c12",
+    error: "#e74c3c",
+  };
+  notification.css("background-color", colors[type] || colors.info);
 
   // Add to page
   $("body").append(notification);
 
-  // Show and auto-hide
-  setTimeout(() => notification.addClass("show"), 100);
+  // Show notification
   setTimeout(() => {
-    notification.removeClass("show");
+    notification.css({
+      opacity: "1",
+      transform: "translateX(0)",
+    });
+  }, 100);
+
+  // Auto-hide after 4 seconds for warnings, 3 seconds for others
+  const hideDelay = type === "warning" ? 4000 : 3000;
+  setTimeout(() => {
+    notification.css({
+      opacity: "0",
+      transform: "translateX(100%)",
+    });
     setTimeout(() => notification.remove(), 300);
-  }, 3000);
+  }, hideDelay);
 }
 
 // Make functions globally accessible

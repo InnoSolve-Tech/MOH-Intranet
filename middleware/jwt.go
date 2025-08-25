@@ -31,7 +31,7 @@ type UserClaims struct {
 	UserID      string `json:"user_id"`
 	UserName    string `json:"user_name"`
 	Role        string `json:"role"`
-	PartnerUUID string `json:"partner_uuid"`
+	PartnerUUID string `json:"user_uuid"`
 	jwt.RegisteredClaims
 }
 
@@ -138,7 +138,7 @@ func SessionHelper(config ...AuthConfig) fiber.Handler {
 }
 
 // CreateSession creates a new session and sets the cookie
-func CreateSession(c *fiber.Ctx, name, email, partner_uuid string, role string) (string, error) {
+func CreateSession(c *fiber.Ctx, name, user_uuid string, role string) (string, error) {
 	cfg := DefaultAuthConfig()
 	// Generate a secure session token
 	bytes := make([]byte, 32)
@@ -147,10 +147,9 @@ func CreateSession(c *fiber.Ctx, name, email, partner_uuid string, role string) 
 	}
 	// Create JWT claims
 	claims := UserClaims{
-		UserID:      email, // or generate a proper user ID
-		UserName:    name,
+		UserID:      name, // or generate a proper user ID
 		Role:        role,
-		PartnerUUID: partner_uuid,
+		PartnerUUID: user_uuid,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(cfg.SessionDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -177,22 +176,10 @@ func CreateSession(c *fiber.Ctx, name, email, partner_uuid string, role string) 
 		SameSite: "Lax",            // Less restrictive than "Strict"
 	})
 
-	// User role
-	c.Cookie(&fiber.Cookie{
-		Name:     "user_role",
-		Value:    role,
-		Path:     "/",
-		Domain:   "",
-		MaxAge:   7 * 24 * 60 * 60,
-		Secure:   false,
-		HTTPOnly: false,
-		SameSite: "Lax",
-	})
-
 	// Partner UUID
 	c.Cookie(&fiber.Cookie{
-		Name:     "partner_uuid",
-		Value:    partner_uuid,
+		Name:     "user_uuid",
+		Value:    user_uuid,
 		Path:     "/",
 		Domain:   "",
 		MaxAge:   7 * 24 * 60 * 60,
@@ -213,24 +200,12 @@ func CreateSession(c *fiber.Ctx, name, email, partner_uuid string, role string) 
 		SameSite: "Lax",
 	})
 
-	// User email
-	c.Cookie(&fiber.Cookie{
-		Name:     "user_email",
-		Value:    email,
-		Path:     "/",
-		Domain:   "",
-		MaxAge:   7 * 24 * 60 * 60,
-		Secure:   false,
-		HTTPOnly: false,
-		SameSite: "Lax",
-	})
-
 	return tokenString, nil
 }
 
 // ClearSession removes all session cookies
 func ClearSession(c *fiber.Ctx) {
-	cookies := []string{"session_token", "user_role", "user_name", "user_email", "partner_uuid"}
+	cookies := []string{"session_token", "user_role", "user_name", "user_email", "user_uuid"}
 
 	for _, cookieName := range cookies {
 		c.Cookie(&fiber.Cookie{

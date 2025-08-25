@@ -1,3 +1,26 @@
+:root {
+  /* Primary Brand Colors */
+  --primary: #3498db; /* Main brand blue */
+  --primary-light: #eaf4fc; /* Soft background tint of blue */
+  --primary-hover: #2980b9; /* Hover state */
+
+  /* Success / Status Colors */
+  --success: #27ae60; /* Green for active/success */
+  --success-light: #eafaf1; /* Light green background */
+
+  /* Text Colors */
+  --text-primary: #2c3e50; /* Dark readable text */
+  --text-secondary: #7f8c8d; /* Muted gray for labels/subtext */
+
+  /* Backgrounds */
+  --background-primary: #ffffff; /* Main white background */
+  --background-secondary: #f9f9f9; /* Cards / sections background */
+  --background-hover: #f0f0f0; /* Hover state for buttons/nav */
+
+  /* Borders & Dividers */
+  --border-color: #e0e0e0;
+}
+
 /* Partner Profile Specific Styles */
 .partner-header-info h1 {
   margin: 0;
@@ -73,7 +96,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 16px;
-  background: transparent;
+  background: var(--background-secondary);
   border: none;
   border-radius: 6px;
   color: var(--text-secondary);

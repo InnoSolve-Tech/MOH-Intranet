@@ -80,12 +80,7 @@ func RegisterUser(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to register user"})
 	}
 
-	// Start a session
-	email := req.Email
-	if req.ContactID != "" {
-		email = contact.OfficialEmail
-	}
-	middleware.CreateSession(c, req.Username, email, user.UUID, role.RoleName)
+	middleware.CreateSession(c, req.Username, user.UUID, role.RoleName)
 
 	return c.JSON(fiber.Map{
 		"message": "User registered successfully",
@@ -136,25 +131,23 @@ func SignIn(c *fiber.Ctx) error {
 		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	var contact models.PartnerContacts
+	var user models.Users
 	err := database.DB.
-		Joins("JOIN users ON users.id = partner_contacts.user_id").
-		Preload("User.Role").
-		Where("users.username = ? OR partner_contacts.official_email = ?", req.UserID, req.UserID).
-		First(&contact).Error
+		Preload("Role").
+		Where("users.username = ?", req.UserID).
+		First(&user).Error
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(contact.User.Password), []byte(req.Password)) != nil {
+	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)) != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
 	}
 
 	middleware.CreateSession(c,
-		contact.User.Username,
-		contact.OfficialEmail,
-		contact.User.UUID,
-		contact.User.Role.RoleName,
+		user.Username,
+		user.UUID,
+		user.Role.RoleName,
 	)
 
 	return c.JSON(fiber.Map{
@@ -300,6 +293,50 @@ func GetUsers(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(users)
+}
+
+func GetUserByUUID(c *fiber.Ctx) error {
+	userUUID := c.Params("uuid")
+	if userUUID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "User UUID is required",
+		})
+	}
+
+	var user models.Users
+	var contact models.PartnerContacts
+
+	// Fetch user and preload role
+	if err := database.DB.
+		Preload("Role").
+		Where("uuid = ?", userUUID).
+		First(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to fetch user",
+			"details": err.Error(),
+		})
+	}
+
+	// Fetch user contact and preload partner relations
+	if user.Role.RoleName != "admin" {
+		if err := database.DB.
+			Where("user_id = ?", user.ID).
+			Preload("Partner").
+			Preload("Partner.PartnerSupportYears").
+			Preload("Partner.PartnerContacts").
+			First(&contact).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to fetch contact",
+				"details": err.Error(),
+			})
+		}
+	}
+
+	// Return combined response
+	return c.JSON(fiber.Map{
+		"user":    user,
+		"partner": contact.Partner,
+	})
 }
 
 func getEnv(key string, fallback *string) string {

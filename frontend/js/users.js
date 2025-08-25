@@ -340,6 +340,34 @@ function clearTreeFilters() {
   applyTreeFilters();
 }
 
+function openUserModal(userData) {
+  const modal = document.getElementById("userModal");
+  const modalBody = document.getElementById("userModalBody");
+
+  // Populate modal with user data
+  modalBody.innerHTML = `
+    <p><strong>Name:</strong> ${userData.name}</p>
+    <p><strong>Email:</strong> ${userData.email}</p>
+    <p><strong>Role:</strong> ${userData.role}</p>
+    <!-- Add more fields as needed -->
+  `;
+
+  // Display the modal
+  modal.style.display = "block";
+
+  // Close the modal when the X is clicked
+  document.querySelector(".close").onclick = function () {
+    modal.style.display = "none";
+  };
+
+  // Close the modal if the user clicks outside of it
+  window.onclick = function (event) {
+    if (event.target === modal) {
+      modal.style.display = "none";
+    }
+  };
+}
+
 function openAddUserModal() {
   editingUserId = null;
   $("#modalTitle").text("Add New User");

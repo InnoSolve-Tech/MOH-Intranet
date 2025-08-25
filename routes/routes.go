@@ -26,6 +26,7 @@ func SetupRoutes(app *fiber.App) {
 	{
 		users.Post("/register", service.RegisterUser)
 		users.Get("", service.GetUsers)
+		users.Get("/:uuid", service.GetUserByUUID)
 		users.Put("/change-scope", service.ChangeScope)
 		users.Put("/reset-password", service.ResetPassword)
 		users.Post("/forgot-password", service.ForgotPassword)
@@ -40,5 +41,21 @@ func SetupRoutes(app *fiber.App) {
 		partners.Get("/:uuid", service.GetPartnerByID)   // Get partner by UUID
 		partners.Put("/:uuid", service.UpdatePartner)    // Update partner by UUID
 		partners.Delete("/:uuid", service.DeletePartner) // Delete partner by UUID
+	}
+
+	thematicAreas := api.Group("/thematic-areas")
+	{
+		thematicAreas.Post("", service.CreateThematicArea)
+		thematicAreas.Get("", service.GetThematicAreas)
+		thematicAreas.Post("/bulk", service.CreateThematicAreasBulk)
+		thematicAreas.Delete("", service.DeleteThematicArea)
+	}
+
+	partnerCategories := api.Group("/partner-categories")
+	{
+		partnerCategories.Post("", service.CreatePartnerCategory)
+		partnerCategories.Get("", service.GetPartnerCategory)
+		partnerCategories.Post("/bulk", service.CreatePartnerCategoriesBulk)
+		partnerCategories.Delete("", service.DeletePartnerCategory)
 	}
 }

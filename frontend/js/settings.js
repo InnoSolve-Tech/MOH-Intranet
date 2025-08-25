@@ -2,49 +2,35 @@
 const $ = window.jQuery;
 const agGrid = window.agGrid;
 
-const dropdownData = {
-  thematicAreas: [
-    "Health",
-    "Education",
-    "Agriculture",
-    "Water and Sanitation",
-    "Nutrition",
-    "Child Protection",
-    "Gender Equality",
-    "Environment",
-    "Economic Development",
-    "Emergency Response",
-    "Governance",
-    "Human Rights",
-  ],
-  partnerCategories: {
-    Local: ["Local NGO", "CBO"],
-    International: ["Bi-Lateral", "Multilateral", "UN", "International NGO"],
-  },
-  districts: [
-    "Kampala",
-    "Wakiso",
-    "Mukono",
-    "Jinja",
-    "Mbale",
-    "Gulu",
-    "Lira",
-    "Mbarara",
-    "Kasese",
-    "Fort Portal",
-    "Hoima",
-    "Masaka",
-    "Soroti",
-    "Arua",
-    "Kabale",
-    "Moroto",
-    "Kitgum",
-    "Pader",
-    "Adjumani",
-    "Moyo",
-  ],
-  supportLevels: ["National", "District"],
-};
+let dropdownData = {};
+
+$(document).ready(async () => {
+  try {
+    // Fetch all async data in parallel
+    const [thematicAreasRes, partnerCategoriesRes] = await Promise.all([
+      fetch("/api/v1/thematic-areas"),
+      fetch("/api/v1/partner-categories"),
+      // add more fetches later...
+    ]);
+
+    // Parse all responses in parallel
+    const [thematicAreasJson, partnerCategoriesJson] = await Promise.all([
+      thematicAreasRes.json(),
+      partnerCategoriesRes.json(),
+    ]);
+
+    dropdownData = {
+      thematicAreas: thematicAreasJson.map((v) => ({ ...v, name: v.area })),
+      partnerCategories: partnerCategoriesJson,
+    };
+
+    initializeSettingsPage();
+    loadSmtpSettings();
+    loadInternalGroupsData();
+  } catch (err) {
+    console.error("Error loading dropdown data:", err);
+  }
+});
 
 const internalGroupsData = [];
 let internalGroupsGrid = null;
@@ -69,7 +55,7 @@ window.showSettingsSection = (sectionName) => {
   $(`.nav-btn:contains("${buttonText}")`).addClass("active");
 };
 
-function addDropdownItem(dropdownType) {
+async function addDropdownItem(dropdownType) {
   let inputId, newValue;
 
   switch (dropdownType) {
@@ -358,15 +344,13 @@ function initializeDropdownGrid(dropdownType) {
   let items = [];
 
   if (dropdownType === "partnerCategories") {
-    Object.keys(dropdownData.partnerCategories).forEach((type) => {
-      dropdownData.partnerCategories[type].forEach((category) => {
-        items.push({ type, value: category });
-      });
+    dropdownData.partnerCategories.map(({ type, value, ID }) => {
+      items.push({ type, value, id: ID });
     });
   } else {
     items = dropdownData[dropdownType].map((item, index) => ({
-      id: index,
-      value: item,
+      id: item.ID,
+      value: item.name,
     }));
   }
 
@@ -644,19 +628,6 @@ function showNotification(message, type) {
     notification.fadeOut(300, () => notification.remove());
   }, 3000);
 }
-
-window.logout = () => {
-  if (confirm("Are you sure you want to logout?")) {
-    localStorage.removeItem("currentUser");
-    window.location.href = "login.html";
-  }
-};
-
-$(document).ready(() => {
-  initializeSettingsPage();
-  loadSmtpSettings();
-  loadInternalGroupsData();
-});
 
 function initializeSettingsPage() {
   window.showSettingsSection("dropdowns");
