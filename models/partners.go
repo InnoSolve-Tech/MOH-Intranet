@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -32,30 +33,26 @@ type PartnerAddress struct {
 
 type PartnerContacts struct {
 	gorm.Model
-	Names          string  `json:"names"`
-	Title          string  `json:"title"`
-	PhoneNumber    string  `json:"phone_number"`
-	AltPhoneNumber string  `json:"alt_phone_number"`
-	OfficialEmail  string  `json:"official_email"`
-	Address        string  `json:"address"`
-	UserID         *uint   `json:"user_id"`
-	User           *Users  `json:"user" gorm:"foreignKey:UserID;references:ID"`
-	PartnerID      uint    `json:"partner_id"`
-	Partner        Partner `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
+	Names         string  `json:"names"`
+	Title         string  `json:"title"`
+	PhoneNumber   string  `json:"phone_number"`
+	OfficialEmail string  `json:"official_email"`
+	PartnerID     uint    `json:"partner_id"`
+	Partner       Partner `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 
 type PartnerSupportYears struct {
 	gorm.Model
-	Year                uint    `json:"year"`
-	LevelOfSupport      string  `json:"level_of_support"`
-	ThematicAreas       string  `json:"thematic_areas"`
-	District            string  `json:"district"`
-	DistrictSupportType string  `json:"district_support_type"`
-	PartnerID           uint    `json:"partner_id"`
-	Partner             Partner `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
+	Year          uint           `json:"year"`
+	Quarter       string         `json:"quarter"`
+	Level         string         `json:"level"`
+	ThematicAreas datatypes.JSON `json:"thematic_areas" gorm:"type:jsonb"` // store array as JSON
+	District      string         `json:"district"`
+	Subcounties   datatypes.JSON `json:"subcounties" gorm:"type:jsonb"` // store array as JSON
+	PartnerID     uint           `json:"partner_id"`
+	Partner       Partner        `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 
-// New MoU model
 type PartnerMoU struct {
 	gorm.Model
 	SignedBy   string     `json:"signed_by"`
@@ -67,7 +64,7 @@ type PartnerMoU struct {
 	Partner    Partner    `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 
-// Updated request structure to match frontend data
+// Request struct aligned with frontend JSON
 type PartnerSubmissionData struct {
 	BasicInfo struct {
 		PartnerName   string `json:"partnerName"`
@@ -77,32 +74,37 @@ type PartnerSubmissionData struct {
 		OfficialPhone string `json:"officialPhone"`
 		OfficialEmail string `json:"officialEmail"`
 	} `json:"basicInfo"`
+
 	Addresses []string `json:"addresses"`
-	Contacts  []struct {
-		Name     string `json:"name"`     // Updated to match frontend
-		Position string `json:"position"` // Updated to match frontend
-		Phone    string `json:"phone"`    // Updated to match frontend
-		Email    string `json:"email"`    // Updated to match frontend
+
+	Contacts []struct {
+		Name     string `json:"name"`
+		Position string `json:"position"`
+		Phone    string `json:"phone"`
+		Email    string `json:"email"`
 	} `json:"contacts"`
+
 	MoU struct {
 		HasMoU     bool        `json:"hasMou"`
 		SignedBy   string      `json:"signedBy"`
 		WhoTitle   string      `json:"whoTitle"`
 		SignedDate string      `json:"signedDate"`
 		ExpiryDate string      `json:"expiryDate"`
-		File       interface{} `json:"file"` // Changed to interface{} to handle different types
+		File       interface{} `json:"file"`
 	} `json:"mou"`
+
 	SupportYears []struct {
-		Year          int               `json:"year"`
-		Level         string            `json:"level"`
-		ThematicAreas string            `json:"thematicAreas"` // Updated to match frontend
-		Districts     []string          `json:"districts"`
-		Coverage      map[string]string `json:"coverage"`
+		Year          int      `json:"year"`
+		Quarter       string   `json:"quarter"`
+		Level         string   `json:"level"`
+		ThematicAreas []string `json:"thematicAreas"`
+		District      string   `json:"district"`
+		Subcounties   []string `json:"subcounties"`
 	} `json:"supportYears"`
+
 	UserAccounts []struct {
 		ContactIndex string `json:"contactIndex"`
 		Username     string `json:"username"`
 		Password     string `json:"password"`
-		AssignedUser string `json:"assignedUser"`
 	} `json:"userAccounts"`
 }

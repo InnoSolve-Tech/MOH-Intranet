@@ -19,6 +19,7 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/signin", service.SignIn)
 	api.Get("/thematic-areas", service.GetThematicAreas)
 	api.Get("/partner-categories", service.GetPartnerCategory)
+	api.Post("/partners", service.CreatePartner) // Create partner with file upload
 	app.Get("/uploads/:category/:filename", service.ServeUploadedFile)
 
 	// Protected API routes

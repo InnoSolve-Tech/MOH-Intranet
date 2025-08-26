@@ -54,7 +54,6 @@ func RegisterUser(c *fiber.Ctx) error {
 		if err := database.DB.Where("id = ?", req.ContactID).First(&contact).Error; err != nil {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Contact not found"})
 		}
-		contact.UserID = &contact.ID
 		if err := database.DB.Save(&contact).Error; err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to link contact to user"})
 		}

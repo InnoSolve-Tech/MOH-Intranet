@@ -375,32 +375,18 @@ func saveContacts(tx *gorm.DB, contacts []struct {
 	Phone    string `json:"phone"`
 	Email    string `json:"email"`
 }, partnerID uint) error {
-	var contactRecords []models.PartnerContacts
-
-	for _, contact := range contacts {
-		// Validate required contact fields
-		if strings.TrimSpace(contact.Name) == "" ||
-			strings.TrimSpace(contact.Position) == "" ||
-			strings.TrimSpace(contact.Phone) == "" ||
-			strings.TrimSpace(contact.Email) == "" {
-			continue // Skip incomplete contacts
-		}
-
-		contactRecords = append(contactRecords, models.PartnerContacts{
-			Names:         strings.TrimSpace(contact.Name),
-			Title:         strings.TrimSpace(contact.Position),
-			PhoneNumber:   strings.TrimSpace(contact.Phone),
-			OfficialEmail: strings.TrimSpace(contact.Email),
+	for _, c := range contacts {
+		record := models.PartnerContacts{
+			Names:         c.Name,
+			Title:         c.Position,
+			PhoneNumber:   c.Phone,
+			OfficialEmail: c.Email,
 			PartnerID:     partnerID,
-		})
-	}
-
-	if len(contactRecords) > 0 {
-		if err := tx.Create(&contactRecords).Error; err != nil {
-			return fmt.Errorf("failed to create contacts: %v", err)
+		}
+		if err := tx.Create(&record).Error; err != nil {
+			return err
 		}
 	}
-
 	return nil
 }
 
@@ -442,67 +428,32 @@ func saveMoUDetails(tx *gorm.DB, mouData struct {
 }
 
 // saveSupportYears saves partner support years data
-func saveSupportYears(tx *gorm.DB, supportYears []struct {
-	Year          int               `json:"year"`
-	Level         string            `json:"level"`
-	ThematicAreas string            `json:"thematicAreas"` // Updated to match frontend
-	Districts     []string          `json:"districts"`
-	Coverage      map[string]string `json:"coverage"`
+func saveSupportYears(tx *gorm.DB, years []struct {
+	Year          int      `json:"year"`
+	Quarter       string   `json:"quarter"`
+	Level         string   `json:"level"`
+	ThematicAreas []string `json:"thematicAreas"`
+	District      string   `json:"district"`
+	Subcounties   []string `json:"subcounties"`
 }, partnerID uint) error {
-	var supportYearRecords []models.PartnerSupportYears
+	for _, y := range years {
+		thematicJSON, _ := json.Marshal(y.ThematicAreas)
+		subcountiesJSON, _ := json.Marshal(y.Subcounties)
 
-	for _, support := range supportYears {
-		// Validate required fields
-		if support.Year == 0 ||
-			strings.TrimSpace(support.Level) == "" ||
-			strings.TrimSpace(support.ThematicAreas) == "" {
-			continue // Skip incomplete support year data
+		record := models.PartnerSupportYears{
+			Year:          uint(y.Year),
+			Quarter:       y.Quarter,
+			Level:         y.Level,
+			ThematicAreas: thematicJSON,
+			District:      y.District,
+			Subcounties:   subcountiesJSON,
+			PartnerID:     partnerID,
 		}
 
-		// Create records for each district if districts are provided
-		if len(support.Districts) > 0 {
-			for _, district := range support.Districts {
-				district = strings.TrimSpace(district)
-				if district == "" {
-					continue
-				}
-
-				// Get coverage type for this district
-				coverageType := ""
-				if support.Coverage != nil {
-					if coverage, exists := support.Coverage[district]; exists {
-						coverageType = coverage
-					}
-				}
-
-				supportYearRecords = append(supportYearRecords, models.PartnerSupportYears{
-					Year:                uint(support.Year),
-					LevelOfSupport:      strings.TrimSpace(support.Level),
-					ThematicAreas:       strings.TrimSpace(support.ThematicAreas), // Updated field name
-					District:            district,
-					DistrictSupportType: coverageType,
-					PartnerID:           partnerID,
-				})
-			}
-		} else {
-			// Create single record without district
-			supportYearRecords = append(supportYearRecords, models.PartnerSupportYears{
-				Year:                uint(support.Year),
-				LevelOfSupport:      strings.TrimSpace(support.Level),
-				ThematicAreas:       strings.TrimSpace(support.ThematicAreas), // Updated field name
-				District:            "",
-				DistrictSupportType: "",
-				PartnerID:           partnerID,
-			})
+		if err := tx.Create(&record).Error; err != nil {
+			return err
 		}
 	}
-
-	if len(supportYearRecords) > 0 {
-		if err := tx.Create(&supportYearRecords).Error; err != nil {
-			return fmt.Errorf("failed to create support years: %v", err)
-		}
-	}
-
 	return nil
 }
 
@@ -511,7 +462,6 @@ func handleUserAccounts(c *fiber.Ctx, tx *gorm.DB, userAccounts []struct {
 	ContactIndex string `json:"contactIndex"`
 	Username     string `json:"username"`
 	Password     string `json:"password"`
-	AssignedUser string `json:"assignedUser"`
 }, contacts []struct {
 	Name     string `json:"name"`
 	Position string `json:"position"`

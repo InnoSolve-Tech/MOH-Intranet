@@ -33,7 +33,7 @@ async function handleLogin(e) {
     }
 
     // Redirect on success
-    window.location.href = "/menu/partners.html";
+    window.location.href = "/menu/user-profile.html";
   } catch (err) {
     console.error("Login error:", err);
     alert("An error occurred. Please try again.");

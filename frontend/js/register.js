@@ -1,4 +1,40 @@
 let dropdownData = {};
+
+// Uganda districts and their subcounties data
+const ugandaDistrictsSubcounties = {
+  "Kampala": ["Central Division", "Kawempe Division", "Makindye Division", "Nakawa Division", "Rubaga Division"],
+  "Wakiso": ["Busukuma", "Kakiri", "Kasangati", "Katabi", "Kyadondo", "Kyengera", "Makongo", "Namayumba", "Nangabo", "Nsangi", "Ssisa"],
+  "Mukono": ["Bamunanika", "Buikwe", "Goma", "Kasawo", "Kimenyedde", "Mukono", "Nagojje", "Nakisunga", "Ntenjeru", "Yiffer"],
+  "Jinja": ["Budondo", "Bugembe", "Buwenge", "Jinja", "Kakira", "Mafubira", "Mpumudde"],
+  "Mbale": ["Bufumbo", "Bungokho", "Butaleja", "Lwangoli", "Malaba", "Manafwa", "Mbale", "Nabumali", "Namanyonyi", "Namisindwa", "Wanale"],
+  "Gulu": ["Aswa", "Awach", "Bardege", "Bungatira", "Gulu", "Koro", "Lalogi", "Layibi", "Lukole", "Ongako", "Palaro", "Patiko", "Pece", "Unyama"],
+  "Lira": ["Adekokwok", "Agweng", "Aloi", "Amach", "Amolator", "Aromo", "Barr", "Dokolo", "Kwania", "Lira", "Otuke"],
+  "Mbarara": ["Biharwe", "Bubaare", "Bukanga", "Bunyaruguru", "Gwakisa", "Ibanda", "Isingiro", "Kashaari", "Kashari", "Kenshunga", "Kikagate", "Kinoni", "Masha", "Mbarara", "Nyabushozi", "Rubaya", "Rubindi", "Rukiri", "Rwampara", "Rwanyamahembe"],
+  "Kasese": ["Buhuhira", "Bukonzo East", "Bukonzo West", "Bulembia", "Bwesumbu", "Hima", "Ibanda", "Kabatoro", "Kahokya", "Kasese", "Katebwa", "Karusandara", "Kisinga", "Kitswamba", "Kyarumba", "Kyondo", "Mahango", "Maliba", "Munkunyu", "Nyakatonzi", "Rukoki"],
+  "Fort Portal": ["Bundibugyo", "Fort Portal", "Hakibale", "Kabwoya", "Kabarole", "Rwebisengo"],
+  "Hoima": ["Buhaguzi", "Bugambe", "Bulima", "Busiisi", "Hoima", "Kabwoya", "Kigorobya", "Kyabigambire", "Kyangwali"],
+  "Masaka": ["Bukomansimbi", "Buwunga", "Kabonera", "Kalungu", "Kyanamukaka", "Kyesiiga", "Lwengo", "Masaka", "Mukungwe", "Villa Maria"],
+  "Soroti": ["Arapai", "Gweri", "Katakwi", "Kyere", "Pingire", "Serere", "Soroti", "Tubur"],
+  "Arua": ["Arua", "Ayivu", "Logiri", "Maracha", "Omugo", "Rigbo", "Terego", "Vura"],
+  "Kabale": ["Bukinda", "Bunyangabu", "Hamurwa", "Kaharo", "Kamuganguzi", "Kamwezi", "Katuna", "Kitumba", "Maziba", "Ndorwa East", "Ndorwa West"],
+  "Moroto": ["Katikekile", "Kotido", "Moroto", "Nadunget", "Nakapiripirit", "Rupa", "Tapac"],
+  "Kitgum": ["Akwang", "Kitgum", "Lagoro", "Lamwo", "Mucwini", "Namokora", "Palabek Gem"],
+  "Pader": ["Aromo", "Atanga", "Kilak", "Pader", "Pajule", "Purongo"],
+  "Adjumani": ["Adjumani", "Dzaipi", "Elegu", "Itirikwa", "Ofua", "Pakele"],
+  "Moyo": ["Aliba", "Dufile", "Gimara", "Itula", "Lefori", "Moyo", "Obongi"],
+  "Apac": ["Akokoro", "Apac", "Chegere", "Ibuje", "Inomo", "Kole", "Maruzi", "Oyam"],
+  "Tororo": ["Mulanda", "Nagongera", "Paya", "Rubongi", "Tororo", "West Budama North", "West Budama South"],
+  "Busia": ["Busia", "Buteba", "Dabani", "Lumino", "Masafu", "Mundika", "Sikuda"],
+  "Iganga": ["Bulamogi", "Buyende", "Iganga", "Kigulu", "Makuutu", "Namayingo", "Namungalwe"],
+  "Kamuli": ["Balawoli", "Bugulumbya", "Butansi", "Gadumire", "Kamuli", "Namasagali"],
+  "Pallisa": ["Budaka", "Butebo", "Gogonyo", "Kamuge", "Kasilo", "Kibale", "Pallisa", "Petete"],
+  "Kumi": ["Ongino", "Atutur", "Kachumbala", "Kumi", "Ngora", "Serere"],
+  "Kapchorwa": ["Chepsukunya", "Kapchorwa", "Kaptum", "Tegeres"],
+  "Kotido": ["Kotido", "Nakapelimoru", "Rengen"],
+  "Bundibugyo": ["Bundibugyo", "Bubandi", "Busaru", "Harugongo", "Ntoroko"],
+  "Kisoro": ["Bufumbira", "Busanza", "Chahi", "Kirundo", "Kisoro", "Murora", "Nyakabande", "Nyarubuye"]
+};
+
 $(document).ready(async () => {
   try {
     // Fetch thematic areas + partner categories
@@ -25,23 +61,172 @@ $(document).ready(async () => {
       }, {}),
     };
 
-    // Populate <select> for thematic areas
-    const thematicSelect = document.getElementById("supportThematic");
-    dropdownData.thematicAreas.forEach((area) => {
-      const option = document.createElement("option");
-      option.value = area.name;
-      option.textContent = area.name;
-      thematicSelect.appendChild(option);
-    });
-  } catch (e) {}
+    // Populate thematic areas as checkboxes
+    populateThematicAreasCheckboxes();
+    
+    // Populate districts dropdown
+    populateDistrictsDropdown();
+  } catch (e) {
+    console.error("Error loading dropdown data:", e);
+  }
 });
+
+function populateThematicAreasCheckboxes() {
+  const container = document.getElementById("supportThematic");
+  if (!container) return;
+
+  // Clear existing content and convert to checkbox container
+  container.innerHTML = "";
+  container.style.display = "block";
+  container.style.maxHeight = "200px";
+  container.style.overflowY = "auto";
+  container.style.border = "1px solid #ced4da";
+  container.style.borderRadius = "4px";
+  container.style.padding = "10px";
+  container.style.backgroundColor = "#f8f9fa";
+
+  dropdownData.thematicAreas.forEach((area, index) => {
+    const checkboxDiv = document.createElement("div");
+    checkboxDiv.className = "checkbox-item";
+    checkboxDiv.style.marginBottom = "8px";
+    checkboxDiv.style.display = "flex";
+    checkboxDiv.style.alignItems = "center";
+    checkboxDiv.style.gap = "8px";
+
+    checkboxDiv.innerHTML = `
+      <input type="checkbox" id="thematic_${index}" name="thematicAreas" value="${area.name}" 
+             style="width: 16px; height: 16px; accent-color: #007bff;">
+      <label for="thematic_${index}" style="margin: 0; cursor: pointer; font-size: 14px;">${area.name}</label>
+    `;
+    container.appendChild(checkboxDiv);
+  });
+}
+
+function populateDistrictsDropdown() {
+  const select = document.getElementById("supportDistricts");
+  if (!select) return;
+
+  // Clear existing options
+  select.innerHTML = '<option value="">Select District</option>';
+  select.multiple = false; // Single select for districts
+
+  // Add Uganda districts
+  Object.keys(ugandaDistrictsSubcounties).forEach(district => {
+    const option = document.createElement("option");
+    option.value = district;
+    option.textContent = district;
+    select.appendChild(option);
+  });
+}
+
+function handleModalDistrictChange() {
+  const districtSelect = document.getElementById("supportDistricts");
+  const subcountiesContainer = document.getElementById("modalSubcounties");
+  
+  if (!districtSelect || !subcountiesContainer) return;
+  
+  const selectedDistrict = districtSelect.value;
+  
+  if (selectedDistrict && ugandaDistrictsSubcounties[selectedDistrict]) {
+    // Show subcounties container
+    subcountiesContainer.style.display = "block";
+    
+    // Clear existing subcounties
+    const subcountiesCheckboxes = document.getElementById("subcountiesCheckboxes");
+    subcountiesCheckboxes.innerHTML = "";
+    
+    // Add subcounties as checkboxes
+    ugandaDistrictsSubcounties[selectedDistrict].forEach((subcounty, index) => {
+      const checkboxDiv = document.createElement("div");
+      checkboxDiv.className = "checkbox-item";
+      checkboxDiv.style.marginBottom = "6px";
+      checkboxDiv.style.display = "flex";
+      checkboxDiv.style.alignItems = "center";
+      checkboxDiv.style.gap = "8px";
+      
+      checkboxDiv.innerHTML = `
+        <input type="checkbox" id="subcounty_${index}" name="subcounties" value="${subcounty}" 
+               style="width: 16px; height: 16px; accent-color: #007bff;">
+        <label for="subcounty_${index}" style="margin: 0; cursor: pointer; font-size: 14px;">${subcounty}</label>
+      `;
+      subcountiesCheckboxes.appendChild(checkboxDiv);
+    });
+    
+    // Update help text
+    document.querySelector("#addSupportYearModal .district-help-text").textContent = 
+      "Select subcounties within the chosen district";
+      
+    // Hide coverage container initially
+    document.getElementById("modalDistrictCoverage").style.display = "none";
+  } else {
+    // Hide subcounties if no district selected
+    subcountiesContainer.style.display = "none";
+    document.getElementById("modalDistrictCoverage").style.display = "none";
+  }
+}
+
+// Password validation functions
+function validatePassword(password) {
+  const minLength = 8;
+  const hasUpperCase = /[A-Z]/.test(password);
+  const hasLowerCase = /[a-z]/.test(password);
+  const hasNumbers = /\d/.test(password);
+  const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
+  
+  const errors = [];
+  
+  if (password.length < minLength) {
+    errors.push(`Password must be at least ${minLength} characters long`);
+  }
+  if (!hasUpperCase) {
+    errors.push("Password must contain at least one uppercase letter");
+  }
+  if (!hasLowerCase) {
+    errors.push("Password must contain at least one lowercase letter");
+  }
+  if (!hasNumbers) {
+    errors.push("Password must contain at least one number");
+  }
+  if (!hasSpecialChar) {
+    errors.push("Password must contain at least one special character");
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors: errors
+  };
+}
+
+function showPasswordStrength(password, strengthElementId) {
+  const strengthElement = document.getElementById(strengthElementId);
+  if (!strengthElement) return;
+  
+  const validation = validatePassword(password);
+  let strength = "Weak";
+  let color = "#dc3545";
+  
+  if (validation.isValid) {
+    strength = "Strong";
+    color = "#28a745";
+  } else if (password.length >= 6 && validation.errors.length <= 2) {
+    strength = "Medium";
+    color = "#ffc107";
+  }
+  
+  strengthElement.innerHTML = `<span style="color: ${color}; font-weight: bold;">${strength}</span>`;
+  
+  if (validation.errors.length > 0) {
+    const errorList = validation.errors.map(err => `<li>${err}</li>`).join('');
+    strengthElement.innerHTML += `<ul style="margin: 5px 0; padding-left: 20px; color: #dc3545; font-size: 12px;">${errorList}</ul>`;
+  }
+}
 
 let currentStep = 1;
 let addressCount = 1;
 let contactCount = 1;
 let supportYearCount = 1;
-let lastSupportYearData = null; // Store last filled support year data for prefilling
-let editingRowIndex = null; // Store the row index for editing
+let lastSupportYearData = null;
+let editingRowIndex = null;
 
 let supportYearsGrid = null;
 const supportYearsData = [];
@@ -68,6 +253,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initializeSupportYearsGrid();
+  
+  // Add event listeners for subcounty changes
+  document.addEventListener("change", (e) => {
+    if (e.target && e.target.matches('input[name="subcounties"]')) {
+      handleSubcountyChange();
+    }
+  });
 });
 
 function updateCategoryOptions(partnerType, categorySelect) {
@@ -94,16 +286,11 @@ function initializeSupportYearsGrid() {
   const gridOptions = {
     columnDefs: [
       { field: "year", headerName: "Year", width: 80, sortable: true },
+      { field: "quarter", headerName: "Quarter", width: 100, sortable: true },
       { field: "level", headerName: "Level", width: 100, sortable: true },
       {
         field: "thematicAreas",
-        headerName: "Thematic Area",
-        width: 150,
-        sortable: true,
-      },
-      {
-        field: "districts",
-        headerName: "Districts",
+        headerName: "Thematic Areas",
         width: 200,
         valueFormatter: (params) => {
           if (Array.isArray(params.value)) {
@@ -112,17 +299,16 @@ function initializeSupportYearsGrid() {
           return params.value || "";
         },
       },
+      { field: "district", headerName: "District", width: 120, sortable: true },
       {
-        field: "coverage",
-        headerName: "Coverage",
-        width: 150,
+        field: "subcounties",
+        headerName: "Subcounties",
+        width: 200,
         valueFormatter: (params) => {
-          if (params.value && typeof params.value === "object") {
-            return Object.entries(params.value)
-              .map(([district, coverage]) => `${district}: ${coverage}`)
-              .join(", ");
+          if (Array.isArray(params.value)) {
+            return params.value.join(", ");
           }
-          return "";
+          return params.value || "";
         },
       },
       {
@@ -183,38 +369,34 @@ function openAddSupportYearModal() {
   document.getElementById("addSupportYearModal").classList.add("show");
 
   if (lastSupportYearData && supportYearsData.length > 0) {
-    document.getElementById("supportYear").value = lastSupportYearData.year + 1; // Increment year
+    document.getElementById("supportYear").value = lastSupportYearData.year + 1;
+    document.getElementById("quarter").value = lastSupportYearData.quarter;
     document.getElementById("supportLevel").value = lastSupportYearData.level;
-    document.getElementById("supportThematic").value =
-      lastSupportYearData.thematicAreas;
+    
+    // Pre-select thematic areas
+    if (lastSupportYearData.thematicAreas) {
+      const thematicCheckboxes = document.querySelectorAll('input[name="thematicAreas"]');
+      thematicCheckboxes.forEach(cb => {
+        cb.checked = lastSupportYearData.thematicAreas.includes(cb.value);
+      });
+    }
 
-    // Trigger level change to set up districts properly
     handleModalLevelChange();
 
-    // If not National level, prefill districts
     if (lastSupportYearData.level !== "National") {
-      const districtsSelect = document.getElementById("supportDistricts");
+      const districtSelect = document.getElementById("supportDistricts");
       setTimeout(() => {
-        Array.from(districtsSelect.options).forEach((option) => {
-          option.selected = lastSupportYearData.districts.includes(
-            option.value,
-          );
-        });
+        districtSelect.value = lastSupportYearData.district || "";
         handleModalDistrictChange();
-
-        // Prefill coverage
+        
         setTimeout(() => {
-          if (lastSupportYearData.coverage) {
-            Object.entries(lastSupportYearData.coverage).forEach(
-              ([district, coverage]) => {
-                const coverageInput = document.querySelector(
-                  `input[name="modalCoverage[${district}]"][value="${coverage}"]`,
-                );
-                if (coverageInput) {
-                  coverageInput.checked = true;
-                }
-              },
-            );
+          // Pre-select subcounties
+          if (lastSupportYearData.subcounties) {
+            lastSupportYearData.subcounties.forEach(subcounty => {
+              const checkbox = document.querySelector(`input[name="subcounties"][value="${subcounty}"]`);
+              if (checkbox) checkbox.checked = true;
+            });
+            handleSubcountyChange();
           }
         }, 100);
       }, 100);
@@ -237,9 +419,15 @@ function closeAddSupportYearModal() {
 
 function resetSupportYearForm() {
   document.getElementById("supportYearForm").reset();
-  document.getElementById("supportDistricts").multiple = false;
+  
+  // Clear thematic area checkboxes
+  document.querySelectorAll('input[name="thematicAreas"]').forEach(cb => cb.checked = false);
+  
+  // Clear subcounties
+  document.getElementById("modalSubcounties").style.display = "none";
+  document.getElementById("subcountiesCheckboxes").innerHTML = "";
+  
   document.getElementById("modalDistrictCoverage").style.display = "none";
-  document.getElementById("modalCoverageOptions").innerHTML = "";
 }
 
 function handleModalLevelChange() {
@@ -248,70 +436,27 @@ function handleModalLevelChange() {
   const helpText = document.querySelector(
     "#addSupportYearModal .district-help-text",
   );
+  const subcountiesContainer = document.getElementById("modalSubcounties");
   const coverageContainer = document.getElementById("modalDistrictCoverage");
 
   if (levelSelect.value === "National") {
-    // National level - disable districts since it's nationwide
     districtsSelect.disabled = true;
-    districtsSelect.multiple = false;
-    districtsSelect.selectedIndex = -1;
+    districtsSelect.selectedIndex = 0;
     helpText.textContent = "Districts not required for National level support";
+    if (subcountiesContainer) subcountiesContainer.style.display = "none";
   } else if (levelSelect.value === "District") {
-    // District level - enable multi-select for districts
     districtsSelect.disabled = false;
-    districtsSelect.multiple = true;
-    districtsSelect.selectedIndex = -1;
-    helpText.textContent = "Hold Ctrl/Cmd to select multiple districts";
+    districtsSelect.selectedIndex = 0;
+    helpText.textContent = "Select a district to choose subcounties";
   } else {
-    // Reset if no level selected
     districtsSelect.disabled = true;
-    districtsSelect.multiple = false;
-    districtsSelect.selectedIndex = -1;
+    districtsSelect.selectedIndex = 0;
     helpText.textContent = "Select level of support first";
+    if (subcountiesContainer) subcountiesContainer.style.display = "none";
   }
 
   if (coverageContainer) {
     coverageContainer.style.display = "none";
-    document.getElementById("modalCoverageOptions").innerHTML = "";
-  }
-}
-
-function handleModalDistrictChange() {
-  const districtsSelect = document.getElementById("supportDistricts");
-  const coverageContainer = document.getElementById("modalDistrictCoverage");
-  const coverageOptions = document.getElementById("modalCoverageOptions");
-
-  if (!coverageContainer || !coverageOptions || districtsSelect.disabled)
-    return;
-
-  const selectedDistricts = Array.from(districtsSelect.selectedOptions).map(
-    (option) => option.value,
-  );
-
-  if (selectedDistricts.length > 0) {
-    coverageContainer.style.display = "block";
-    coverageOptions.innerHTML = selectedDistricts
-      .map(
-        (district) => `
-        <div class="coverage-item">
-          <label class="coverage-label">${district}:</label>
-          <div class="coverage-radios">
-            <label class="radio-option">
-              <input type="radio" name="modalCoverage[${district}]" value="Whole" required>
-              <span>Whole</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="modalCoverage[${district}]" value="Partial" required>
-              <span>Partial</span>
-            </label>
-          </div>
-        </div>
-      `,
-      )
-      .join("");
-  } else {
-    coverageContainer.style.display = "none";
-    coverageOptions.innerHTML = "";
   }
 }
 
@@ -320,11 +465,11 @@ function saveSupportYear() {
   const formData = new FormData(form);
 
   const yearElement = document.getElementById("supportYear");
+  const quarterElement = document.getElementById("quarter");
   const levelElement = document.getElementById("supportLevel");
-  const thematicElement = document.getElementById("supportThematic");
-  const districtsSelect = document.getElementById("supportDistricts");
+  const districtSelect = document.getElementById("supportDistricts");
 
-  if (!yearElement || !levelElement || !thematicElement || !districtsSelect) {
+  if (!yearElement || !quarterElement || !levelElement || !districtSelect) {
     showNotification(
       "Form elements not found. Please refresh the page.",
       "error",
@@ -333,56 +478,52 @@ function saveSupportYear() {
   }
 
   const year = yearElement.value;
+  const quarter = quarterElement.value;
   const level = levelElement.value;
-  const thematicAreas = thematicElement.value;
 
-  if (!year || !level || !thematicAreas) {
+  if (!year || !quarter || !level) {
     showNotification("Please fill in all required fields", "error");
     return;
   }
 
-  let selectedDistricts = [];
-  let coverage = {};
+  // Get selected thematic areas
+  const selectedThematicAreas = Array.from(document.querySelectorAll('input[name="thematicAreas"]:checked'))
+    .map(cb => cb.value);
+    
+  if (selectedThematicAreas.length === 0) {
+    showNotification("Please select at least one thematic area", "error");
+    return;
+  }
+
+  let selectedDistrict = "";
+  let selectedSubcounties = [];
 
   if (level === "National") {
-    selectedDistricts = ["National"];
-    coverage = { National: "Whole" };
+    selectedDistrict = "National";
+    selectedSubcounties = ["National"];
   } else {
-    if (districtsSelect.selectedOptions.length === 0) {
-      showNotification("Please select at least one district", "error");
+    selectedDistrict = districtSelect.value;
+    if (!selectedDistrict) {
+      showNotification("Please select a district", "error");
       return;
     }
-
-    selectedDistricts = Array.from(districtsSelect.selectedOptions).map(
-      (option) => option.value,
-    );
-
-    // Collect coverage data
-    selectedDistricts.forEach((district) => {
-      const coverageInput = document.querySelector(
-        `input[name="modalCoverage[${district}]"]:checked`,
-      );
-      if (coverageInput) {
-        coverage[district] = coverageInput.value;
-      }
-    });
-
-    // Check if coverage is complete
-    if (Object.keys(coverage).length !== selectedDistricts.length) {
-      showNotification(
-        "Please select coverage type for all districts",
-        "error",
-      );
+    
+    selectedSubcounties = Array.from(document.querySelectorAll('input[name="subcounties"]:checked'))
+      .map(cb => cb.value);
+      
+    if (selectedSubcounties.length === 0) {
+      showNotification("Please select at least one subcounty", "error");
       return;
     }
   }
 
   const supportYearData = {
     year: Number.parseInt(year),
+    quarter: quarter,
     level: level,
-    thematicAreas: thematicAreas,
-    districts: selectedDistricts,
-    coverage: coverage,
+    thematicAreas: selectedThematicAreas,
+    district: selectedDistrict,
+    subcounties: selectedSubcounties,
   };
 
   console.log("[v0] Adding support year data:", supportYearData);
@@ -390,11 +531,9 @@ function saveSupportYear() {
   lastSupportYearData = { ...supportYearData };
 
   if (typeof editingRowIndex !== "undefined" && editingRowIndex !== null) {
-    // Update existing entry
     supportYearsData[editingRowIndex] = supportYearData;
     editingRowIndex = null;
   } else {
-    // Add new entry
     supportYearsData.push(supportYearData);
   }
 
@@ -402,12 +541,10 @@ function saveSupportYear() {
 
   if (supportYearsGrid) {
     try {
-      // Use the grid API directly to set row data
       supportYearsGrid.setGridOption("rowData", supportYearsData);
       console.log("[v0] Grid updated successfully with new data");
     } catch (error) {
       console.error("[v0] Error updating grid:", error);
-      // Force grid refresh by destroying and recreating
       if (supportYearsGrid.destroy) {
         supportYearsGrid.destroy();
       }
@@ -433,34 +570,33 @@ function editSupportYear(rowIndex) {
 
   // Populate modal with existing data
   document.getElementById("supportYear").value = data.year;
+  document.getElementById("quarter").value = data.quarter;
   document.getElementById("supportLevel").value = data.level;
-  document.getElementById("supportThematic").value = data.thematicAreas;
+  
+  // Select thematic areas
+  document.querySelectorAll('input[name="thematicAreas"]').forEach(cb => {
+    cb.checked = data.thematicAreas.includes(cb.value);
+  });
 
   handleModalLevelChange();
 
   setTimeout(() => {
-    const districtsSelect = document.getElementById("supportDistricts");
+    if (data.level !== "National") {
+      const districtSelect = document.getElementById("supportDistricts");
+      districtSelect.value = data.district;
+      handleModalDistrictChange();
 
-    // Select districts based on the data
-    Array.from(districtsSelect.options).forEach((option) => {
-      option.selected = data.districts.includes(option.value);
-    });
-
-    // Trigger district change to show coverage options
-    handleModalDistrictChange();
-
-    setTimeout(() => {
-      if (data.coverage) {
-        Object.entries(data.coverage).forEach(([district, coverage]) => {
-          const coverageInput = document.querySelector(
-            `input[name="modalCoverage[${district}]"][value="${coverage}"]`,
-          );
-          if (coverageInput) {
-            coverageInput.checked = true;
-          }
-        });
-      }
-    }, 100);
+      setTimeout(() => {
+        // Select subcounties
+        if (data.subcounties) {
+          data.subcounties.forEach(subcounty => {
+            const checkbox = document.querySelector(`input[name="subcounties"][value="${subcounty}"]`);
+            if (checkbox) checkbox.checked = true;
+          });
+          handleSubcountyChange();
+        }
+      }, 100);
+    }
   }, 100);
 
   document.querySelector("#addSupportYearModal .modal-header h3").textContent =
@@ -567,8 +703,8 @@ function updateNavigationButtons() {
   const submitBtn = document.querySelector(".submit-btn");
 
   prevBtn.style.display = currentStep > 1 ? "block" : "none";
-  nextBtn.style.display = currentStep < 4 ? "block" : "none"; // Updated to 4 steps
-  submitBtn.style.display = currentStep === 4 ? "block" : "none"; // Updated to 4 steps
+  nextBtn.style.display = currentStep < 4 ? "block" : "none";
+  submitBtn.style.display = currentStep === 4 ? "block" : "none";
 }
 
 function addAddress() {
@@ -628,14 +764,6 @@ function removeContact(button) {
   }
 }
 
-function addSupportYear() {
-  openAddSupportYearModal();
-}
-
-function removeSupportYear(button) {
-  button.parentElement.remove();
-}
-
 document.addEventListener("DOMContentLoaded", () => {
   const hasMouCheckbox = document.getElementById("hasMou");
   if (hasMouCheckbox) {
@@ -644,7 +772,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (mouDetails) {
         mouDetails.style.display = this.checked ? "block" : "none";
 
-        // Toggle required attribute on MoU fields
         const mouFields = mouDetails.querySelectorAll("input[required]");
         mouFields.forEach((field) => {
           if (this.checked) {
@@ -673,12 +800,10 @@ function validateCurrentStep() {
   let firstErrorField = null;
 
   if (currentStep === 1) {
-    // Validate basic form fields
     const requiredFields = currentStepElement.querySelectorAll(
       "input[required], select[required]",
     );
 
-    // Clear previous validation states
     const formGroups = currentStepElement.querySelectorAll(".form-group");
     formGroups.forEach((group) => {
       if (group && group.classList) {
@@ -703,7 +828,6 @@ function validateCurrentStep() {
         fieldValid = false;
         errorMessage = "This field is required";
       } else {
-        // Specific validation based on field type
         if (field.type === "email" && !isValidEmail(field.value)) {
           fieldValid = false;
           errorMessage = "Please enter a valid email address";
@@ -775,11 +899,9 @@ function validateCurrentStep() {
     const hasMouCheckbox = document.getElementById("hasMou");
 
     if (hasMouCheckbox && hasMouCheckbox.checked) {
-      // If MoU is checked, validate the required fields
       const requiredFields =
         currentStepElement.querySelectorAll("input[required]");
 
-      // Clear previous validation states
       const formGroups = currentStepElement.querySelectorAll(".form-group");
       formGroups.forEach((group) => {
         if (group && group.classList) {
@@ -791,7 +913,6 @@ function validateCurrentStep() {
         }
       });
 
-      // Validate required fields
       requiredFields.forEach((field) => {
         if (!field) return;
 
@@ -805,7 +926,6 @@ function validateCurrentStep() {
           fieldValid = false;
           errorMessage = "This field is required";
         } else if (field.type === "date") {
-          // Additional date validation if needed
           const date = new Date(field.value);
           if (isNaN(date.getTime())) {
             fieldValid = false;
@@ -823,7 +943,6 @@ function validateCurrentStep() {
         }
       });
 
-      // ✅ Validate PDF file separately
       const fileField = document.getElementById("mouFile");
       if (fileField) {
         const formGroup = fileField.closest(".form-group");
@@ -844,7 +963,6 @@ function validateCurrentStep() {
         }
       }
     }
-    // If MoU is not checked, step is automatically valid
   } else if (currentStep === 4) {
     if (supportYearsData.length === 0) {
       showNotification("Please add at least one support year", "error");
@@ -884,7 +1002,6 @@ function showErrorMessage(formGroup, message) {
 }
 
 function showNotification(message, type = "info") {
-  // Remove existing notifications
   const existingNotification = document.querySelector(".notification");
   if (existingNotification) {
     existingNotification.remove();
@@ -944,12 +1061,14 @@ function showUserCreationModal(formData) {
                 <div class="user-fields" id="userFields${index}" style="display: none;">
                   <div class="form-row">
                     <div class="form-group">
-                      <input type="text" name="username[${index}]" placeholder="Username" required>
+                      <input type="text" name="username[${index}]" value="${contact.email}" disabled="${true}" placeholder="Username" required>
                     </div>
                     <div class="form-group">
-                      <input type="password" name="password[${index}]" placeholder="Password" required>
+                      <input type="password" name="password[${index}]" placeholder="Password" required 
+                             oninput="showPasswordStrength(this.value, 'passwordStrength${index}')">
                     </div>
                   </div>
+                  <div id="passwordStrength${index}" class="password-strength"></div>
                 </div>
               </div>
             </div>
@@ -995,21 +1114,29 @@ function closeUserCreationModal() {
 function finalSubmitRegistration() {
   const modal = document.getElementById("userCreationModal");
   const userCreationData = [];
+  let allPasswordsValid = true;
 
-  // Collect user creation data
+  // Collect and validate user creation data
   const checkboxes = modal.querySelectorAll(
     'input[name^="createUser"]:checked',
   );
   checkboxes.forEach((checkbox) => {
     const index = checkbox.name.match(/\[(\d+)\]/)[1];
-    const username = modal.querySelector(
-      `input[name="username[${index}]"]`,
-    ).value;
-    const password = modal.querySelector(
-      `input[name="password[${index}]"]`,
-    ).value;
+    const usernameInput = modal.querySelector(`input[name="username[${index}]"]`);
+    const passwordInput = modal.querySelector(`input[name="password[${index}]"]`);
+    
+    const username = usernameInput ? usernameInput.value : "";
+    const password = passwordInput ? passwordInput.value : "";
 
     if (username && password) {
+      const passwordValidation = validatePassword(password);
+      if (!passwordValidation.isValid) {
+        showNotification(`Invalid password for user ${username}: ${passwordValidation.errors.join(', ')}`, "error");
+        allPasswordsValid = false;
+        passwordInput.focus();
+        return;
+      }
+
       userCreationData.push({
         contactIndex: index,
         username,
@@ -1017,6 +1144,10 @@ function finalSubmitRegistration() {
       });
     }
   });
+
+  if (!allPasswordsValid) {
+    return;
+  }
 
   // Get the original form data
   const formData = collectFormData();
@@ -1038,8 +1169,6 @@ async function submitRegistration(data) {
   const rf = new FormData(form);
 
   try {
-    // Format data according to the required JSON structure
-
     const submitData = {
       basicInfo: {
         partnerName: data.basicInfo.partnerName || "",
@@ -1065,20 +1194,18 @@ async function submitRegistration(data) {
       },
       supportYears: data.supportYears.map((supportYear) => ({
         year: Number.parseInt(supportYear.year) || 0,
+        quarter: supportYear.quarter || "",
         level: supportYear.level || "",
-        thematicAreas: supportYear.thematicAreas || "",
-        districts: supportYear.districts || [],
-        coverage: supportYear.coverage || {},
+        thematicAreas: supportYear.thematicAreas || [],
+        district: supportYear.district || "",
+        subcounties: supportYear.subcounties || [],
       })),
       userAccounts: data.userAccounts || [],
     };
 
     const formData = new FormData();
-
-    // Add the JSON data as a string
     formData.append("data", JSON.stringify(submitData));
 
-    // Add the file if it exists
     const fileInput = form.querySelector('input[name="mouFile"]');
     if (fileInput && fileInput.files && fileInput.files[0]) {
       formData.append("mouFile", fileInput.files[0]);
@@ -1099,7 +1226,6 @@ async function submitRegistration(data) {
 
     showNotification("Registration submitted successfully!", "success");
 
-    // Reset form after successful submission
     setTimeout(() => {
       if (
         confirm(
@@ -1143,7 +1269,7 @@ function collectFormData() {
       expiryDate: formData.get("expiryDate"),
       file: formData.get("mouFile"),
     },
-    supportYears: supportYearsData, // Use ag-grid data instead of form parsing
+    supportYears: supportYearsData,
   };
 
   // Collect addresses
@@ -1184,8 +1310,6 @@ document.getElementById("registrationForm").addEventListener("submit", (e) => {
 
   if (validateCurrentStep()) {
     const formData = collectFormData();
-
-    // Show user creation modal instead of direct submission
     showUserCreationModal(formData);
   }
 });
@@ -1198,6 +1322,7 @@ function resetForm() {
   supportYearCount = 1;
   lastSupportYearData = null;
   editingRowIndex = null;
+  supportYearsData.length = 0;
 
   // Reset stepper
   document.querySelectorAll(".step").forEach((step) => {
@@ -1211,6 +1336,7 @@ function resetForm() {
   });
   document.querySelector('.form-step[data-step="1"]').classList.add("active");
 
+  // Reset containers
   const addressContainer = document.getElementById("addressesContainer");
   addressContainer.innerHTML = `
     <div class="address-item">
@@ -1240,96 +1366,11 @@ function resetForm() {
     </div>
   `;
 
-  // Reset dynamic containers
-  resetDynamicContainers();
   updateNavigationButtons();
-}
-
-function resetDynamicContainers() {
-  // Reset support years (keep first one)
-  const supportContainer = document.getElementById("supportYearsContainer");
-  const firstSupport = supportContainer.querySelector(".dynamic-item");
-  supportContainer.innerHTML = "";
-  supportContainer.appendChild(firstSupport);
-  firstSupport
-    .querySelectorAll("input, select")
-    .forEach((input) => (input.value = ""));
-}
-
-function handleLevelChange(levelSelect, index) {
-  const districtsSelect = document.querySelector(
-    `select[name="supportYears[${index}][districts]"]`,
-  );
-  const helpText = levelSelect
-    .closest(".form-group")
-    .nextElementSibling.querySelector(".district-help-text");
-  const coverageContainer = document.getElementById(`districtCoverage${index}`);
-
-  if (levelSelect.value === "National") {
-    // National level - disable districts since it's nationwide
-    districtsSelect.disabled = true;
-    districtsSelect.multiple = false;
-    districtsSelect.selectedIndex = -1;
-    helpText.textContent = "Districts not required for National level support";
-  } else if (levelSelect.value === "District") {
-    // District level - enable multi-select for districts
-    districtsSelect.disabled = false;
-    districtsSelect.multiple = true;
-    districtsSelect.selectedIndex = -1;
-    helpText.textContent = "Hold Ctrl/Cmd to select multiple districts";
-  } else {
-    // Reset if no level selected
-    districtsSelect.disabled = true;
-    districtsSelect.multiple = false;
-    districtsSelect.selectedIndex = -1;
-    helpText.textContent = "Select level of support first";
-  }
-
-  // Hide coverage options when level changes
-  if (coverageContainer) {
-    coverageContainer.style.display = "none";
-    coverageContainer.querySelector(".coverage-options").innerHTML = "";
-  }
-}
-
-function handleDistrictChange(districtsSelect, index) {
-  const coverageContainer = document.getElementById(`districtCoverage${index}`);
-  const coverageOptions = document.getElementById(`coverageOptions${index}`);
-
-  if (!coverageContainer || !coverageOptions) return;
-
-  const selectedDistricts = Array.from(districtsSelect.selectedOptions).map(
-    (option) => option.value,
-  );
-
-  if (selectedDistricts.length > 0) {
-    // Show coverage options
-    coverageContainer.style.display = "block";
-
-    // Generate coverage options for each selected district
-    coverageOptions.innerHTML = selectedDistricts
-      .map(
-        (district) => `
-      <div class="coverage-item">
-        <label class="coverage-label">${district}:</label>
-        <div class="coverage-radios">
-          <label class="radio-option">
-            <input type="radio" name="supportYears[${index}][coverage][${district}]" value="Whole" required>
-            <span>Whole</span>
-          </label>
-          <label class="radio-option">
-            <input type="radio" name="supportYears[${index}][coverage][${district}]" value="Partial" required>
-            <span>Partial</span>
-          </label>
-        </div>
-      </div>
-    `,
-      )
-      .join("");
-  } else {
-    // Hide coverage options if no districts selected
-    coverageContainer.style.display = "none";
-    coverageOptions.innerHTML = "";
+  
+  // Reset grid
+  if (supportYearsGrid) {
+    supportYearsGrid.setGridOption("rowData", []);
   }
 }
 
@@ -1343,6 +1384,33 @@ style.textContent = `
   @keyframes slideOut {
     from { transform: translateX(0); opacity: 1; }
     to { transform: translateX(100%); opacity: 0; }
+  }
+
+  .checkbox-item {
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .checkbox-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #007bff;
+  }
+
+  .checkbox-item label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .password-strength {
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    font-size: 12px;
   }
 `;
 document.head.appendChild(style);

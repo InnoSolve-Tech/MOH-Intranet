@@ -299,7 +299,7 @@
       </form>
     </div>
 
-    <!-- Added modal for adding support years -->
+    <!-- Updated modal for adding support years with checkbox-based multi-selects -->
     <div id="addSupportYearModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
@@ -344,57 +344,36 @@
                 </select>
               </div>
             </div>
-            <!-- Added missing thematic areas dropdown -->
+            
+            <!-- Updated thematic areas to be checkbox container -->
             <div class="form-group">
               <label>Thematic Areas Supported *</label>
-              <select id="supportThematic" required>
-                <option value="">Select Thematic Area</option>
-              </select>
+              <div id="supportThematic" class="checkbox-container">
+                <!-- This will be populated by JavaScript with checkboxes -->
+              </div>
             </div>
+            
+            <!-- Updated districts to single select dropdown -->
             <div class="form-group">
-              <label>Districts Supported *</label>
-              <!-- Added multiple attribute to enable multi-select for districts -->
+              <label>District Supported *</label>
               <select
                 id="supportDistricts"
-                multiple
                 required
                 onchange="handleModalDistrictChange()"
               >
-                <option value="Kampala">Kampala</option>
-                <option value="Wakiso">Wakiso</option>
-                <option value="Mukono">Mukono</option>
-                <option value="Jinja">Jinja</option>
-                <option value="Mbale">Mbale</option>
-                <option value="Gulu">Gulu</option>
-                <option value="Lira">Lira</option>
-                <option value="Mbarara">Mbarara</option>
-                <option value="Kasese">Kasese</option>
-                <option value="Fort Portal">Fort Portal</option>
-                <option value="Hoima">Hoima</option>
-                <option value="Masaka">Masaka</option>
-                <option value="Soroti">Soroti</option>
-                <option value="Arua">Arua</option>
-                <option value="Kabale">Kabale</option>
-                <option value="Moroto">Moroto</option>
-                <option value="Kitgum">Kitgum</option>
-                <option value="Pader">Pader</option>
-                <option value="Adjumani">Adjumani</option>
-                <option value="Moyo">Moyo</option>
+                <option value="">Select District</option>
+                <!-- Options populated by JavaScript -->
               </select>
-              <!-- Updated help text to reflect new logic -->
-              <small class="district-help-text"
-                >Hold Ctrl/Cmd to select multiple districts when level is
-                District</small
-              >
+              <small class="district-help-text">Select a district to choose subcounties</small>
+            </div>
 
-              <div
-                class="district-coverage-container"
-                id="modalDistrictCoverage"
-                style="display: none"
-              >
-                <h5>District Coverage</h5>
-                <div class="coverage-options" id="modalCoverageOptions"></div>
+            <!-- Added subcounties multi-select container -->
+            <div class="form-group" id="modalSubcounties" style="display: none;">
+              <label>Subcounties Supported *</label>
+              <div id="subcountiesCheckboxes" class="checkbox-container">
+                <!-- This will be populated by JavaScript with checkboxes based on selected district -->
               </div>
+              <small class="subcounty-help-text">Select subcounties within the chosen district</small>
             </div>
           </form>
         </div>
@@ -417,5 +396,304 @@
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/register.js"></script>
+
+    <style>
+      /* Additional styles for checkbox containers and improved UI */
+      .checkbox-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 12px;
+        background-color: #f8f9fa;
+        margin-top: 5px;
+      }
+
+      .checkbox-item {
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 0;
+      }
+
+      .checkbox-item:last-child {
+        margin-bottom: 0;
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: #007bff;
+        cursor: pointer;
+      }
+
+      .checkbox-item label {
+        margin: 0;
+        cursor: pointer;
+        font-size: 14px;
+        color: #333;
+        user-select: none;
+      }
+
+      .checkbox-item:hover {
+        background-color: #e9ecef;
+        border-radius: 4px;
+        padding: 4px 8px;
+        margin: 2px -8px;
+      }
+
+      .coverage-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e9ecef;
+      }
+
+      .coverage-item:last-child {
+        border-bottom: none;
+      }
+
+      .coverage-label {
+        font-weight: 500;
+        color: #495057;
+        min-width: 120px;
+      }
+
+      .coverage-radios {
+        display: flex;
+        gap: 15px;
+      }
+
+      .radio-option {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+
+      .radio-option input[type="radio"] {
+        margin: 0;
+        cursor: pointer;
+      }
+
+      .radio-option span {
+        user-select: none;
+      }
+
+      .district-help-text, .subcounty-help-text {
+        display: block;
+        margin-top: 5px;
+        font-size: 12px;
+        color: #6c757d;
+        font-style: italic;
+      }
+
+      /* Enhanced modal styles */
+      .modal.show {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+      }
+
+      .modal-content {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+
+      .modal-header {
+        padding: 20px 20px 0 20px;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-header h3 {
+        margin: 0;
+        color: #495057;
+      }
+
+      .modal-body {
+        padding: 20px;
+      }
+
+      .modal-footer {
+        padding: 0 20px 20px 20px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        border-top: 1px solid #dee2e6;
+        margin-top: 20px;
+        padding-top: 20px;
+      }
+
+      .close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #adb5bd;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+      }
+
+      .close:hover {
+        color: #6c757d;
+        background-color: #f8f9fa;
+      }
+
+      /* Responsive improvements */
+      @media (max-width: 768px) {
+        .modal-content {
+          width: 95%;
+          max-height: 95vh;
+        }
+        
+        .checkbox-container {
+          max-height: 150px;
+        }
+        
+        .coverage-item {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        
+        .coverage-radios {
+          width: 100%;
+          justify-content: flex-start;
+        }
+      }
+
+      /* Password strength indicator styles */
+      .password-strength {
+        margin-top: 8px;
+        padding: 8px 12px;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+        font-size: 12px;
+        border-left: 4px solid #dee2e6;
+      }
+
+      .password-strength ul {
+        margin: 8px 0 0 0;
+        padding-left: 16px;
+      }
+
+      .password-strength li {
+        margin: 2px 0;
+      }
+
+      /* User creation modal styles */
+      .contact-user-item {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+      }
+
+      .contact-info {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #dee2e6;
+      }
+
+      .contact-info strong {
+        color: #495057;
+      }
+
+      .contact-info small {
+        color: #6c757d;
+      }
+
+      .user-creation-fields label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+        font-weight: 500;
+        cursor: pointer;
+      }
+
+      .user-fields {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 4px;
+        border: 1px solid #dee2e6;
+      }
+
+      /* Form validation styles */
+      .form-group.error input,
+      .form-group.error select {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+      }
+
+      .form-group.success input,
+      .form-group.success select {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+      }
+
+      .error-message {
+        color: #dc3545;
+        font-size: 12px;
+        margin-top: 4px;
+        display: none;
+      }
+
+      .error-message.show {
+        display: block;
+      }
+
+      /* Notification styles */
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 6px;
+        color: white;
+        font-weight: 500;
+        z-index: 1000;
+        max-width: 400px;
+        word-wrap: break-word;
+      }
+
+      .notification.success {
+        background: #28a745;
+      }
+
+      .notification.error {
+        background: #dc3545;
+      }
+
+      .notification.info {
+        background: #007bff;
+      }
+    </style>
   </body>
 </html>
