@@ -17,6 +17,8 @@ func SetupRoutes(app *fiber.App) {
 
 	// Login Free endpoint
 	api.Post("/signin", service.SignIn)
+	api.Get("/thematic-areas", service.GetThematicAreas)
+	api.Get("/partner-categories", service.GetPartnerCategory)
 	app.Get("/uploads/:category/:filename", service.ServeUploadedFile)
 
 	// Protected API routes
@@ -46,7 +48,6 @@ func SetupRoutes(app *fiber.App) {
 	thematicAreas := api.Group("/thematic-areas")
 	{
 		thematicAreas.Post("", service.CreateThematicArea)
-		thematicAreas.Get("", service.GetThematicAreas)
 		thematicAreas.Post("/bulk", service.CreateThematicAreasBulk)
 		thematicAreas.Delete("", service.DeleteThematicArea)
 	}
@@ -54,7 +55,6 @@ func SetupRoutes(app *fiber.App) {
 	partnerCategories := api.Group("/partner-categories")
 	{
 		partnerCategories.Post("", service.CreatePartnerCategory)
-		partnerCategories.Get("", service.GetPartnerCategory)
 		partnerCategories.Post("/bulk", service.CreatePartnerCategoriesBulk)
 		partnerCategories.Delete("", service.DeletePartnerCategory)
 	}

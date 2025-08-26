@@ -208,7 +208,7 @@
         <div class="form-step" data-step="3">
           <div class="checkbox-group">
             <input type="checkbox" id="hasMou" name="hasMou" />
-            <label for="hasMou">We have signed an MoU</label>
+            <label for="hasMou">We have an MoU with Ministry of Health</label>
           </div>
 
           <div class="mou-details" id="mouDetails" style="display: none">
@@ -240,7 +240,7 @@
                 type="file"
                 id="mouFile"
                 name="mouFile"
-                accept=".pdf,.doc,.docx"
+                accept="application/pdf"
               />
             </div>
           </div>
@@ -322,6 +322,16 @@
                 />
               </div>
               <div class="form-group">
+                <label>Quarter *</label>
+                <select id="quarter" required>
+                  <option value="">Select Quarter *</option>
+                  <option value="First">First</option>
+                  <option value="Second">Second</option>
+                  <option value="Third">Third</option>
+                  <option value="Fourth">Fourth</option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label>Level of Support *</label>
                 <select
                   id="supportLevel"
@@ -339,22 +349,6 @@
               <label>Thematic Areas Supported *</label>
               <select id="supportThematic" required>
                 <option value="">Select Thematic Area</option>
-                <option value="Health">Health</option>
-                <option value="Education">Education</option>
-                <option value="Agriculture">Agriculture</option>
-                <option value="Water and Sanitation">
-                  Water and Sanitation
-                </option>
-                <option value="Nutrition">Nutrition</option>
-                <option value="Child Protection">Child Protection</option>
-                <option value="Gender Equality">Gender Equality</option>
-                <option value="Environment">Environment</option>
-                <option value="Economic Development">
-                  Economic Development
-                </option>
-                <option value="Emergency Response">Emergency Response</option>
-                <option value="Governance">Governance</option>
-                <option value="Human Rights">Human Rights</option>
               </select>
             </div>
             <div class="form-group">
@@ -421,6 +415,7 @@
 
     <!-- Added ag-grid CDN -->
     <script src="https://cdn.jsdelivr.net/npm/ag-grid-community@31.0.0/dist/ag-grid-community.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="js/register.js"></script>
   </body>
 </html>

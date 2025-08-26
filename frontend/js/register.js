@@ -1,3 +1,41 @@
+let dropdownData = {};
+$(document).ready(async () => {
+  try {
+    // Fetch thematic areas + partner categories
+    const [thematicAreasRes, partnerCategoriesRes] = await Promise.all([
+      fetch("/api/v1/thematic-areas"),
+      fetch("/api/v1/partner-categories"),
+    ]);
+
+    // Parse JSON responses
+    const [thematicAreasJson, partnerCategoriesJson] = await Promise.all([
+      thematicAreasRes.json(),
+      partnerCategoriesRes.json(),
+    ]);
+
+    // Transform data
+    dropdownData = {
+      thematicAreas: thematicAreasJson.map((v) => ({ ...v, name: v.area })),
+      partnerCategories: partnerCategoriesJson.reduce((acc, curr) => {
+        if (!acc[curr.type]) {
+          acc[curr.type] = [];
+        }
+        acc[curr.type].push(curr.value);
+        return acc;
+      }, {}),
+    };
+
+    // Populate <select> for thematic areas
+    const thematicSelect = document.getElementById("supportThematic");
+    dropdownData.thematicAreas.forEach((area) => {
+      const option = document.createElement("option");
+      option.value = area.name;
+      option.textContent = area.name;
+      thematicSelect.appendChild(option);
+    });
+  } catch (e) {}
+});
+
 let currentStep = 1;
 let addressCount = 1;
 let contactCount = 1;
@@ -7,11 +45,6 @@ let editingRowIndex = null; // Store the row index for editing
 
 let supportYearsGrid = null;
 const supportYearsData = [];
-
-const categoryMapping = {
-  Local: ["Local NGO", "CBO"],
-  International: ["Bi-Lateral", "Multilateral", "UN", "International NGO"],
-};
 
 document.addEventListener("DOMContentLoaded", () => {
   const categorySelect = document.getElementById("category");
@@ -40,8 +73,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateCategoryOptions(partnerType, categorySelect) {
   categorySelect.innerHTML = '<option value="">Select Category</option>';
 
-  if (partnerType && categoryMapping[partnerType]) {
-    categoryMapping[partnerType].forEach((category) => {
+  if (partnerType && dropdownData.partnerCategories[partnerType]) {
+    dropdownData.partnerCategories[partnerType].forEach((category) => {
       const option = document.createElement("option");
       option.value = category;
       option.textContent = category;
@@ -758,6 +791,7 @@ function validateCurrentStep() {
         }
       });
 
+      // Validate required fields
       requiredFields.forEach((field) => {
         if (!field) return;
 
@@ -788,6 +822,27 @@ function validateCurrentStep() {
           formGroup.classList.add("success");
         }
       });
+
+      // ✅ Validate PDF file separately
+      const fileField = document.getElementById("mouFile");
+      if (fileField) {
+        const formGroup = fileField.closest(".form-group");
+        const file = fileField.files[0];
+        if (file) {
+          const validType =
+            file.type === "application/pdf" ||
+            file.name.toLowerCase().endsWith(".pdf");
+          if (!validType) {
+            let errorMessage = "Only PDF files are allowed";
+            formGroup.classList.add("error");
+            showErrorMessage(formGroup, errorMessage);
+            if (!firstErrorField) firstErrorField = fileField;
+            isValid = false;
+          } else {
+            formGroup.classList.add("success");
+          }
+        }
+      }
     }
     // If MoU is not checked, step is automatically valid
   } else if (currentStep === 4) {
