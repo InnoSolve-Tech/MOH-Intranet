@@ -344,7 +344,7 @@
                 </select>
               </div>
             </div>
-            
+
             <!-- Updated thematic areas to be checkbox container -->
             <div class="form-group">
               <label>Thematic Areas Supported *</label>
@@ -352,7 +352,7 @@
                 <!-- This will be populated by JavaScript with checkboxes -->
               </div>
             </div>
-            
+
             <!-- Updated districts to single select dropdown -->
             <div class="form-group">
               <label>District Supported *</label>
@@ -364,16 +364,20 @@
                 <option value="">Select District</option>
                 <!-- Options populated by JavaScript -->
               </select>
-              <small class="district-help-text">Select a district to choose subcounties</small>
+              <small class="district-help-text"
+                >Select a district to choose subcounties</small
+              >
             </div>
 
             <!-- Added subcounties multi-select container -->
-            <div class="form-group" id="modalSubcounties" style="display: none;">
+            <div class="form-group" id="modalSubcounties" style="display: none">
               <label>Subcounties Supported *</label>
               <div id="subcountiesCheckboxes" class="checkbox-container">
                 <!-- This will be populated by JavaScript with checkboxes based on selected district -->
               </div>
-              <small class="subcounty-help-text">Select subcounties within the chosen district</small>
+              <small class="subcounty-help-text"
+                >Select subcounties within the chosen district</small
+              >
             </div>
           </form>
         </div>
@@ -483,7 +487,8 @@
         user-select: none;
       }
 
-      .district-help-text, .subcounty-help-text {
+      .district-help-text,
+      .subcounty-help-text {
         display: block;
         margin-top: 5px;
         font-size: 12px;
@@ -569,17 +574,17 @@
           width: 95%;
           max-height: 95vh;
         }
-        
+
         .checkbox-container {
           max-height: 150px;
         }
-        
+
         .coverage-item {
           flex-direction: column;
           align-items: flex-start;
           gap: 8px;
         }
-        
+
         .coverage-radios {
           width: 100%;
           justify-content: flex-start;

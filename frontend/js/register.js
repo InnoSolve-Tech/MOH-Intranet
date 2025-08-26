@@ -2,37 +2,280 @@ let dropdownData = {};
 
 // Uganda districts and their subcounties data
 const ugandaDistrictsSubcounties = {
-  "Kampala": ["Central Division", "Kawempe Division", "Makindye Division", "Nakawa Division", "Rubaga Division"],
-  "Wakiso": ["Busukuma", "Kakiri", "Kasangati", "Katabi", "Kyadondo", "Kyengera", "Makongo", "Namayumba", "Nangabo", "Nsangi", "Ssisa"],
-  "Mukono": ["Bamunanika", "Buikwe", "Goma", "Kasawo", "Kimenyedde", "Mukono", "Nagojje", "Nakisunga", "Ntenjeru", "Yiffer"],
-  "Jinja": ["Budondo", "Bugembe", "Buwenge", "Jinja", "Kakira", "Mafubira", "Mpumudde"],
-  "Mbale": ["Bufumbo", "Bungokho", "Butaleja", "Lwangoli", "Malaba", "Manafwa", "Mbale", "Nabumali", "Namanyonyi", "Namisindwa", "Wanale"],
-  "Gulu": ["Aswa", "Awach", "Bardege", "Bungatira", "Gulu", "Koro", "Lalogi", "Layibi", "Lukole", "Ongako", "Palaro", "Patiko", "Pece", "Unyama"],
-  "Lira": ["Adekokwok", "Agweng", "Aloi", "Amach", "Amolator", "Aromo", "Barr", "Dokolo", "Kwania", "Lira", "Otuke"],
-  "Mbarara": ["Biharwe", "Bubaare", "Bukanga", "Bunyaruguru", "Gwakisa", "Ibanda", "Isingiro", "Kashaari", "Kashari", "Kenshunga", "Kikagate", "Kinoni", "Masha", "Mbarara", "Nyabushozi", "Rubaya", "Rubindi", "Rukiri", "Rwampara", "Rwanyamahembe"],
-  "Kasese": ["Buhuhira", "Bukonzo East", "Bukonzo West", "Bulembia", "Bwesumbu", "Hima", "Ibanda", "Kabatoro", "Kahokya", "Kasese", "Katebwa", "Karusandara", "Kisinga", "Kitswamba", "Kyarumba", "Kyondo", "Mahango", "Maliba", "Munkunyu", "Nyakatonzi", "Rukoki"],
-  "Fort Portal": ["Bundibugyo", "Fort Portal", "Hakibale", "Kabwoya", "Kabarole", "Rwebisengo"],
-  "Hoima": ["Buhaguzi", "Bugambe", "Bulima", "Busiisi", "Hoima", "Kabwoya", "Kigorobya", "Kyabigambire", "Kyangwali"],
-  "Masaka": ["Bukomansimbi", "Buwunga", "Kabonera", "Kalungu", "Kyanamukaka", "Kyesiiga", "Lwengo", "Masaka", "Mukungwe", "Villa Maria"],
-  "Soroti": ["Arapai", "Gweri", "Katakwi", "Kyere", "Pingire", "Serere", "Soroti", "Tubur"],
-  "Arua": ["Arua", "Ayivu", "Logiri", "Maracha", "Omugo", "Rigbo", "Terego", "Vura"],
-  "Kabale": ["Bukinda", "Bunyangabu", "Hamurwa", "Kaharo", "Kamuganguzi", "Kamwezi", "Katuna", "Kitumba", "Maziba", "Ndorwa East", "Ndorwa West"],
-  "Moroto": ["Katikekile", "Kotido", "Moroto", "Nadunget", "Nakapiripirit", "Rupa", "Tapac"],
-  "Kitgum": ["Akwang", "Kitgum", "Lagoro", "Lamwo", "Mucwini", "Namokora", "Palabek Gem"],
-  "Pader": ["Aromo", "Atanga", "Kilak", "Pader", "Pajule", "Purongo"],
-  "Adjumani": ["Adjumani", "Dzaipi", "Elegu", "Itirikwa", "Ofua", "Pakele"],
-  "Moyo": ["Aliba", "Dufile", "Gimara", "Itula", "Lefori", "Moyo", "Obongi"],
-  "Apac": ["Akokoro", "Apac", "Chegere", "Ibuje", "Inomo", "Kole", "Maruzi", "Oyam"],
-  "Tororo": ["Mulanda", "Nagongera", "Paya", "Rubongi", "Tororo", "West Budama North", "West Budama South"],
-  "Busia": ["Busia", "Buteba", "Dabani", "Lumino", "Masafu", "Mundika", "Sikuda"],
-  "Iganga": ["Bulamogi", "Buyende", "Iganga", "Kigulu", "Makuutu", "Namayingo", "Namungalwe"],
-  "Kamuli": ["Balawoli", "Bugulumbya", "Butansi", "Gadumire", "Kamuli", "Namasagali"],
-  "Pallisa": ["Budaka", "Butebo", "Gogonyo", "Kamuge", "Kasilo", "Kibale", "Pallisa", "Petete"],
-  "Kumi": ["Ongino", "Atutur", "Kachumbala", "Kumi", "Ngora", "Serere"],
-  "Kapchorwa": ["Chepsukunya", "Kapchorwa", "Kaptum", "Tegeres"],
-  "Kotido": ["Kotido", "Nakapelimoru", "Rengen"],
-  "Bundibugyo": ["Bundibugyo", "Bubandi", "Busaru", "Harugongo", "Ntoroko"],
-  "Kisoro": ["Bufumbira", "Busanza", "Chahi", "Kirundo", "Kisoro", "Murora", "Nyakabande", "Nyarubuye"]
+  Kampala: [
+    "Central Division",
+    "Kawempe Division",
+    "Makindye Division",
+    "Nakawa Division",
+    "Rubaga Division",
+  ],
+  Wakiso: [
+    "Busukuma",
+    "Kakiri",
+    "Kasangati",
+    "Katabi",
+    "Kyadondo",
+    "Kyengera",
+    "Makongo",
+    "Namayumba",
+    "Nangabo",
+    "Nsangi",
+    "Ssisa",
+  ],
+  Mukono: [
+    "Bamunanika",
+    "Buikwe",
+    "Goma",
+    "Kasawo",
+    "Kimenyedde",
+    "Mukono",
+    "Nagojje",
+    "Nakisunga",
+    "Ntenjeru",
+    "Yiffer",
+  ],
+  Jinja: [
+    "Budondo",
+    "Bugembe",
+    "Buwenge",
+    "Jinja",
+    "Kakira",
+    "Mafubira",
+    "Mpumudde",
+  ],
+  Mbale: [
+    "Bufumbo",
+    "Bungokho",
+    "Butaleja",
+    "Lwangoli",
+    "Malaba",
+    "Manafwa",
+    "Mbale",
+    "Nabumali",
+    "Namanyonyi",
+    "Namisindwa",
+    "Wanale",
+  ],
+  Gulu: [
+    "Aswa",
+    "Awach",
+    "Bardege",
+    "Bungatira",
+    "Gulu",
+    "Koro",
+    "Lalogi",
+    "Layibi",
+    "Lukole",
+    "Ongako",
+    "Palaro",
+    "Patiko",
+    "Pece",
+    "Unyama",
+  ],
+  Lira: [
+    "Adekokwok",
+    "Agweng",
+    "Aloi",
+    "Amach",
+    "Amolator",
+    "Aromo",
+    "Barr",
+    "Dokolo",
+    "Kwania",
+    "Lira",
+    "Otuke",
+  ],
+  Mbarara: [
+    "Biharwe",
+    "Bubaare",
+    "Bukanga",
+    "Bunyaruguru",
+    "Gwakisa",
+    "Ibanda",
+    "Isingiro",
+    "Kashaari",
+    "Kashari",
+    "Kenshunga",
+    "Kikagate",
+    "Kinoni",
+    "Masha",
+    "Mbarara",
+    "Nyabushozi",
+    "Rubaya",
+    "Rubindi",
+    "Rukiri",
+    "Rwampara",
+    "Rwanyamahembe",
+  ],
+  Kasese: [
+    "Buhuhira",
+    "Bukonzo East",
+    "Bukonzo West",
+    "Bulembia",
+    "Bwesumbu",
+    "Hima",
+    "Ibanda",
+    "Kabatoro",
+    "Kahokya",
+    "Kasese",
+    "Katebwa",
+    "Karusandara",
+    "Kisinga",
+    "Kitswamba",
+    "Kyarumba",
+    "Kyondo",
+    "Mahango",
+    "Maliba",
+    "Munkunyu",
+    "Nyakatonzi",
+    "Rukoki",
+  ],
+  "Fort Portal": [
+    "Bundibugyo",
+    "Fort Portal",
+    "Hakibale",
+    "Kabwoya",
+    "Kabarole",
+    "Rwebisengo",
+  ],
+  Hoima: [
+    "Buhaguzi",
+    "Bugambe",
+    "Bulima",
+    "Busiisi",
+    "Hoima",
+    "Kabwoya",
+    "Kigorobya",
+    "Kyabigambire",
+    "Kyangwali",
+  ],
+  Masaka: [
+    "Bukomansimbi",
+    "Buwunga",
+    "Kabonera",
+    "Kalungu",
+    "Kyanamukaka",
+    "Kyesiiga",
+    "Lwengo",
+    "Masaka",
+    "Mukungwe",
+    "Villa Maria",
+  ],
+  Soroti: [
+    "Arapai",
+    "Gweri",
+    "Katakwi",
+    "Kyere",
+    "Pingire",
+    "Serere",
+    "Soroti",
+    "Tubur",
+  ],
+  Arua: [
+    "Arua",
+    "Ayivu",
+    "Logiri",
+    "Maracha",
+    "Omugo",
+    "Rigbo",
+    "Terego",
+    "Vura",
+  ],
+  Kabale: [
+    "Bukinda",
+    "Bunyangabu",
+    "Hamurwa",
+    "Kaharo",
+    "Kamuganguzi",
+    "Kamwezi",
+    "Katuna",
+    "Kitumba",
+    "Maziba",
+    "Ndorwa East",
+    "Ndorwa West",
+  ],
+  Moroto: [
+    "Katikekile",
+    "Kotido",
+    "Moroto",
+    "Nadunget",
+    "Nakapiripirit",
+    "Rupa",
+    "Tapac",
+  ],
+  Kitgum: [
+    "Akwang",
+    "Kitgum",
+    "Lagoro",
+    "Lamwo",
+    "Mucwini",
+    "Namokora",
+    "Palabek Gem",
+  ],
+  Pader: ["Aromo", "Atanga", "Kilak", "Pader", "Pajule", "Purongo"],
+  Adjumani: ["Adjumani", "Dzaipi", "Elegu", "Itirikwa", "Ofua", "Pakele"],
+  Moyo: ["Aliba", "Dufile", "Gimara", "Itula", "Lefori", "Moyo", "Obongi"],
+  Apac: [
+    "Akokoro",
+    "Apac",
+    "Chegere",
+    "Ibuje",
+    "Inomo",
+    "Kole",
+    "Maruzi",
+    "Oyam",
+  ],
+  Tororo: [
+    "Mulanda",
+    "Nagongera",
+    "Paya",
+    "Rubongi",
+    "Tororo",
+    "West Budama North",
+    "West Budama South",
+  ],
+  Busia: ["Busia", "Buteba", "Dabani", "Lumino", "Masafu", "Mundika", "Sikuda"],
+  Iganga: [
+    "Bulamogi",
+    "Buyende",
+    "Iganga",
+    "Kigulu",
+    "Makuutu",
+    "Namayingo",
+    "Namungalwe",
+  ],
+  Kamuli: [
+    "Balawoli",
+    "Bugulumbya",
+    "Butansi",
+    "Gadumire",
+    "Kamuli",
+    "Namasagali",
+  ],
+  Pallisa: [
+    "Budaka",
+    "Butebo",
+    "Gogonyo",
+    "Kamuge",
+    "Kasilo",
+    "Kibale",
+    "Pallisa",
+    "Petete",
+  ],
+  Kumi: ["Ongino", "Atutur", "Kachumbala", "Kumi", "Ngora", "Serere"],
+  Kapchorwa: ["Chepsukunya", "Kapchorwa", "Kaptum", "Tegeres"],
+  Kotido: ["Kotido", "Nakapelimoru", "Rengen"],
+  Bundibugyo: ["Bundibugyo", "Bubandi", "Busaru", "Harugongo", "Ntoroko"],
+  Kisoro: [
+    "Bufumbira",
+    "Busanza",
+    "Chahi",
+    "Kirundo",
+    "Kisoro",
+    "Murora",
+    "Nyakabande",
+    "Nyarubuye",
+  ],
 };
 
 $(document).ready(async () => {
@@ -63,7 +306,7 @@ $(document).ready(async () => {
 
     // Populate thematic areas as checkboxes
     populateThematicAreasCheckboxes();
-    
+
     // Populate districts dropdown
     populateDistrictsDropdown();
   } catch (e) {
@@ -111,7 +354,7 @@ function populateDistrictsDropdown() {
   select.multiple = false; // Single select for districts
 
   // Add Uganda districts
-  Object.keys(ugandaDistrictsSubcounties).forEach(district => {
+  Object.keys(ugandaDistrictsSubcounties).forEach((district) => {
     const option = document.createElement("option");
     option.value = district;
     option.textContent = district;
@@ -122,19 +365,21 @@ function populateDistrictsDropdown() {
 function handleModalDistrictChange() {
   const districtSelect = document.getElementById("supportDistricts");
   const subcountiesContainer = document.getElementById("modalSubcounties");
-  
+
   if (!districtSelect || !subcountiesContainer) return;
-  
+
   const selectedDistrict = districtSelect.value;
-  
+
   if (selectedDistrict && ugandaDistrictsSubcounties[selectedDistrict]) {
     // Show subcounties container
     subcountiesContainer.style.display = "block";
-    
+
     // Clear existing subcounties
-    const subcountiesCheckboxes = document.getElementById("subcountiesCheckboxes");
+    const subcountiesCheckboxes = document.getElementById(
+      "subcountiesCheckboxes",
+    );
     subcountiesCheckboxes.innerHTML = "";
-    
+
     // Add subcounties as checkboxes
     ugandaDistrictsSubcounties[selectedDistrict].forEach((subcounty, index) => {
       const checkboxDiv = document.createElement("div");
@@ -143,7 +388,7 @@ function handleModalDistrictChange() {
       checkboxDiv.style.display = "flex";
       checkboxDiv.style.alignItems = "center";
       checkboxDiv.style.gap = "8px";
-      
+
       checkboxDiv.innerHTML = `
         <input type="checkbox" id="subcounty_${index}" name="subcounties" value="${subcounty}" 
                style="width: 16px; height: 16px; accent-color: #007bff;">
@@ -151,11 +396,12 @@ function handleModalDistrictChange() {
       `;
       subcountiesCheckboxes.appendChild(checkboxDiv);
     });
-    
+
     // Update help text
-    document.querySelector("#addSupportYearModal .district-help-text").textContent = 
-      "Select subcounties within the chosen district";
-      
+    document.querySelector(
+      "#addSupportYearModal .district-help-text",
+    ).textContent = "Select subcounties within the chosen district";
+
     // Hide coverage container initially
     document.getElementById("modalDistrictCoverage").style.display = "none";
   } else {
@@ -172,9 +418,9 @@ function validatePassword(password) {
   const hasLowerCase = /[a-z]/.test(password);
   const hasNumbers = /\d/.test(password);
   const hasSpecialChar = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password);
-  
+
   const errors = [];
-  
+
   if (password.length < minLength) {
     errors.push(`Password must be at least ${minLength} characters long`);
   }
@@ -190,21 +436,21 @@ function validatePassword(password) {
   if (!hasSpecialChar) {
     errors.push("Password must contain at least one special character");
   }
-  
+
   return {
     isValid: errors.length === 0,
-    errors: errors
+    errors: errors,
   };
 }
 
 function showPasswordStrength(password, strengthElementId) {
   const strengthElement = document.getElementById(strengthElementId);
   if (!strengthElement) return;
-  
+
   const validation = validatePassword(password);
   let strength = "Weak";
   let color = "#dc3545";
-  
+
   if (validation.isValid) {
     strength = "Strong";
     color = "#28a745";
@@ -212,11 +458,13 @@ function showPasswordStrength(password, strengthElementId) {
     strength = "Medium";
     color = "#ffc107";
   }
-  
+
   strengthElement.innerHTML = `<span style="color: ${color}; font-weight: bold;">${strength}</span>`;
-  
+
   if (validation.errors.length > 0) {
-    const errorList = validation.errors.map(err => `<li>${err}</li>`).join('');
+    const errorList = validation.errors
+      .map((err) => `<li>${err}</li>`)
+      .join("");
     strengthElement.innerHTML += `<ul style="margin: 5px 0; padding-left: 20px; color: #dc3545; font-size: 12px;">${errorList}</ul>`;
   }
 }
@@ -253,7 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   initializeSupportYearsGrid();
-  
+
   // Add event listeners for subcounty changes
   document.addEventListener("change", (e) => {
     if (e.target && e.target.matches('input[name="subcounties"]')) {
@@ -372,11 +620,13 @@ function openAddSupportYearModal() {
     document.getElementById("supportYear").value = lastSupportYearData.year + 1;
     document.getElementById("quarter").value = lastSupportYearData.quarter;
     document.getElementById("supportLevel").value = lastSupportYearData.level;
-    
+
     // Pre-select thematic areas
     if (lastSupportYearData.thematicAreas) {
-      const thematicCheckboxes = document.querySelectorAll('input[name="thematicAreas"]');
-      thematicCheckboxes.forEach(cb => {
+      const thematicCheckboxes = document.querySelectorAll(
+        'input[name="thematicAreas"]',
+      );
+      thematicCheckboxes.forEach((cb) => {
         cb.checked = lastSupportYearData.thematicAreas.includes(cb.value);
       });
     }
@@ -388,12 +638,14 @@ function openAddSupportYearModal() {
       setTimeout(() => {
         districtSelect.value = lastSupportYearData.district || "";
         handleModalDistrictChange();
-        
+
         setTimeout(() => {
           // Pre-select subcounties
           if (lastSupportYearData.subcounties) {
-            lastSupportYearData.subcounties.forEach(subcounty => {
-              const checkbox = document.querySelector(`input[name="subcounties"][value="${subcounty}"]`);
+            lastSupportYearData.subcounties.forEach((subcounty) => {
+              const checkbox = document.querySelector(
+                `input[name="subcounties"][value="${subcounty}"]`,
+              );
               if (checkbox) checkbox.checked = true;
             });
             handleSubcountyChange();
@@ -419,14 +671,16 @@ function closeAddSupportYearModal() {
 
 function resetSupportYearForm() {
   document.getElementById("supportYearForm").reset();
-  
+
   // Clear thematic area checkboxes
-  document.querySelectorAll('input[name="thematicAreas"]').forEach(cb => cb.checked = false);
-  
+  document
+    .querySelectorAll('input[name="thematicAreas"]')
+    .forEach((cb) => (cb.checked = false));
+
   // Clear subcounties
   document.getElementById("modalSubcounties").style.display = "none";
   document.getElementById("subcountiesCheckboxes").innerHTML = "";
-  
+
   document.getElementById("modalDistrictCoverage").style.display = "none";
 }
 
@@ -487,9 +741,10 @@ function saveSupportYear() {
   }
 
   // Get selected thematic areas
-  const selectedThematicAreas = Array.from(document.querySelectorAll('input[name="thematicAreas"]:checked'))
-    .map(cb => cb.value);
-    
+  const selectedThematicAreas = Array.from(
+    document.querySelectorAll('input[name="thematicAreas"]:checked'),
+  ).map((cb) => cb.value);
+
   if (selectedThematicAreas.length === 0) {
     showNotification("Please select at least one thematic area", "error");
     return;
@@ -507,10 +762,11 @@ function saveSupportYear() {
       showNotification("Please select a district", "error");
       return;
     }
-    
-    selectedSubcounties = Array.from(document.querySelectorAll('input[name="subcounties"]:checked'))
-      .map(cb => cb.value);
-      
+
+    selectedSubcounties = Array.from(
+      document.querySelectorAll('input[name="subcounties"]:checked'),
+    ).map((cb) => cb.value);
+
     if (selectedSubcounties.length === 0) {
       showNotification("Please select at least one subcounty", "error");
       return;
@@ -572,9 +828,9 @@ function editSupportYear(rowIndex) {
   document.getElementById("supportYear").value = data.year;
   document.getElementById("quarter").value = data.quarter;
   document.getElementById("supportLevel").value = data.level;
-  
+
   // Select thematic areas
-  document.querySelectorAll('input[name="thematicAreas"]').forEach(cb => {
+  document.querySelectorAll('input[name="thematicAreas"]').forEach((cb) => {
     cb.checked = data.thematicAreas.includes(cb.value);
   });
 
@@ -589,8 +845,10 @@ function editSupportYear(rowIndex) {
       setTimeout(() => {
         // Select subcounties
         if (data.subcounties) {
-          data.subcounties.forEach(subcounty => {
-            const checkbox = document.querySelector(`input[name="subcounties"][value="${subcounty}"]`);
+          data.subcounties.forEach((subcounty) => {
+            const checkbox = document.querySelector(
+              `input[name="subcounties"][value="${subcounty}"]`,
+            );
             if (checkbox) checkbox.checked = true;
           });
           handleSubcountyChange();
@@ -1122,16 +1380,23 @@ function finalSubmitRegistration() {
   );
   checkboxes.forEach((checkbox) => {
     const index = checkbox.name.match(/\[(\d+)\]/)[1];
-    const usernameInput = modal.querySelector(`input[name="username[${index}]"]`);
-    const passwordInput = modal.querySelector(`input[name="password[${index}]"]`);
-    
+    const usernameInput = modal.querySelector(
+      `input[name="username[${index}]"]`,
+    );
+    const passwordInput = modal.querySelector(
+      `input[name="password[${index}]"]`,
+    );
+
     const username = usernameInput ? usernameInput.value : "";
     const password = passwordInput ? passwordInput.value : "";
 
     if (username && password) {
       const passwordValidation = validatePassword(password);
       if (!passwordValidation.isValid) {
-        showNotification(`Invalid password for user ${username}: ${passwordValidation.errors.join(', ')}`, "error");
+        showNotification(
+          `Invalid password for user ${username}: ${passwordValidation.errors.join(", ")}`,
+          "error",
+        );
         allPasswordsValid = false;
         passwordInput.focus();
         return;
@@ -1367,7 +1632,7 @@ function resetForm() {
   `;
 
   updateNavigationButtons();
-  
+
   // Reset grid
   if (supportYearsGrid) {
     supportYearsGrid.setGridOption("rowData", []);
