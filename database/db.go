@@ -59,6 +59,7 @@ func ConnectDB() *gorm.DB {
 		&models.PartnerMoU{},
 		&models.ThematicAreas{},
 		&models.PartnerCategory{},
+		&models.PartnerSupportYearDistrict{},
 	)
 
 	if err != nil {

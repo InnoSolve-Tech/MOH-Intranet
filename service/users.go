@@ -322,6 +322,7 @@ func GetUserByUUID(c *fiber.Ctx) error {
 			Where("user_id = ?", user.ID).
 			Preload("Partner").
 			Preload("Partner.PartnerSupportYears").
+			Preload("Partner.PartnerSupportYears.Districts").
 			Preload("Partner.PartnerContacts").
 			First(&contact).Error; err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{

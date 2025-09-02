@@ -43,14 +43,21 @@ type PartnerContacts struct {
 
 type PartnerSupportYears struct {
 	gorm.Model
-	Year          uint           `json:"year"`
-	Quarter       string         `json:"quarter"`
-	Level         string         `json:"level"`
-	ThematicAreas datatypes.JSON `json:"thematic_areas" gorm:"type:jsonb"` // store array as JSON
-	District      string         `json:"district"`
-	Subcounties   datatypes.JSON `json:"subcounties" gorm:"type:jsonb"` // store array as JSON
-	PartnerID     uint           `json:"partner_id"`
-	Partner       Partner        `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
+	Year          uint                         `json:"year"`
+	Quarter       string                       `json:"quarter"`
+	Level         string                       `json:"level"`
+	ThematicAreas datatypes.JSON               `json:"thematic_areas" gorm:"type:jsonb"`
+	PartnerID     uint                         `json:"partner_id"`
+	Partner       Partner                      `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
+	Districts     []PartnerSupportYearDistrict `json:"districts" gorm:"foreignKey:PartnerSupportYearID;references:ID;constraint:OnDelete:CASCADE"`
+}
+
+type PartnerSupportYearDistrict struct {
+	gorm.Model
+	District             string              `json:"district" gorm:"not null"`
+	Subcounties          datatypes.JSON      `json:"subcounties" gorm:"type:jsonb"`
+	PartnerSupportYearID uint                `json:"partner_support_year_id"`
+	PartnerSupportYear   PartnerSupportYears `json:"partner_support_year" gorm:"foreignKey:PartnerSupportYearID;references:ID"`
 }
 
 type PartnerMoU struct {
@@ -98,8 +105,10 @@ type PartnerSubmissionData struct {
 		Quarter       string   `json:"quarter"`
 		Level         string   `json:"level"`
 		ThematicAreas []string `json:"thematicAreas"`
-		District      string   `json:"district"`
-		Subcounties   []string `json:"subcounties"`
+		Districts     []struct {
+			District    string   `json:"district"`
+			Subcounties []string `json:"subcounties"`
+		} `json:"districts"`
 	} `json:"supportYears"`
 
 	UserAccounts []struct {

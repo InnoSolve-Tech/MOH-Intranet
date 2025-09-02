@@ -214,11 +214,11 @@
           <div class="mou-details" id="mouDetails" style="display: none">
             <div class="form-row">
               <div class="form-group">
-                <label for="signedBy">Signed By (WHO Representative) *</label>
+                <label for="signedBy">Signed By (MoH Representative) *</label>
                 <input type="text" id="signedBy" name="signedBy" required />
               </div>
               <div class="form-group">
-                <label for="whoTitle">Title (WHO Representative) *</label>
+                <label for="whoTitle">Title (MoH Representative) *</label>
                 <input type="text" id="whoTitle" name="whoTitle" required />
               </div>
             </div>
@@ -355,17 +355,12 @@
 
             <!-- Updated districts to single select dropdown -->
             <div class="form-group">
-              <label>District Supported *</label>
-              <select
-                id="supportDistricts"
-                required
-                onchange="handleModalDistrictChange()"
-              >
-                <option value="">Select District</option>
-                <!-- Options populated by JavaScript -->
-              </select>
+              <label>Districts Supported *</label>
+              <div id="supportDistricts" class="checkbox-container">
+                <!-- This will be populated by JavaScript with district checkboxes -->
+              </div>
               <small class="district-help-text"
-                >Select a district to choose subcounties</small
+                >Select districts to choose subcounties</small
               >
             </div>
 

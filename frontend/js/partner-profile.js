@@ -13,10 +13,18 @@ function getCookie(name) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Initialize grids first
+  initializeGrids();
+
   // Load Partner Profile
   const partner_uuid = getCookie("user_uuid");
-  await loadPartnerProfile(partner_uuid);
+  if (partner_uuid) {
+    await loadPartnerProfile(partner_uuid);
+  } else {
+    showNotification("User UUID not found in cookies", "error");
+  }
 });
+
 // Initialize partner profile page
 
 // Load partner profile data
@@ -29,6 +37,7 @@ async function loadPartnerProfile(partneruuid) {
 
     const res = await response.json();
     const partner = res.partner;
+    console.log(partner);
     currentPartner = partner;
 
     populatePartnerInfo(partner);
@@ -109,7 +118,7 @@ function initializeContactsGrid() {
       { headerName: "Name", field: "names", flex: 1 },
       { headerName: "Position", field: "title", flex: 1 },
       { headerName: "Phone", field: "phone_number", flex: 1 },
-      { headerName: "Email", field: "offical_email", flex: 1 },
+      { headerName: "Email", field: "official_email", flex: 1 },
       {
         headerName: "Actions",
         field: "actions",
@@ -236,15 +245,37 @@ function initializeDocumentsGrid() {
 }
 
 // Load data into grids
-function loadContactsData(contacts) {
-  if (contactsGrid) {
-    contactsGrid.setGridOption("rowData", contacts);
+function loadSupportYearsData(supportYears) {
+  const normalized = supportYears.map((sy) => ({
+    year: sy.year,
+    level: sy.level,
+    thematicAreas: Array.isArray(sy.thematic_areas)
+      ? sy.thematic_areas.join(", ")
+      : "-",
+    districts: Array.isArray(sy.districts)
+      ? sy.districts.map((d) => d.district).join(", ")
+      : "-",
+    coverage: Array.isArray(sy.districts)
+      ? sy.districts.reduce((acc, d) => {
+          acc[d.district] = d.subcounties?.length || 0;
+          return acc;
+        }, {})
+      : "-",
+  }));
+
+  if (supportYearsGrid) {
+    supportYearsGrid.setGridOption("rowData", normalized);
   }
 }
 
-function loadSupportYearsData(supportYears) {
-  if (supportYearsGrid) {
-    supportYearsGrid.setGridOption("rowData", supportYears);
+function loadContactsData(contacts) {
+  const normalized = contacts.map((c) => ({
+    ...c,
+    official_email: c.official_email || "-", // fix typo mismatch
+  }));
+
+  if (contactsGrid) {
+    contactsGrid.setGridOption("rowData", normalized);
   }
 }
 

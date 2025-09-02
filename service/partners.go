@@ -427,33 +427,51 @@ func saveMoUDetails(tx *gorm.DB, mouData struct {
 	return nil
 }
 
-// saveSupportYears saves partner support years data
+// saveSupportYears saves partner support years data with districts attached to subcounties
 func saveSupportYears(tx *gorm.DB, years []struct {
 	Year          int      `json:"year"`
 	Quarter       string   `json:"quarter"`
 	Level         string   `json:"level"`
 	ThematicAreas []string `json:"thematicAreas"`
-	District      string   `json:"district"`
-	Subcounties   []string `json:"subcounties"`
+	Districts     []struct {
+		District    string   `json:"district"`
+		Subcounties []string `json:"subcounties"`
+	} `json:"districts"`
 }, partnerID uint) error {
+
 	for _, y := range years {
 		thematicJSON, _ := json.Marshal(y.ThematicAreas)
-		subcountiesJSON, _ := json.Marshal(y.Subcounties)
 
-		record := models.PartnerSupportYears{
+		// Build child districts (skip when level is National)
+		var districts []models.PartnerSupportYearDistrict
+		if strings.ToLower(strings.TrimSpace(y.Level)) != "national" {
+			for _, d := range y.Districts {
+				// ignore empty district names
+				if strings.TrimSpace(d.District) == "" {
+					continue
+				}
+				subJSON, _ := json.Marshal(d.Subcounties)
+				districts = append(districts, models.PartnerSupportYearDistrict{
+					District:    d.District,
+					Subcounties: subJSON,
+				})
+			}
+		}
+
+		supportYear := models.PartnerSupportYears{
 			Year:          uint(y.Year),
 			Quarter:       y.Quarter,
 			Level:         y.Level,
 			ThematicAreas: thematicJSON,
-			District:      y.District,
-			Subcounties:   subcountiesJSON,
 			PartnerID:     partnerID,
+			Districts:     districts, // attach children before create
 		}
 
-		if err := tx.Create(&record).Error; err != nil {
-			return err
+		if err := tx.Session(&gorm.Session{FullSaveAssociations: true}).Create(&supportYear).Error; err != nil {
+			return fmt.Errorf("failed to create support year and districts: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -538,6 +556,7 @@ func GetPartners(c *fiber.Ctx) error {
 		Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("PartnerSupportYears.Districts").
 		Preload("PartnerMoU").
 		Find(&partners).Error; err != nil {
 
@@ -568,6 +587,7 @@ func GetPartnerByID(c *fiber.Ctx) error {
 	if err := database.DB.Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("PartnerSupportYears.Districts").
 		Preload("PartnerMoU").
 		Where("uuid = ?", partnerUUID).
 		First(&partner).Error; err != nil {
@@ -581,7 +601,6 @@ func GetPartnerByID(c *fiber.Ctx) error {
 			"details": err.Error(),
 		})
 	}
-
 	return c.JSON(fiber.Map{
 		"partner": partner,
 	})

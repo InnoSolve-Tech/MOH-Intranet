@@ -346,68 +346,78 @@ function populateThematicAreasCheckboxes() {
 }
 
 function populateDistrictsDropdown() {
-  const select = document.getElementById("supportDistricts");
-  if (!select) return;
+  const container = document.getElementById("supportDistricts");
+  if (!container) return;
 
-  // Clear existing options
-  select.innerHTML = '<option value="">Select District</option>';
-  select.multiple = false; // Single select for districts
+  // Clear existing content
+  container.innerHTML = "";
+  container.style.display = "block";
+  container.style.maxHeight = "200px";
+  container.style.overflowY = "auto";
+  container.style.border = "1px solid #ced4da";
+  container.style.borderRadius = "4px";
+  container.style.padding = "10px";
+  container.style.backgroundColor = "#f8f9fa";
 
-  // Add Uganda districts
-  Object.keys(ugandaDistrictsSubcounties).forEach((district) => {
-    const option = document.createElement("option");
-    option.value = district;
-    option.textContent = district;
-    select.appendChild(option);
+  // Add Uganda districts as checkboxes
+  Object.keys(ugandaDistrictsSubcounties).forEach((district, index) => {
+    const checkboxDiv = document.createElement("div");
+    checkboxDiv.className = "checkbox-item";
+    checkboxDiv.style.marginBottom = "8px";
+    checkboxDiv.style.display = "flex";
+    checkboxDiv.style.alignItems = "center";
+    checkboxDiv.style.gap = "8px";
+
+    checkboxDiv.innerHTML = `
+      <input type="checkbox" id="district_${index}" name="districts" value="${district}" 
+             style="width: 16px; height: 16px; accent-color: #007bff;" onchange="handleModalDistrictChange()">
+      <label for="district_${index}" style="margin: 0; cursor: pointer; font-size: 14px;">${district}</label>
+    `;
+    container.appendChild(checkboxDiv);
   });
 }
 
 function handleModalDistrictChange() {
-  const districtSelect = document.getElementById("supportDistricts");
   const subcountiesContainer = document.getElementById("modalSubcounties");
+  const subcountiesCheckboxes = document.getElementById(
+    "subcountiesCheckboxes",
+  );
+  if (!subcountiesContainer || !subcountiesCheckboxes) return;
 
-  if (!districtSelect || !subcountiesContainer) return;
+  // Find all checked district checkboxes
+  const selectedDistricts = Array.from(
+    document.querySelectorAll(
+      '#supportDistricts input[name="districts"]:checked',
+    ),
+  ).map((cb) => cb.value);
 
-  const selectedDistrict = districtSelect.value;
+  // Clear old subcounties
+  subcountiesCheckboxes.innerHTML = "";
 
-  if (selectedDistrict && ugandaDistrictsSubcounties[selectedDistrict]) {
-    // Show subcounties container
+  if (selectedDistricts.length > 0) {
     subcountiesContainer.style.display = "block";
 
-    // Clear existing subcounties
-    const subcountiesCheckboxes = document.getElementById(
-      "subcountiesCheckboxes",
-    );
-    subcountiesCheckboxes.innerHTML = "";
+    // Add subcounties for each selected district
+    selectedDistricts.forEach((district) => {
+      if (ugandaDistrictsSubcounties[district]) {
+        const groupLabel = document.createElement("div");
+        groupLabel.innerHTML = `<strong>${district}</strong>`;
+        subcountiesCheckboxes.appendChild(groupLabel);
 
-    // Add subcounties as checkboxes
-    ugandaDistrictsSubcounties[selectedDistrict].forEach((subcounty, index) => {
-      const checkboxDiv = document.createElement("div");
-      checkboxDiv.className = "checkbox-item";
-      checkboxDiv.style.marginBottom = "6px";
-      checkboxDiv.style.display = "flex";
-      checkboxDiv.style.alignItems = "center";
-      checkboxDiv.style.gap = "8px";
-
-      checkboxDiv.innerHTML = `
-        <input type="checkbox" id="subcounty_${index}" name="subcounties" value="${subcounty}" 
-               style="width: 16px; height: 16px; accent-color: #007bff;">
-        <label for="subcounty_${index}" style="margin: 0; cursor: pointer; font-size: 14px;">${subcounty}</label>
-      `;
-      subcountiesCheckboxes.appendChild(checkboxDiv);
+        ugandaDistrictsSubcounties[district].forEach((subcounty, index) => {
+          const checkboxDiv = document.createElement("div");
+          checkboxDiv.className = "checkbox-item";
+          checkboxDiv.innerHTML = `
+            <input type="checkbox" id="${district}_subcounty_${index}" 
+                   name="subcounties" value="${subcounty}">
+            <label for="${district}_subcounty_${index}">${subcounty}</label>
+          `;
+          subcountiesCheckboxes.appendChild(checkboxDiv);
+        });
+      }
     });
-
-    // Update help text
-    document.querySelector(
-      "#addSupportYearModal .district-help-text",
-    ).textContent = "Select subcounties within the chosen district";
-
-    // Hide coverage container initially
-    document.getElementById("modalDistrictCoverage").style.display = "none";
   } else {
-    // Hide subcounties if no district selected
     subcountiesContainer.style.display = "none";
-    document.getElementById("modalDistrictCoverage").style.display = "none";
   }
 }
 
@@ -533,13 +543,26 @@ function initializeSupportYearsGrid() {
 
   const gridOptions = {
     columnDefs: [
-      { field: "year", headerName: "Year", width: 80, sortable: true },
-      { field: "quarter", headerName: "Quarter", width: 100, sortable: true },
-      { field: "level", headerName: "Level", width: 100, sortable: true },
+      { field: "year", headerName: "Year", width: 80, flex: 1, sortable: true },
+      {
+        field: "quarter",
+        headerName: "Quarter",
+        width: 100,
+        flex: 1,
+        sortable: true,
+      },
+      {
+        field: "level",
+        headerName: "Level",
+        width: 100,
+        flex: 1,
+        sortable: true,
+      },
       {
         field: "thematicAreas",
         headerName: "Thematic Areas",
         width: 200,
+        flex: 1,
         valueFormatter: (params) => {
           if (Array.isArray(params.value)) {
             return params.value.join(", ");
@@ -547,11 +570,18 @@ function initializeSupportYearsGrid() {
           return params.value || "";
         },
       },
-      { field: "district", headerName: "District", width: 120, sortable: true },
+      {
+        field: "district",
+        headerName: "District",
+        width: 120,
+        flex: 1,
+        sortable: true,
+      },
       {
         field: "subcounties",
         headerName: "Subcounties",
         width: 200,
+        flex: 1,
         valueFormatter: (params) => {
           if (Array.isArray(params.value)) {
             return params.value.join(", ");
@@ -562,6 +592,7 @@ function initializeSupportYearsGrid() {
       {
         headerName: "Actions",
         width: 120,
+        flex: 1.5,
         cellRenderer: (params) => {
           return `
             <button class="grid-btn edit-btn" onclick="editSupportYear(${params.node.rowIndex})">
@@ -686,83 +717,68 @@ function resetSupportYearForm() {
 
 function handleModalLevelChange() {
   const levelSelect = document.getElementById("supportLevel");
-  const districtsSelect = document.getElementById("supportDistricts");
+  const districtsContainer = document.getElementById("supportDistricts");
   const helpText = document.querySelector(
     "#addSupportYearModal .district-help-text",
   );
   const subcountiesContainer = document.getElementById("modalSubcounties");
-  const coverageContainer = document.getElementById("modalDistrictCoverage");
 
   if (levelSelect.value === "National") {
-    districtsSelect.disabled = true;
-    districtsSelect.selectedIndex = 0;
+    // Hide districts + subcounties when national
+    districtsContainer.style.display = "none";
+    if (subcountiesContainer) subcountiesContainer.style.display = "none";
     helpText.textContent = "Districts not required for National level support";
-    if (subcountiesContainer) subcountiesContainer.style.display = "none";
   } else if (levelSelect.value === "District") {
-    districtsSelect.disabled = false;
-    districtsSelect.selectedIndex = 0;
-    helpText.textContent = "Select a district to choose subcounties";
+    // Show districts
+    districtsContainer.style.display = "block";
+    helpText.textContent = "Select districts to choose subcounties";
   } else {
-    districtsSelect.disabled = true;
-    districtsSelect.selectedIndex = 0;
-    helpText.textContent = "Select level of support first";
+    // Reset
+    districtsContainer.style.display = "none";
     if (subcountiesContainer) subcountiesContainer.style.display = "none";
-  }
-
-  if (coverageContainer) {
-    coverageContainer.style.display = "none";
+    helpText.textContent = "Select level of support first";
   }
 }
 
 function saveSupportYear() {
-  const form = document.getElementById("supportYearForm");
-  const formData = new FormData(form);
-
-  const yearElement = document.getElementById("supportYear");
-  const quarterElement = document.getElementById("quarter");
-  const levelElement = document.getElementById("supportLevel");
-  const districtSelect = document.getElementById("supportDistricts");
-
-  if (!yearElement || !quarterElement || !levelElement || !districtSelect) {
-    showNotification(
-      "Form elements not found. Please refresh the page.",
-      "error",
-    );
-    return;
-  }
-
-  const year = yearElement.value;
-  const quarter = quarterElement.value;
-  const level = levelElement.value;
+  const year = document.getElementById("supportYear").value;
+  const quarter = document.getElementById("quarter").value;
+  const level = document.getElementById("supportLevel").value;
 
   if (!year || !quarter || !level) {
     showNotification("Please fill in all required fields", "error");
     return;
   }
 
-  // Get selected thematic areas
+  // Thematic areas check
   const selectedThematicAreas = Array.from(
     document.querySelectorAll('input[name="thematicAreas"]:checked'),
   ).map((cb) => cb.value);
-
   if (selectedThematicAreas.length === 0) {
     showNotification("Please select at least one thematic area", "error");
     return;
   }
 
-  let selectedDistrict = "";
+  let selectedDistricts = [];
   let selectedSubcounties = [];
 
   if (level === "National") {
-    selectedDistrict = "National";
+    selectedDistricts = ["National"];
     selectedSubcounties = ["National"];
   } else {
-    selectedDistrict = districtSelect.value;
-    if (!selectedDistrict) {
-      showNotification("Please select a district", "error");
+    // ✅ Collect all checked district checkboxes
+    selectedDistricts = Array.from(
+      document.querySelectorAll(
+        '#supportDistricts input[name="districts"]:checked',
+      ),
+    ).map((cb) => cb.value);
+
+    if (selectedDistricts.length === 0) {
+      showNotification("Please select at least one district", "error");
       return;
     }
 
+    // ✅ Collect subcounties
     selectedSubcounties = Array.from(
       document.querySelectorAll('input[name="subcounties"]:checked'),
     ).map((cb) => cb.value);
@@ -775,10 +791,10 @@ function saveSupportYear() {
 
   const supportYearData = {
     year: Number.parseInt(year),
-    quarter: quarter,
-    level: level,
+    quarter,
+    level,
     thematicAreas: selectedThematicAreas,
-    district: selectedDistrict,
+    district: selectedDistricts.join(", "), // allow multiple
     subcounties: selectedSubcounties,
   };
 
@@ -1378,6 +1394,7 @@ function finalSubmitRegistration() {
   const checkboxes = modal.querySelectorAll(
     'input[name^="createUser"]:checked',
   );
+
   checkboxes.forEach((checkbox) => {
     const index = checkbox.name.match(/\[(\d+)\]/)[1];
     const usernameInput = modal.querySelector(
@@ -1387,8 +1404,8 @@ function finalSubmitRegistration() {
       `input[name="password[${index}]"]`,
     );
 
-    const username = usernameInput ? usernameInput.value : "";
-    const password = passwordInput ? passwordInput.value : "";
+    const username = usernameInput ? usernameInput.value.trim() : "";
+    const password = passwordInput ? passwordInput.value.trim() : "";
 
     if (username && password) {
       const passwordValidation = validatePassword(password);
@@ -1431,7 +1448,6 @@ async function submitRegistration(data) {
   showNotification("Submitting registration...", "info");
 
   const form = document.getElementById("registrationForm");
-  const rf = new FormData(form);
 
   try {
     const submitData = {
@@ -1444,7 +1460,7 @@ async function submitRegistration(data) {
         officialEmail: data.basicInfo.officialEmail || "",
       },
       addresses: data.addresses || [],
-      contacts: data.contacts.map((contact) => ({
+      contacts: (data.contacts || []).map((contact) => ({
         name: contact.name || "",
         position: contact.position || "",
         phone: contact.phone || "",
@@ -1457,13 +1473,28 @@ async function submitRegistration(data) {
         signedDate: data.mou.signedDate || "",
         expiryDate: data.mou.expiryDate || "",
       },
-      supportYears: data.supportYears.map((supportYear) => ({
+      supportYears: (data.supportYears || []).map((supportYear) => ({
         year: Number.parseInt(supportYear.year) || 0,
         quarter: supportYear.quarter || "",
         level: supportYear.level || "",
         thematicAreas: supportYear.thematicAreas || [],
-        district: supportYear.district || "",
-        subcounties: supportYear.subcounties || [],
+        // ensure district + subcounties always match
+        districts:
+          supportYear.level === "National"
+            ? []
+            : supportYear.district
+                .split(",")
+                .map((district) => district.trim())
+                .map((district) => {
+                  // Check if the district exists in the master list
+                  const subcounties =
+                    ugandaDistrictsSubcounties[district] || [];
+
+                  return {
+                    district: district,
+                    subcounties: subcounties,
+                  };
+                }),
       })),
       userAccounts: data.userAccounts || [],
     };
