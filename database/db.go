@@ -61,6 +61,8 @@ func ConnectDB() *gorm.DB {
 		&models.PartnerCategory{},
 		&models.PartnerSupportYearDistrict{},
 		&models.PasswordToken{},
+		&models.InternalGroups{},
+		&models.Emails{},
 	)
 
 	if err != nil {

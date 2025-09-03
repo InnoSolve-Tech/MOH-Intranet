@@ -1,6 +1,8 @@
 package models
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
 	"gorm.io/datatypes"
@@ -116,4 +118,46 @@ type PartnerSubmissionData struct {
 		Username     string `json:"username"`
 		Password     string `json:"password"`
 	} `json:"userAccounts"`
+}
+
+func FindPartnersByThematicAndDistricts(db *gorm.DB, thematicAreas []string, districts []string) ([]Partner, error) {
+	var partners []Partner
+
+	if len(thematicAreas) == 0 && len(districts) == 0 {
+		return partners, nil
+	}
+
+	baseQuery := `
+		SELECT DISTINCT p.* 
+		FROM partners p
+		JOIN partner_support_years psy ON psy.partner_id = p.id
+		LEFT JOIN partner_support_year_districts psyd ON psyd.partner_support_year_id = psy.id
+		WHERE p.deleted_at IS NULL AND (`
+
+	var conditions []string
+	var args []interface{}
+
+	// Handle thematic areas filtering
+	if len(thematicAreas) > 0 {
+		for _, area := range thematicAreas {
+			conditions = append(conditions, "psy.thematic_areas::jsonb @> ?::jsonb")
+			args = append(args, fmt.Sprintf(`"%s"`, area))
+		}
+	}
+
+	// Handle districts filtering
+	if len(districts) > 0 {
+		placeholders := make([]string, len(districts))
+		for i, district := range districts {
+			placeholders[i] = "?"
+			args = append(args, district)
+		}
+		conditions = append(conditions, fmt.Sprintf("psyd.district IN (%s)", strings.Join(placeholders, ",")))
+	}
+
+	// Complete the query
+	finalQuery := baseQuery + strings.Join(conditions, " OR ") + ")"
+
+	result := db.Raw(finalQuery, args...).Scan(&partners)
+	return partners, result.Error
 }

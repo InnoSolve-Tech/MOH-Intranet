@@ -61,4 +61,22 @@ func SetupRoutes(app *fiber.App) {
 		partnerCategories.Post("/bulk", service.CreatePartnerCategoriesBulk)
 		partnerCategories.Delete("/:id", service.DeletePartnerCategory)
 	}
+
+	internalGroups := api.Group("/internal-groups")
+	{
+		internalGroups.Post("", service.CreateInternalGroup)
+		internalGroups.Get("", service.GetInternalGroups)
+		internalGroups.Get("/:uuid", service.GetInternalGroup)
+		internalGroups.Put("/:uuid", service.UpdateInternalGroup)
+		internalGroups.Delete("/:uuid", service.DeleteInternalGroup)
+	}
+
+	emails := api.Group("/emails")
+	{
+		emails.Post("", service.CreateEmail)
+		emails.Get("", service.GetEmails)
+		emails.Get("/:id", service.GetEmail)
+		emails.Put("/:id", service.UpdateEmail)
+		emails.Delete("/:id", service.DeleteEmail)
+	}
 }
