@@ -68,6 +68,32 @@
               </svg>
               Internal Groups
             </button>
+            <button class="nav-btn" onclick="showSettingsSection('bulk-email')">
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                <g
+                  id="SVGRepo_tracerCarrier"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ></g>
+                <g id="SVGRepo_iconCarrier">
+                  <path
+                    d="M16 12C16 14.2091 14.2091 16 12 16C9.79086 16 8 14.2091 8 12C8 9.79086 9.79086 8 12 8C14.2091 8 16 9.79086 16 12ZM16 12V13.5C16 14.8807 17.1193 16 18.5 16V16C19.8807 16 21 14.8807 21 13.5V12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21H16"
+                    stroke="#000000"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ></path>
+                </g>
+              </svg>
+              Bulk Email
+            </button>
             <button class="nav-btn" onclick="showSettingsSection('smtp')">
               <svg
                 width="16"
@@ -256,6 +282,195 @@
                   id="internalGroupsGrid"
                   class="ag-theme-alpine"
                   style="height: 400px; width: 100%; margin-top: 20px"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <!-- Bulk Email Section -->
+          <div id="bulk-email-settings" class="settings-section">
+            <div class="settings-card">
+              <div class="card-header">
+                <h3>Bulk Email Communications</h3>
+                <p>
+                  Send targeted email campaigns to partners based on thematic
+                  areas or internal groups
+                </p>
+              </div>
+              <div class="card-body">
+                <div class="bulk-email-form">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emailTargetType">Target Audience</label>
+                      <select
+                        id="emailTargetType"
+                        onchange="updateEmailTargets()"
+                      >
+                        <option value="">Select target type...</option>
+                        <option value="thematic">By Thematic Area</option>
+                        <option value="group">By Internal Group</option>
+                        <option value="all">All Partners</option>
+                      </select>
+                    </div>
+                    <div
+                      class="form-group"
+                      id="emailTargetSelectionGroup"
+                      style="display: none"
+                    >
+                      <label
+                        for="emailTargetSelection"
+                        id="emailTargetSelectionLabel"
+                        >Select Target</label
+                      >
+                      <select id="emailTargetSelection" multiple>
+                        <!-- Options populated dynamically -->
+                      </select>
+                      <small>Hold Ctrl/Cmd to select multiple options</small>
+                    </div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label for="emailSubject">Email Subject *</label>
+                      <input
+                        type="text"
+                        id="emailSubject"
+                        placeholder="Enter email subject line"
+                        required
+                      />
+                    </div>
+                    <div class="form-group">
+                      <label for="emailPriority">Priority</label>
+                      <select id="emailPriority">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="emailContent">Email Content *</label>
+                    <textarea
+                      id="emailContent"
+                      rows="10"
+                      placeholder="Enter your email message here..."
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div class="email-templates">
+                    <h4>Quick Templates</h4>
+                    <div class="template-buttons">
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="loadEmailTemplate('survey')"
+                      >
+                        Survey Request
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="loadEmailTemplate('update')"
+                      >
+                        Program Update
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="loadEmailTemplate('meeting')"
+                      >
+                        Meeting Invitation
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-secondary btn-sm"
+                        onclick="loadEmailTemplate('reminder')"
+                      >
+                        Document Reminder
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="email-preview">
+                    <h4>Email Preview & Recipients</h4>
+                    <div class="recipient-summary" id="recipientSummary">
+                      <p>Select target audience to see recipient count</p>
+                    </div>
+                    <div class="preview-content" id="previewContent">
+                      <div class="preview-placeholder">
+                        Email preview will appear here...
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="email-actions">
+                    <div class="form-row">
+                      <div class="form-group">
+                        <label class="checkbox-label">
+                          <input type="checkbox" id="sendTestFirst" checked />
+                          <span class="checkmark"></span>
+                          Send test email first
+                        </label>
+                      </div>
+                      <div class="form-group" id="testEmailGroup">
+                        <input
+                          type="email"
+                          id="testEmailAddress"
+                          placeholder="Test email address"
+                        />
+                      </div>
+                    </div>
+                    <div class="action-buttons">
+                      <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="previewEmail()"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path
+                            d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"
+                          />
+                        </svg>
+                        Preview
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="sendBulkEmail()"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                        </svg>
+                        Send Email
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email History -->
+            <div class="settings-card" style="margin-top: 20px">
+              <div class="card-header">
+                <h3>Email Campaign History</h3>
+                <p>Track your previously sent bulk emails</p>
+              </div>
+              <div class="card-body">
+                <div
+                  id="emailHistoryGrid"
+                  class="ag-theme-alpine"
+                  style="height: 300px; width: 100%"
                 ></div>
               </div>
             </div>

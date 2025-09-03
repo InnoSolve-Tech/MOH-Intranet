@@ -34,11 +34,14 @@ async function loadPartnerProfile(partneruuid) {
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
     const res = await response.json();
     const partner = res.partner;
-    console.log(partner);
     currentPartner = partner;
+    console.log(partner);
+
+    if (res.user.roles.role_name == "admin") {
+      $(".back-btn").css("display", "inline-block");
+    }
 
     populatePartnerInfo(partner);
     loadContactsData(partner.partner_contacts || []);

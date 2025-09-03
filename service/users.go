@@ -321,6 +321,7 @@ func GetUserByUUID(c *fiber.Ctx) error {
 		if err := database.DB.
 			Where("user_id = ?", user.ID).
 			Preload("Partner").
+			Preload("Partner.PartnerAddress").
 			Preload("Partner.PartnerSupportYears").
 			Preload("Partner.PartnerSupportYears.Districts").
 			Preload("Partner.PartnerContacts").

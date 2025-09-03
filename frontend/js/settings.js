@@ -3,6 +3,8 @@ const $ = window.jQuery;
 const agGrid = window.agGrid;
 
 let dropdownData = {};
+let emailHistory = [];
+let emailHistoryGrid = null;
 
 $(document).ready(async () => {
   try {
@@ -27,6 +29,8 @@ $(document).ready(async () => {
     initializeSettingsPage();
     loadSmtpSettings();
     loadInternalGroupsData();
+    loadEmailHistory();
+    populateThematicAreasDropdowns();
   } catch (err) {
     console.error("Error loading dropdown data:", err);
   }
@@ -41,6 +45,93 @@ let editingItemIndex = -1;
 let editingDropdownType = "";
 let smtpSettings = {};
 
+// Email templates
+const emailTemplates = {
+  survey: {
+    subject: "Partnership Survey - Your Input Needed",
+    content: `Dear Partner,
+
+We hope this message finds you well. As part of our ongoing commitment to strengthening our partnerships and improving our collaborative efforts, we are conducting a brief survey to gather your valuable feedback.
+
+Your insights will help us:
+- Better understand your needs and priorities
+- Improve our support and communication
+- Plan future initiatives more effectively
+
+The survey will take approximately 10-15 minutes to complete. Please click the link below to begin:
+
+[Survey Link]
+
+Thank you for your continued partnership and support.
+
+Best regards,
+Ministry of Health Uganda`,
+  },
+  update: {
+    subject: "Important Program Updates - Please Review",
+    content: `Dear Partner,
+
+We hope you are doing well. We wanted to share some important updates regarding our ongoing programs and initiatives.
+
+Key Updates:
+- [Update 1]
+- [Update 2]
+- [Update 3]
+
+These changes may impact your current activities, so please review them carefully and reach out if you have any questions or concerns.
+
+We appreciate your continued collaboration and look forward to working together on these exciting developments.
+
+Warm regards,
+Ministry of Health Uganda`,
+  },
+  meeting: {
+    subject: "Partnership Meeting Invitation - Your Attendance Requested",
+    content: `Dear Partner,
+
+You are cordially invited to attend our upcoming partnership meeting to discuss important matters and plan future activities.
+
+Meeting Details:
+- Date: [Date]
+- Time: [Time]
+- Location: [Location/Virtual Link]
+- Duration: [Duration]
+
+Agenda:
+- Review of current partnerships
+- Discussion of upcoming initiatives
+- Q&A session
+- Next steps planning
+
+Please confirm your attendance by [RSVP Date]. If you cannot attend, please let us know if you would like to nominate a representative.
+
+Looking forward to seeing you there.
+
+Best regards,
+Ministry of Health Uganda`,
+  },
+  reminder: {
+    subject: "Document Submission Reminder - Action Required",
+    content: `Dear Partner,
+
+This is a friendly reminder regarding outstanding document submissions that require your attention.
+
+Outstanding Documents:
+- [Document 1] - Due: [Date]
+- [Document 2] - Due: [Date]
+- [Document 3] - Due: [Date]
+
+Please ensure these documents are submitted by the specified deadlines to avoid any delays in processing or compliance issues.
+
+If you have any questions or need assistance with the submission process, please don't hesitate to contact us.
+
+Thank you for your prompt attention to this matter.
+
+Best regards,
+Ministry of Health Uganda`,
+  },
+};
+
 window.showSettingsSection = (sectionName) => {
   $(".settings-section").removeClass("active");
   $(`#${sectionName}-settings`).addClass("active");
@@ -51,9 +142,333 @@ window.showSettingsSection = (sectionName) => {
       ? "Dropdown Management"
       : sectionName === "groups"
         ? "Internal Groups"
-        : "SMTP Configuration";
+        : sectionName === "bulk-email"
+          ? "Bulk Email"
+          : "SMTP Configuration";
   $(`.nav-btn:contains("${buttonText}")`).addClass("active");
 };
+
+// Populate thematic areas in all relevant dropdowns
+function populateThematicAreasDropdowns() {
+  const thematicOptions = dropdownData.thematicAreas
+    .map((area) => `<option value="${area.name}">${area.name}</option>`)
+    .join("");
+
+  // Update Internal Groups modal
+  $("#groupThematicAreas").html(thematicOptions);
+
+  // Update bulk email targeting when thematic is selected
+  updateThematicAreasInBulkEmail();
+}
+
+function updateThematicAreasInBulkEmail() {
+  if ($("#emailTargetType").val() === "thematic") {
+    const thematicOptions = dropdownData.thematicAreas
+      .map((area) => `<option value="${area.name}">${area.name}</option>`)
+      .join("");
+    $("#emailTargetSelection").html(thematicOptions);
+  }
+}
+
+// Bulk Email Functions
+window.updateEmailTargets = () => {
+  const targetType = $("#emailTargetType").val();
+  const targetGroup = $("#emailTargetSelectionGroup");
+  const targetSelection = $("#emailTargetSelection");
+  const targetLabel = $("#emailTargetSelectionLabel");
+
+  if (targetType === "") {
+    targetGroup.hide();
+    updateRecipientSummary(0, "No target selected");
+    return;
+  }
+
+  if (targetType === "all") {
+    targetGroup.hide();
+    updateRecipientSummary(125, "All Partners"); // Mock count
+    return;
+  }
+
+  targetGroup.show();
+
+  if (targetType === "thematic") {
+    targetLabel.text("Select Thematic Areas");
+    const thematicOptions = dropdownData.thematicAreas
+      .map((area) => `<option value="${area.name}">${area.name}</option>`)
+      .join("");
+    targetSelection.html(thematicOptions);
+  } else if (targetType === "group") {
+    targetLabel.text("Select Internal Groups");
+    const groupOptions = internalGroupsData
+      .map((group) => `<option value="${group.id}">${group.name}</option>`)
+      .join("");
+    targetSelection.html(groupOptions);
+  }
+
+  targetSelection.off("change").on("change", updateRecipientCount);
+  updateRecipientCount();
+};
+
+function updateRecipientCount() {
+  const targetType = $("#emailTargetType").val();
+  const selectedTargets = $("#emailTargetSelection").val() || [];
+
+  let count = 0;
+  let description = "";
+
+  if (targetType === "thematic") {
+    // Mock calculation based on selected thematic areas
+    count = selectedTargets.length * 15; // Assume 15 partners per thematic area
+    description =
+      selectedTargets.length > 0
+        ? `Partners in: ${selectedTargets.join(", ")}`
+        : "No thematic areas selected";
+  } else if (targetType === "group") {
+    // Calculate based on selected internal groups
+    selectedTargets.forEach((groupId) => {
+      const group = internalGroupsData.find((g) => g.id == groupId);
+      if (group) {
+        count += group.partnerCount;
+      }
+    });
+    const groupNames = selectedTargets
+      .map((groupId) => {
+        const group = internalGroupsData.find((g) => g.id == groupId);
+        return group ? group.name : "";
+      })
+      .filter(Boolean);
+    description =
+      groupNames.length > 0
+        ? `Groups: ${groupNames.join(", ")}`
+        : "No groups selected";
+  }
+
+  updateRecipientSummary(count, description);
+}
+
+function updateRecipientSummary(count, description) {
+  $("#recipientSummary").html(`
+    <div class="recipient-info">
+      <div class="recipient-count">
+        <strong>${count}</strong> recipients
+      </div>
+      <div class="recipient-description">
+        ${description}
+      </div>
+    </div>
+  `);
+}
+
+window.loadEmailTemplate = (templateName) => {
+  const template = emailTemplates[templateName];
+  if (template) {
+    $("#emailSubject").val(template.subject);
+    $("#emailContent").val(template.content);
+    previewEmail();
+  }
+};
+
+window.previewEmail = () => {
+  const subject = $("#emailSubject").val();
+  const content = $("#emailContent").val();
+
+  if (!subject || !content) {
+    showNotification(
+      "Please enter both subject and content to preview",
+      "error",
+    );
+    return;
+  }
+
+  const previewHtml = `
+    <div class="email-preview-content">
+      <div class="email-header">
+        <div class="email-subject"><strong>Subject:</strong> ${subject}</div>
+        <div class="email-from"><strong>From:</strong> ${smtpSettings.fromName || "Ministry of Health Uganda"} &lt;${smtpSettings.fromEmail || "noreply@health.go.ug"}&gt;</div>
+      </div>
+      <div class="email-body">
+        ${content.replace(/\n/g, "<br>")}
+      </div>
+    </div>
+  `;
+
+  $("#previewContent").html(previewHtml);
+};
+
+window.sendBulkEmail = () => {
+  const targetType = $("#emailTargetType").val();
+  const subject = $("#emailSubject").val();
+  const content = $("#emailContent").val();
+  const priority = $("#emailPriority").val();
+  const sendTest = $("#sendTestFirst").is(":checked");
+  const testEmail = $("#testEmailAddress").val();
+
+  // Validation
+  if (!targetType) {
+    showNotification("Please select a target audience", "error");
+    return;
+  }
+
+  if (!subject || !content) {
+    showNotification("Please enter both subject and email content", "error");
+    return;
+  }
+
+  if (sendTest && !testEmail) {
+    showNotification("Please enter a test email address", "error");
+    return;
+  }
+
+  const recipientCount = parseInt($(".recipient-count strong").text()) || 0;
+  if (recipientCount === 0) {
+    showNotification("No recipients selected for this email", "error");
+    return;
+  }
+
+  // Confirm before sending
+  const confirmMessage = sendTest
+    ? `Send test email to ${testEmail} first?`
+    : `Send email to ${recipientCount} recipients?`;
+
+  if (!confirm(confirmMessage)) return;
+
+  // Simulate email sending
+  showNotification("Sending email...", "info");
+
+  setTimeout(() => {
+    // Add to email history
+    const emailRecord = {
+      id: Date.now(),
+      subject: subject,
+      targetType: targetType,
+      targetDetails: getTargetDetails(),
+      recipientCount: recipientCount,
+      sentDate: new Date().toISOString(),
+      status: "Sent",
+      priority: priority,
+    };
+
+    emailHistory.unshift(emailRecord);
+    saveEmailHistory();
+    initializeEmailHistoryGrid();
+
+    // Reset form
+    $("#emailSubject").val("");
+    $("#emailContent").val("");
+    $("#emailTargetType").val("");
+    updateEmailTargets();
+    $("#previewContent").html(
+      '<div class="preview-placeholder">Email preview will appear here...</div>',
+    );
+
+    const message = sendTest
+      ? "Test email sent successfully!"
+      : `Bulk email sent to ${recipientCount} recipients successfully!`;
+    showNotification(message, "success");
+  }, 2000);
+};
+
+function getTargetDetails() {
+  const targetType = $("#emailTargetType").val();
+  const selectedTargets = $("#emailTargetSelection").val() || [];
+
+  if (targetType === "all") return "All Partners";
+  if (targetType === "thematic") return selectedTargets.join(", ");
+  if (targetType === "group") {
+    return selectedTargets
+      .map((groupId) => {
+        const group = internalGroupsData.find((g) => g.id == groupId);
+        return group ? group.name : "";
+      })
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  return "";
+}
+
+function initializeEmailHistoryGrid() {
+  if (emailHistoryGrid) {
+    emailHistoryGrid.destroy();
+  }
+
+  const columnDefs = [
+    {
+      headerName: "Subject",
+      field: "subject",
+      sortable: true,
+      filter: true,
+      flex: 2,
+      cellRenderer: (params) => `
+        <div>
+          <strong>${params.data.subject}</strong>
+          <br><small style="color: #666;">${params.data.targetDetails}</small>
+        </div>
+      `,
+    },
+    {
+      headerName: "Target Type",
+      field: "targetType",
+      sortable: true,
+      filter: true,
+      flex: 1,
+      cellRenderer: (params) => {
+        const badges = {
+          thematic: '<span class="badge badge-info">Thematic</span>',
+          group: '<span class="badge badge-success">Group</span>',
+          all: '<span class="badge badge-primary">All Partners</span>',
+        };
+        return badges[params.data.targetType] || params.data.targetType;
+      },
+    },
+    {
+      headerName: "Recipients",
+      field: "recipientCount",
+      sortable: true,
+      flex: 1,
+      cellRenderer: (params) =>
+        `<strong>${params.data.recipientCount}</strong>`,
+    },
+    {
+      headerName: "Sent Date",
+      field: "sentDate",
+      sortable: true,
+      flex: 1,
+      cellRenderer: (params) =>
+        new Date(params.data.sentDate).toLocaleDateString(),
+    },
+    {
+      headerName: "Status",
+      field: "status",
+      sortable: true,
+      flex: 1,
+      cellRenderer: (params) =>
+        `<span class="badge badge-success">${params.data.status}</span>`,
+    },
+  ];
+
+  const gridOptions = {
+    columnDefs: columnDefs,
+    rowData: emailHistory,
+    domLayout: "normal",
+    suppressRowClickSelection: true,
+    rowHeight: 60,
+  };
+
+  const gridDiv = document.getElementById("emailHistoryGrid");
+  emailHistoryGrid = window.agGrid.createGrid(gridDiv, gridOptions);
+}
+
+function loadEmailHistory() {
+  const saved = localStorage.getItem("emailHistory");
+  if (saved) {
+    emailHistory.splice(0, emailHistory.length, ...JSON.parse(saved));
+  }
+}
+
+function saveEmailHistory() {
+  localStorage.setItem("emailHistory", JSON.stringify(emailHistory));
+}
 
 async function addDropdownItem(dropdownType) {
   let inputId, newValue;

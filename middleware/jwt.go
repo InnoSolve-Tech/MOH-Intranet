@@ -2,12 +2,16 @@ package middleware
 
 import (
 	"crypto/rand"
+	"encoding/json"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
+	"moh-intranet.com/database"
+	"moh-intranet.com/models"
 )
 
 // AuthConfig holds configuration for authentication middleware
@@ -41,11 +45,10 @@ func AuthMiddleware(config ...AuthConfig) fiber.Handler {
 	if len(config) > 0 {
 		cfg = config[0]
 	}
-
 	return func(c *fiber.Ctx) error {
 		requestPath := c.Path()
 
-		// Skip middleware for API routes and assets
+		// Skip static and api routes
 		if strings.HasPrefix(requestPath, "/api/") ||
 			strings.HasPrefix(requestPath, "/assets/") ||
 			strings.HasPrefix(requestPath, "/css/") ||
@@ -59,36 +62,157 @@ func AuthMiddleware(config ...AuthConfig) fiber.Handler {
 			return c.Next()
 		}
 
-		// Only protect /menu/* pages (note: singular "menu" not "menus")
+		// Store current page as last safe page if it's not a menu page
 		if !strings.HasPrefix(requestPath, "/menu/") {
+			c.Cookie(&fiber.Cookie{
+				Name:     "last_safe_page",
+				Value:    requestPath,
+				Path:     "/",
+				HTTPOnly: false, // Allow JavaScript access
+				SameSite: "Lax",
+			})
 			return c.Next()
 		}
 
-		// Verify session token for /menus/* pages
-		token := c.Cookies(cfg.CookieName)
-		if token == "" {
-			return c.Redirect("/")
+		// Helper function to get safe redirect URL with multiple fallbacks
+		getSafeRedirectURL := func() string {
+			// 1. Try custom header (set by JavaScript)
+			if customRef := c.Get("X-Previous-Page"); customRef != "" {
+				if !strings.HasPrefix(customRef, "/menu/") && customRef != requestPath {
+					return customRef
+				}
+			}
+
+			// 2. Try stored cookie
+			if cookieRef := c.Cookies("last_safe_page"); cookieRef != "" {
+				if !strings.HasPrefix(cookieRef, "/menu/") && cookieRef != requestPath {
+					return cookieRef
+				}
+			}
+
+			// 3. Try HTTP Referer header
+			if referer := c.Get("Referer"); referer != "" {
+				if refererURL, err := url.Parse(referer); err == nil {
+					refererPath := refererURL.Path
+					if refererPath != requestPath && !strings.HasPrefix(refererPath, "/menu/") {
+						return refererPath
+					}
+				}
+			}
+
+			// 4. Try query parameter (for explicit redirects)
+			if returnTo := c.Query("return_to"); returnTo != "" {
+				if !strings.HasPrefix(returnTo, "/menu/") && returnTo != requestPath {
+					return returnTo
+				}
+			}
+
+			// 5. Fallback to dashboard or home
+			return "/"
 		}
 
-		// Validate JWT token
+		token := c.Cookies(cfg.CookieName)
+		if token == "" {
+			return c.Redirect(getSafeRedirectURL())
+		}
+
 		claims, err := validateToken(token, cfg.JWTSecret)
 		if err != nil {
-			// Clear invalid cookie
+			// Clear auth cookie but keep navigation cookie
 			c.Cookie(&fiber.Cookie{
 				Name:     cfg.CookieName,
 				Value:    "",
 				Expires:  time.Now().Add(-time.Hour),
 				HTTPOnly: true,
 			})
-			return c.Redirect("/")
+			return c.Redirect(getSafeRedirectURL())
 		}
 
-		// Store user info in context for use in templates
-		c.Locals("user", claims)
-		c.Locals("authenticated", true)
+		userUUID := claims.PartnerUUID
+		if userUUID == "" {
+			return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized: missing user UUID")
+		}
 
+		// Fetch user with role and functions
+		var user models.Users
+		if err := database.DB.Preload("Role").Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to fetch user",
+				"details": err.Error(),
+			})
+		}
+
+		// Map requested path to the menu key for filtering
+		menuKey := mapPathToMenuKey(requestPath)
+		if menuKey == "" {
+			return c.Redirect(getSafeRedirectURL())
+		}
+
+		// Check if menuKey allowed by user's role and functions
+		if !isMenuKeyAllowedForUser(menuKey, &user) {
+			return c.Redirect(getSafeRedirectURL())
+		}
+
+		// Save user info in context for other middlewares/handlers
+		c.Locals("user", user)
+		c.Locals("authenticated", true)
+		c.Locals("userRole", user.Role.RoleName)
 		return c.Next()
 	}
+}
+
+func mapPathToMenuKey(path string) string {
+	p := strings.TrimPrefix(path, "/menu/")
+	p = strings.TrimSuffix(p, ".html")
+	switch p {
+	case "partners":
+		return "partners"
+	case "partner-profile":
+		return "partner-profile"
+	case "users":
+		return "users"
+	case "user-profile":
+		return "user-profile"
+	case "reports":
+		return "reports"
+	case "settings":
+		return "settings"
+	default:
+		return ""
+	}
+}
+
+// isMenuKeyAllowedForUser implements your frontend role and function logic
+func isMenuKeyAllowedForUser(menuKey string, user *models.Users) bool {
+	// If user has no role or permissions, allow only profile pages
+	if user.Role.ID == 0 {
+		return menuKey == "partner-profile" || menuKey == "user-profile"
+	}
+
+	// Admin user sees everything except partner-profile
+	if user.Role.RoleName == "admin" {
+		return menuKey != "partner-profile"
+	}
+
+	// Scope-based example (assuming user.Scope exists)
+	if user.Scope == "individual" {
+		return menuKey == "partner-profile" || menuKey == "user-profile"
+	}
+	// Role functions assumed to be a slice of keys like []string{"partners","users",...}
+	var allowedFunctions []string
+	if err := json.Unmarshal(user.Role.Function, &allowedFunctions); err == nil && len(allowedFunctions) > 0 {
+		if menuKey == "user-profile" {
+			return true
+		}
+		for _, f := range allowedFunctions {
+			if f == menuKey {
+				return true
+			}
+		}
+		return false
+	}
+	// Default fallback - only profile pages allowed
+	return menuKey == "partner-profile" || menuKey == "user-profile"
 }
 
 // SessionHelper creates session management helper middleware
