@@ -234,13 +234,14 @@ async function changePassword() {
 
   try {
     const user_uuid = getCookie("user_uuid");
-    const response = await fetch(`/api/v1/users/${user_uuid}/change-password`, {
-      method: "POST",
+    const response = await fetch(`/api/v1/users/change-password`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        current_password: currentPassword,
+        user_uuid,
+        old_password: currentPassword,
         new_password: newPassword,
       }),
     });

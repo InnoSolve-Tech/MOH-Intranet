@@ -21,6 +21,9 @@ func SetupRoutes(app *fiber.App) {
 	api.Get("/partner-categories", service.GetPartnerCategory)
 	api.Post("/partners", service.CreatePartner) // Create partner with file upload
 	app.Get("/uploads/:category/:filename", service.ServeUploadedFile)
+	api.Put("/reset-password", service.SetPassword)
+	api.Post("/forgot-password", service.ForgotPassword)
+	api.Post("/validate-token", service.ValidateToken)
 
 	// Protected API routes
 	api.Use(middleware.RequireAuth())
@@ -30,9 +33,8 @@ func SetupRoutes(app *fiber.App) {
 		users.Post("/register", service.RegisterUser)
 		users.Get("", service.GetUsers)
 		users.Get("/:uuid", service.GetUserByUUID)
+		users.Put("/change-password", service.ResetPassword)
 		users.Put("/change-scope", service.ChangeScope)
-		users.Put("/reset-password", service.ResetPassword)
-		users.Post("/forgot-password", service.ForgotPassword)
 		users.Post("/set-password", service.SetPassword)
 	}
 
@@ -50,13 +52,13 @@ func SetupRoutes(app *fiber.App) {
 	{
 		thematicAreas.Post("", service.CreateThematicArea)
 		thematicAreas.Post("/bulk", service.CreateThematicAreasBulk)
-		thematicAreas.Delete("", service.DeleteThematicArea)
+		thematicAreas.Delete("/:id", service.DeleteThematicArea)
 	}
 
 	partnerCategories := api.Group("/partner-categories")
 	{
 		partnerCategories.Post("", service.CreatePartnerCategory)
 		partnerCategories.Post("/bulk", service.CreatePartnerCategoriesBulk)
-		partnerCategories.Delete("", service.DeletePartnerCategory)
+		partnerCategories.Delete("/:id", service.DeletePartnerCategory)
 	}
 }

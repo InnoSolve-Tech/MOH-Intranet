@@ -109,6 +109,7 @@ func RegisterUserUsernameAndPassword(c *fiber.Ctx, Username string, Password str
 		Username: Username,
 		Password: string(hashedPassword),
 		RoleID:   role.ID,
+		Active:   false,
 		Scope:    "individual",
 	}
 
@@ -137,6 +138,10 @@ func SignIn(c *fiber.Ctx) error {
 		First(&user).Error
 	if err != nil {
 		return c.Status(401).JSON(fiber.Map{"error": "Invalid username or password"})
+	}
+
+	if !user.Active {
+		return c.Status(401).JSON(fiber.Map{"error": "User is currently inactive."})
 	}
 
 	if bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)) != nil {
@@ -277,6 +282,29 @@ func SetPassword(c *fiber.Ctx) error {
 	database.DB.Delete(&t)
 
 	return c.JSON(fiber.Map{"message": "Password updated successfully"})
+}
+
+func ValidateToken(c *fiber.Ctx) error {
+	var req struct {
+		Token string `json:"token"`
+	}
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	var t models.PasswordToken
+	if err := database.DB.Where("token = ?", req.Token).First(&t).Error; err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid or expired token"})
+	}
+	if time.Now().After(t.ExpiresAt) {
+		return c.Status(400).JSON(fiber.Map{"error": "Token expired"})
+	}
+
+	database.DB.Delete(&t)
+
+	database.DB.Model(&models.Users{}).Where("username = ?", t.Email).Update("active", true)
+
+	return c.JSON(fiber.Map{"message": "Token Confirmed"})
 }
 
 func GetUsers(c *fiber.Ctx) error {

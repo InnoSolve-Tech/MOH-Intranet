@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -18,10 +19,10 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"moh-intranet.com/database"
+	"moh-intranet.com/helpers"
 	"moh-intranet.com/models"
 )
 
-// CreatePartner creates a new partner record with all related data
 // CreatePartner creates a new partner record with all related data
 func CreatePartner(c *fiber.Ctx) error {
 	var submissionData models.PartnerSubmissionData
@@ -210,6 +211,27 @@ func CreatePartner(c *fiber.Ctx) error {
 		Preload("PartnerSupportYears").
 		Preload("PartnerMoU").
 		First(&completePartner, partner.ID)
+
+	token := helpers.GenerateSecureToken(32)
+	pt := models.PasswordToken{
+		Token:     token,
+		Email:     submissionData.UserAccounts[0].Username,
+		ExpiresAt: time.Now().Add(24 * time.Hour),
+	}
+	if err := database.DB.Create(&pt).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to create reset token"})
+	}
+
+	defaultDomain := "http://localhost:7088"
+	domain := getEnv("DOMAIN", &defaultDomain)
+
+	// Build confirmation link with the token as query parameter
+	confirmLink := fmt.Sprintf("%s/confirmation.html?token=%s", domain, url.QueryEscape(token))
+
+	// Compose email body, e.g. including clickable link
+	body := fmt.Sprintf("Thank you for registering. Please confirm your email by clicking the link below:\n\n%s", confirmLink)
+
+	go helpers.SendEmail(submissionData.UserAccounts[0].Username, "Password Reset", body)
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
 		"message": "Partner created successfully",

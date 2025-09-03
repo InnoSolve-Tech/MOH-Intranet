@@ -309,26 +309,47 @@ function updateTreeSelection() {
 function applyTreeFilters() {
   filteredUsers = usersData.filter((user) => {
     if (treeFilters.role && user.role !== treeFilters.role) return false;
+
     if (treeFilters.scope) {
       const scope = user.scope || "No Scope";
       if (scope !== treeFilters.scope) return false;
     }
-    if (treeFilters.user && user.id !== treeFilters.user) return false;
+
+    if (treeFilters.user) {
+      const search = treeFilters.user.toLowerCase();
+      // Partial match on firstName or lastName
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      if (!fullName.includes(search)) return false;
+    }
+
     return true;
   });
 
   if (gridApi) {
-    gridApi.setGridOption("rowData", filteredUsers);
+    gridApi.setRowData(filteredUsers); // Correct API call
   }
 }
 
 function searchTree() {
   const searchTerm = $("#treeSearch").val().toLowerCase();
-  $(".tree-node-header, .tree-leaf").each(function () {
-    const text = $(this).text().toLowerCase();
-    const match = text.includes(searchTerm);
-    $(this).css("display", match || searchTerm === "" ? "flex" : "none");
-  });
+
+  if (!searchTerm) {
+    // Clear the search filter
+    treeFilters.user = null;
+    // Show all nodes
+    $(".tree-node-header, .tree-leaf").css("display", "flex");
+  } else {
+    $(".tree-node-header, .tree-leaf").each(function () {
+      const text = $(this).text().toLowerCase();
+      const match = text.includes(searchTerm);
+      $(this).css("display", match ? "flex" : "none");
+    });
+
+    // Use searchTerm as 'user' filter for the table — matching user firstName partially
+    treeFilters.user = searchTerm;
+  }
+
+  applyTreeFilters();
 }
 
 function clearTreeFilters() {

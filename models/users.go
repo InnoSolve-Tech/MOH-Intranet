@@ -21,6 +21,7 @@ type Users struct {
 	Password string `json:"password" gorm:"unique;not null"`
 	Scope    Scope  `json:"scope" gorm:"type:varchar(20)"`
 	RoleID   uint   `json:"role_id"`
+	Active   bool   `json:"active"`
 	Role     Roles  `json:"roles" gorm:"foreignKey:RoleID;references:ID"`
 }
 

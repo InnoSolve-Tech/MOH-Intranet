@@ -1,5 +1,6 @@
 /* White card with shadow instead of gray background */
-.login-container {
+.login-container,
+.container {
   background: white;
   padding: 15px;
   border-radius: 8px;
@@ -52,6 +53,7 @@
 /* Responsive Design */
 @media (max-width: 768px) {
   .login-container,
+  .container,
   .registration-container,
   .contact-container {
     margin: 10px;

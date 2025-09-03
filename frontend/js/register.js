@@ -1360,20 +1360,51 @@ function showUserCreationModal(formData) {
   document.body.appendChild(modal);
 }
 
-function toggleUserFields(index) {
-  const checkbox = document.querySelector(`input[name="createUser[${index}]"]`);
-  const userFields = document.getElementById(`userFields${index}`);
+function toggleUserFields(selectedIndex) {
+  const checkboxes = document.querySelectorAll(
+    'input[type="checkbox"][name^="createUser"]',
+  );
+  const userFieldsAll = document.querySelectorAll(".user-fields");
 
-  if (checkbox.checked) {
-    userFields.style.display = "block";
-    userFields
-      .querySelectorAll("input, select")
-      .forEach((field) => (field.required = true));
+  const selectedCheckbox = checkboxes[selectedIndex];
+
+  if (selectedCheckbox.checked) {
+    // Disable all other checkboxes and hide their fields
+    checkboxes.forEach((cb, idx) => {
+      if (idx !== selectedIndex) {
+        cb.checked = false;
+        cb.disabled = true;
+        const uf = document.getElementById(`userFields${idx}`);
+        if (uf) {
+          uf.style.display = "none";
+          uf.querySelectorAll("input, select").forEach((field) => {
+            field.required = false;
+            field.value = "";
+          });
+        }
+      }
+    });
+
+    // Show and require fields for currently selected
+    const currentUserFields = document.getElementById(
+      `userFields${selectedIndex}`,
+    );
+    currentUserFields.style.display = "block";
+    currentUserFields.querySelectorAll("input, select").forEach((field) => {
+      field.required = true;
+    });
   } else {
-    userFields.style.display = "none";
-    userFields.querySelectorAll("input, select").forEach((field) => {
-      field.required = false;
-      field.value = "";
+    // When unchecked, enable all checkboxes and hide fields
+    checkboxes.forEach((cb, idx) => {
+      cb.disabled = false;
+      const uf = document.getElementById(`userFields${idx}`);
+      if (uf) {
+        uf.style.display = "none";
+        uf.querySelectorAll("input, select").forEach((field) => {
+          field.required = false;
+          field.value = "";
+        });
+      }
     });
   }
 }
@@ -1434,11 +1465,6 @@ function finalSubmitRegistration() {
   // Get the original form data
   const formData = collectFormData();
   formData.userAccounts = userCreationData;
-
-  console.log("=== COMPLETE REGISTRATION DATA ===");
-  console.log("Form Data:", formData);
-  console.log("User Accounts:", userCreationData);
-  console.log("=== END COMPLETE DATA ===");
 
   closeUserCreationModal();
   submitRegistration(formData);
@@ -1525,10 +1551,10 @@ async function submitRegistration(data) {
     setTimeout(() => {
       if (
         confirm(
-          "Registration completed! Would you like to submit another registration?",
+          "Registration completed! Please check your email to confirm your email address!",
         )
       ) {
-        resetForm();
+        window.location.href = "/";
       } else {
         window.location.href = "/";
       }

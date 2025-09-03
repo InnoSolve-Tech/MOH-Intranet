@@ -28,7 +28,7 @@ async function handleLogin(e) {
 
     if (!response.ok) {
       const error = await response.json();
-      alert(error.message || "Login failed");
+      alert(error.error);
       return;
     }
 

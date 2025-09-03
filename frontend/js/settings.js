@@ -22,8 +22,12 @@ $(document).ready(async () => {
     ]);
 
     dropdownData = {
-      thematicAreas: thematicAreasJson.map((v) => ({ ...v, name: v.area })),
-      partnerCategories: partnerCategoriesJson,
+      thematicAreas: thematicAreasJson.map((v) => ({
+        ...v,
+        name: v.area,
+        ID: v.ID,
+      })),
+      partnerCategories: partnerCategoriesJson.map((v) => ({ ...v, ID: v.ID })),
     };
 
     initializeSettingsPage();
@@ -450,6 +454,7 @@ function initializeEmailHistoryGrid() {
   const gridOptions = {
     columnDefs: columnDefs,
     rowData: emailHistory,
+    getRowId: (params) => params.data.id || params.data.ID,
     domLayout: "normal",
     suppressRowClickSelection: true,
     rowHeight: 60,
@@ -471,7 +476,7 @@ function saveEmailHistory() {
 }
 
 async function addDropdownItem(dropdownType) {
-  let inputId, newValue;
+  let inputId, newValue, type;
 
   switch (dropdownType) {
     case "thematicAreas":
@@ -489,23 +494,53 @@ async function addDropdownItem(dropdownType) {
   }
 
   newValue = $(`#${inputId}`).val().trim();
+
   if (!newValue) {
     showNotification("Please enter a value", "error");
     return;
   }
 
+  switch (dropdownType) {
+    case "thematicAreas":
+      await fetch(`/api/v1/thematic-areas`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ area: newValue }),
+      });
+      break;
+
+    case "partnerCategories":
+      type = $("#categoryType").val();
+      await fetch(`/api/v1/partner-categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type: type, value: newValue }),
+      });
+      break;
+    case "districts":
+      break;
+    case "supportLevels":
+      break;
+  }
+
   if (dropdownType === "partnerCategories") {
-    const type = $("#categoryType").val();
-    if (!dropdownData.partnerCategories[type].includes(newValue)) {
-      dropdownData.partnerCategories[type].push(newValue);
+    const exists = dropdownData.partnerCategories.some(
+      (c) => c.type === type && c.value === newValue,
+    );
+    if (!exists) {
+      dropdownData.partnerCategories.push({
+        type: type,
+        value: newValue,
+        ID: Date.now(), // ideally get this from server response
+      });
       showNotification("Category added successfully", "success");
     } else {
       showNotification("Category already exists", "error");
       return;
     }
   } else {
-    if (!dropdownData[dropdownType].includes(newValue)) {
-      dropdownData[dropdownType].push(newValue);
+    if (!dropdownData[dropdownType].some((item) => item.name === newValue)) {
+      dropdownData[dropdownType].push({ name: newValue, ID: Date.now() });
       showNotification("Item added successfully", "success");
     } else {
       showNotification("Item already exists", "error");
@@ -528,26 +563,49 @@ function editDropdownItem(dropdownType, rowIndex) {
   $("#editItemModal").addClass("show");
 }
 
-function deleteDropdownItem(dropdownType, rowIndex) {
+async function deleteDropdownItem(dropdownType, rowIndex, itemId) {
   if (!confirm("Are you sure you want to delete this item?")) return;
 
-  const rowData =
-    dropdownGrids[dropdownType].getDisplayedRowAtIndex(rowIndex).data;
-
-  if (dropdownType === "partnerCategories") {
-    const typeCategories = dropdownData.partnerCategories[rowData.type];
-    const index = typeCategories.indexOf(rowData.value);
-    if (index !== -1) {
-      typeCategories.splice(index, 1);
-    }
-  } else {
-    const index = dropdownData[dropdownType].indexOf(rowData.value);
-    if (index !== -1) {
-      dropdownData[dropdownType].splice(index, 1);
-    }
+  switch (dropdownType) {
+    case "thematicAreas":
+      await fetch(`/api/v1/thematic-areas/${itemId}`, { method: "DELETE" });
+      break;
+    case "partnerCategories":
+      await fetch(`/api/v1/partner-categories/${itemId}`, { method: "DELETE" });
+      break;
+    case "districts":
+      break;
+    case "supportLevels":
+      break;
   }
 
-  initializeDropdownGrid(dropdownType);
+  const gridApi = dropdownGrids[dropdownType];
+  if (!gridApi) {
+    console.error("Grid API not found for type:", dropdownType);
+    return;
+  }
+
+  const rowNode = gridApi.getDisplayedRowAtIndex(rowIndex);
+  if (!rowNode) {
+    console.error("Row node not found for index", rowIndex);
+    return;
+  }
+  const rowData = rowNode.data;
+
+  gridApi.applyTransaction({ remove: [rowData] });
+
+  if (dropdownType === "partnerCategories") {
+    dropdownData.partnerCategories = dropdownData.partnerCategories.filter(
+      (cat) => cat.ID !== itemId,
+    );
+  } else {
+    dropdownData[dropdownType] = dropdownData[dropdownType].filter(
+      (item) => item.ID !== itemId,
+    );
+  }
+
+  grid.api.applyTransaction({ remove: [rowData] });
+
   saveDropdownData();
   showNotification("Item deleted successfully", "success");
 }
@@ -777,6 +835,12 @@ function initializeDropdownGrid(dropdownType) {
     dropdownType === "partnerCategories"
       ? [
           {
+            headerName: "ID",
+            field: "id",
+            hide: true,
+            flex: 1,
+          },
+          {
             headerName: "Type",
             field: "type",
             sortable: true,
@@ -799,7 +863,7 @@ function initializeDropdownGrid(dropdownType) {
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
           </svg>
         </button>
-        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex}, ${params.data.id} )">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
           </svg>
@@ -809,6 +873,12 @@ function initializeDropdownGrid(dropdownType) {
           },
         ]
       : [
+          {
+            headerName: "ID",
+            field: "id",
+            hide: true,
+            flex: 1,
+          },
           {
             headerName: "Value",
             field: "value",
@@ -825,7 +895,7 @@ function initializeDropdownGrid(dropdownType) {
             <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
           </svg>
         </button>
-        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex})">
+        <button class="btn btn-sm btn-danger" onclick="deleteDropdownItem('${dropdownType}', ${params.node.rowIndex}, ${params.data.id} )">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
             <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
           </svg>
@@ -837,6 +907,7 @@ function initializeDropdownGrid(dropdownType) {
 
   const gridOptions = {
     columnDefs: columnDefs,
+    getRowId: (params) => params.data.id || params.data.ID,
     rowData: items,
     domLayout: "normal",
     suppressRowClickSelection: true,
@@ -915,6 +986,7 @@ function initializeInternalGroupsGrid() {
   const gridOptions = {
     columnDefs: columnDefs,
     rowData: internalGroupsData,
+    getRowId: (params) => params.data.id || params.data.ID,
     domLayout: "normal",
     suppressRowClickSelection: true,
     rowHeight: 50,

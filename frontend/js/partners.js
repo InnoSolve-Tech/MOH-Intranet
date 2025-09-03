@@ -632,23 +632,40 @@ function applyTreeFilters() {
     if (treeFilters.type && partner.type !== treeFilters.type) return false;
     if (treeFilters.category && partner.category !== treeFilters.category)
       return false;
-    if (treeFilters.acronym && partner.acronym !== treeFilters.acronym)
-      return false;
+
+    if (treeFilters.acronym) {
+      // match acronym or name partially, case-insensitive
+      const search = treeFilters.acronym.toLowerCase();
+      const matchName = partner.name.toLowerCase().includes(search);
+      const matchAcronym = partner.acronym.toLowerCase().includes(search);
+      if (!matchName && !matchAcronym) return false;
+    }
+
     return true;
   });
 
   if (gridApi) {
-    gridApi.setGridOption("rowData", filteredPartners);
+    gridApi.setRowData(filteredPartners);
   }
 }
 
 function searchTree() {
   const searchTerm = $("#treeSearch").val().toLowerCase();
-  $(".tree-node-header, .tree-leaf").each(function () {
-    const text = $(this).text().toLowerCase();
-    const match = text.includes(searchTerm);
-    $(this).css("display", match || searchTerm === "" ? "flex" : "none");
-  });
+
+  if (!searchTerm) {
+    treeFilters.acronym = null;
+    // reset the tree display
+    $(".tree-node-header, .tree-leaf").css("display", "flex");
+  } else {
+    $(".tree-node-header, .tree-leaf").each(function () {
+      const text = $(this).text().toLowerCase();
+      const match = text.includes(searchTerm);
+      $(this).css("display", match ? "flex" : "none");
+    });
+    treeFilters.acronym = searchTerm;
+  }
+
+  applyTreeFilters();
 }
 
 function clearTreeFilters() {

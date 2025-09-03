@@ -23,6 +23,8 @@ async function loadPartnersData() {
     }
 
     const partners = await response.json();
+    console.log(partners);
+    // Properly map partner data
     partnersData = partners.map((partner) => ({
       id: partner.ID,
       name: partner.partner_name || "Unknown",
@@ -37,113 +39,19 @@ async function loadPartnersData() {
       addresses: partner.partner_address || [],
       contacts: partner.partner_contacts || [],
       supportYears: partner.partner_support_years || [],
-      registrationDate: partner.created_at || new Date().toISOString(),
+      registrationDate: partner.CreatedAt || new Date().toISOString(),
     }));
 
     updateReportsGrid();
     updateAllCharts();
     updateStatistics();
+
+    // Update new analytics and trends charts
+    updateAnalytics();
+    updateTrends();
   } catch (error) {
     console.error("Error loading partners data:", error);
-    loadMockReportsData();
   }
-}
-
-// Load mock data as fallback
-function loadMockReportsData() {
-  partnersData = [
-    {
-      id: 1,
-      name: "United Nations Children's Fund",
-      acronym: "UNICEF",
-      type: "International",
-      category: "UN",
-      phone: "+256-414-234567",
-      email: "uganda@unicef.org",
-      status: "Active",
-      hasMou: "Yes",
-      addresses: ["Plot 17A Clement Hill Road, Nakasero"],
-      contacts: [
-        {
-          names: "Jane Smith",
-          title: "Country Director",
-          phone_number: "+256-700-123456",
-          offical_email: "jane.smith@unicef.org",
-        },
-      ],
-      supportYears: [
-        {
-          year: 2023,
-          level: "National",
-          thematicAreas: "Health",
-          districts: ["Kampala", "Wakiso"],
-        },
-      ],
-      registrationDate: "2023-01-15T00:00:00Z",
-    },
-    {
-      id: 2,
-      name: "World Health Organization",
-      acronym: "WHO",
-      type: "International",
-      category: "UN",
-      phone: "+256-414-345678",
-      email: "uganda@who.int",
-      status: "Active",
-      hasMou: "Yes",
-      addresses: ["Plot 15 Nakasero Road"],
-      contacts: [
-        {
-          names: "Dr. John Doe",
-          title: "Representative",
-          phone_number: "+256-700-234567",
-          offical_email: "john.doe@who.int",
-        },
-      ],
-      supportYears: [
-        {
-          year: 2023,
-          level: "National",
-          thematicAreas: "Health",
-          districts: ["All Districts"],
-        },
-      ],
-      registrationDate: "2023-02-20T00:00:00Z",
-    },
-    {
-      id: 3,
-      name: "Brac Uganda",
-      acronym: "BRAC",
-      type: "International",
-      category: "International NGO",
-      phone: "+256-414-456789",
-      email: "info@brac.net",
-      status: "Active",
-      hasMou: "No",
-      addresses: ["Plot 2 Wampewo Avenue, Kololo"],
-      contacts: [
-        {
-          names: "Sarah Johnson",
-          title: "Country Manager",
-          phone_number: "+256-700-345678",
-          offical_email: "sarah.johnson@brac.net",
-        },
-      ],
-      supportYears: [
-        {
-          year: 2023,
-          level: "District",
-          thematicAreas: "Education",
-          districts: ["Kampala", "Mukono"],
-        },
-      ],
-      registrationDate: "2023-03-10T00:00:00Z",
-    },
-  ];
-
-  updateReportsGrid();
-  updateAllCharts();
-  updateStatistics();
 }
 
 // Initialize reports grid
@@ -350,11 +258,11 @@ function initializeAnalyticsCharts() {
     charts.growth = new window.Chart(growthCtx, {
       type: "line",
       data: {
-        labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        labels: [],
         datasets: [
           {
             label: "Cumulative Partners",
-            data: [5, 8, 12, 15, 18, 24],
+            data: [],
             borderColor: "#28a745",
             backgroundColor: "rgba(40, 167, 69, 0.1)",
             tension: 0.4,
@@ -383,7 +291,7 @@ function initializeAnalyticsCharts() {
         labels: ["Signed", "Pending", "Expired"],
         datasets: [
           {
-            data: [18, 4, 2],
+            data: [0, 0, 0], // initially zeros
             backgroundColor: ["#28a745", "#ffc107", "#dc3545"],
             borderWidth: 2,
             borderColor: "#fff",
@@ -401,21 +309,18 @@ function initializeAnalyticsCharts() {
       },
     });
   }
-}
 
-// Initialize trends charts
-function initializeTrendsCharts() {
-  // Registration Trends Chart
-  const regTrendsCtx = document.getElementById("registrationTrendsChart");
-  if (regTrendsCtx) {
-    charts.registrationTrends = new window.Chart(regTrendsCtx, {
+  // Support Years Chart (Bar Chart)
+  const supportYearsCtx = document.getElementById("supportYearsChart");
+  if (supportYearsCtx) {
+    charts.supportYears = new window.Chart(supportYearsCtx, {
       type: "bar",
       data: {
-        labels: ["Q1 2023", "Q2 2023", "Q3 2023", "Q4 2023", "Q1 2024"],
+        labels: [],
         datasets: [
           {
-            label: "New Partners",
-            data: [3, 5, 4, 6, 8],
+            label: "Number of Partners",
+            data: [],
             backgroundColor: "#007bff",
             borderColor: "#0056b3",
             borderWidth: 1,
@@ -426,16 +331,137 @@ function initializeTrendsCharts() {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
-          y: {
-            beginAtZero: true,
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  // District Coverage Heatmap approximation (Bar Chart)
+  const districtHeatmapCtx = document.getElementById("districtHeatmapChart");
+  if (districtHeatmapCtx) {
+    charts.districtHeatmap = new window.Chart(districtHeatmapCtx, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Partners by District",
+            data: [],
+            backgroundColor: "#28a745",
+            borderColor: "#19692c",
+            borderWidth: 1,
           },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true },
         },
       },
     });
   }
 }
 
-// Update all charts with current data
+// Initialize trends charts
+function initializeTrendsCharts() {
+  // Registration Trends Chart
+  const regTrendsCtx = document.getElementById("registrationTrendsChart");
+  if (regTrendsCtx) {
+    charts.registrationTrends = new window.Chart(regTrendsCtx, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "New Partners",
+            data: [],
+            backgroundColor: "#007bff",
+            borderColor: "#0056b3",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  // Thematic Focus Shifts (Line Chart)
+  const thematicTrendsCtx = document.getElementById("thematicTrendsChart");
+  if (thematicTrendsCtx) {
+    charts.thematicTrends = new window.Chart(thematicTrendsCtx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  // Geographic Expansion (Bar Chart)
+  const geographicTrendsCtx = document.getElementById("geographicTrendsChart");
+  if (geographicTrendsCtx) {
+    charts.geographicTrends = new window.Chart(geographicTrendsCtx, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true },
+        },
+      },
+    });
+  }
+
+  // Partnership Duration (Line Chart)
+  const durationTrendsCtx = document.getElementById("durationTrendsChart");
+  if (durationTrendsCtx) {
+    charts.durationTrends = new window.Chart(durationTrendsCtx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Average Partnership Duration (Years)",
+            data: [],
+            borderColor: "#dc3545",
+            backgroundColor: "rgba(220, 53, 69, 0.1)",
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true, suggestedMax: 10 },
+        },
+      },
+    });
+  }
+}
+
+// Update all overview charts with current data
 function updateAllCharts() {
   updatePartnerTypesChart();
   updateThematicAreasChart();
@@ -463,12 +489,15 @@ function updateThematicAreasChart() {
 
   const thematicCounts = {};
   partnersData.forEach((partner) => {
-    partner.supportYears.forEach((sy) => {
-      if (sy.thematicAreas) {
-        thematicCounts[sy.thematicAreas] =
-          (thematicCounts[sy.thematicAreas] || 0) + 1;
-      }
-    });
+    if (Array.isArray(partner.supportYears)) {
+      partner.supportYears.forEach((sy) => {
+        if (Array.isArray(sy.thematic_areas)) {
+          sy.thematic_areas.forEach((area) => {
+            thematicCounts[area] = (thematicCounts[area] || 0) + 1;
+          });
+        }
+      });
+    }
   });
 
   charts.thematicAreas.data.labels = Object.keys(thematicCounts);
@@ -490,16 +519,17 @@ function updateGeographicChart() {
   charts.geographic.update();
 }
 
-// Update trends chart
+// Update registration trends chart (overview)
 function updateTrendsChart() {
   if (!charts.trends || !partnersData) return;
 
-  // Group by month
   const monthCounts = {};
   partnersData.forEach((partner) => {
     const date = new Date(partner.registrationDate);
-    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
+    if (!isNaN(date)) {
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
+    }
   });
 
   const sortedMonths = Object.keys(monthCounts).sort();
@@ -510,7 +540,7 @@ function updateTrendsChart() {
   charts.trends.update();
 }
 
-// Update statistics
+// Update statistics in overview
 function updateStatistics() {
   if (!partnersData) return;
 
@@ -522,27 +552,30 @@ function updateStatistics() {
 
   const uniqueThematicAreas = new Set();
   partnersData.forEach((partner) => {
-    partner.supportYears.forEach((sy) => {
-      if (sy.thematicAreas) uniqueThematicAreas.add(sy.thematicAreas);
-    });
+    if (Array.isArray(partner.supportYears)) {
+      partner.supportYears.forEach((sy) => {
+        if (Array.isArray(sy.thematic_areas)) {
+          sy.thematic_areas.forEach((area) => {
+            uniqueThematicAreas.add(area);
+          });
+        }
+      });
+    }
   });
   $("#thematicAreas").text(uniqueThematicAreas.size);
 }
 
-// Report section navigation
+// Export and filter functions stay unchanged
 function showReportSection(sectionName) {
-  // Hide all sections
   $(".report-section").removeClass("active");
   $(".reports-nav .nav-btn").removeClass("active");
 
-  // Show selected section
   $(`#${sectionName}-section`).addClass("active");
   $(
     `.reports-nav .nav-btn[onclick="showReportSection('${sectionName}')"]`,
   ).addClass("active");
 }
 
-// Apply filters
 function applyFilters() {
   const typeFilter = $("#filterType").val();
   const categoryFilter = $("#filterCategory").val();
@@ -562,7 +595,7 @@ function applyFilters() {
   }
   if (thematicFilter) {
     filteredData = filteredData.filter((p) =>
-      p.supportYears.some((sy) => sy.thematicAreas === thematicFilter),
+      p.supportYears.some((sy) => sy.thematic_areas.includes(thematicFilter)),
     );
   }
 
@@ -571,7 +604,6 @@ function applyFilters() {
   }
 }
 
-// Export functions
 function exportToExcel() {
   const ws = XLSX.utils.json_to_sheet(partnersData);
   const wb = XLSX.utils.book_new();
@@ -600,27 +632,245 @@ function exportChart(chartId) {
   }
 }
 
-// Refresh data
 function refreshData() {
   loadPartnersData();
   showNotification("Data refreshed successfully", "success");
 }
 
-// Update analytics based on date range
-function updateAnalytics() {
-  const startDate = $("#startDate").val();
-  const endDate = $("#endDate").val();
+// ============ NEW: Analytics Tab Updates ============
 
-  if (startDate && endDate) {
-    // Filter data by date range and update charts
-    showNotification("Analytics updated for selected date range", "info");
-  }
+// Update Partner Growth Over Time (cumulative by month)
+function updateGrowthChart() {
+  if (!charts.growth || !partnersData) return;
+
+  const monthlyCounts = {};
+  partnersData.forEach((partner) => {
+    const date = new Date(partner.registrationDate);
+    if (!isNaN(date)) {
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+      monthlyCounts[key] = (monthlyCounts[key] || 0) + 1;
+    }
+  });
+
+  const sortedMonths = Object.keys(monthlyCounts).sort();
+
+  let cumulativeSum = 0;
+  const cumulativeData = sortedMonths.map((month) => {
+    cumulativeSum += monthlyCounts[month];
+    return cumulativeSum;
+  });
+
+  charts.growth.data.labels = sortedMonths;
+  charts.growth.data.datasets[0].data = cumulativeData;
+  charts.growth.update();
 }
 
-// Update trends based on period
+// Update MoU Status Distribution chart dynamically
+function updateMoUStatusChart() {
+  if (!charts.mouStatus || !partnersData) return;
+
+  const count = { Signed: 0, Pending: 0, Expired: 0 };
+  partnersData.forEach((p) => {
+    if (p.hasMou === "Yes") count.Signed++;
+    else count.Pending++; // Simple fallback; expand if you have status info
+  });
+
+  charts.mouStatus.data.datasets[0].data = [
+    count.Signed,
+    count.Pending,
+    count.Expired,
+  ];
+  charts.mouStatus.update();
+}
+
+// Update Support Years Chart
+function updateSupportYearsChart() {
+  if (!charts.supportYears || !partnersData) return;
+
+  const counts = {};
+  partnersData.forEach((partner) => {
+    const yearsCount = Array.isArray(partner.supportYears)
+      ? partner.supportYears.length
+      : 0;
+    counts[yearsCount] = (counts[yearsCount] || 0) + 1;
+  });
+
+  const sortedKeys = Object.keys(counts).sort((a, b) => a - b);
+
+  charts.supportYears.data.labels = sortedKeys.map(
+    (k) => `${k} year${k === "1" ? "" : "s"}`,
+  );
+  charts.supportYears.data.datasets[0].data = sortedKeys.map((k) => counts[k]);
+  charts.supportYears.update();
+}
+
+// Update District Coverage Heatmap (Bar Chart approximation)
+function updateDistrictHeatmapChart() {
+  if (!charts.districtHeatmap || !partnersData) return;
+
+  const districtCounts = {};
+  partnersData.forEach((partner) => {
+    const addresses = partner.addresses || [];
+    addresses.forEach((addr) => {
+      const district = addr.district || "Unknown";
+      districtCounts[district] = (districtCounts[district] || 0) + 1;
+    });
+  });
+
+  const sortedDistricts = Object.keys(districtCounts).sort();
+  charts.districtHeatmap.data.labels = sortedDistricts;
+  charts.districtHeatmap.data.datasets[0].data = sortedDistricts.map(
+    (d) => districtCounts[d],
+  );
+  charts.districtHeatmap.update();
+}
+
+// ============ NEW: Trends Tab Updates ============
+
+// Update Thematic Focus Shifts Chart
+function updateThematicTrendsChart() {
+  if (!charts.thematicTrends || !partnersData) return;
+
+  const thematicYearCounts = {};
+
+  partnersData.forEach((partner) => {
+    (partner.supportYears || []).forEach((sy) => {
+      const year = sy.year || "Unknown";
+      (sy.thematic_areas || []).forEach((area) => {
+        if (!thematicYearCounts[area]) thematicYearCounts[area] = {};
+        thematicYearCounts[area][year] =
+          (thematicYearCounts[area][year] || 0) + 1;
+      });
+    });
+  });
+
+  const allYearsSet = new Set();
+  Object.values(thematicYearCounts).forEach((yearsData) => {
+    Object.keys(yearsData).forEach((y) => {
+      if (y !== "Unknown") allYearsSet.add(y);
+    });
+  });
+  const allYears = Array.from(allYearsSet).sort().slice(-5);
+
+  const labels = allYears;
+  const datasets = Object.entries(thematicYearCounts).map(
+    ([area, yearsData], idx) => ({
+      label: area,
+      data: labels.map((year) => yearsData[year] || 0),
+      borderColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+      backgroundColor: `hsla(${(idx * 60) % 360}, 70%, 50%, 0.2)`,
+      tension: 0.3,
+      fill: true,
+    }),
+  );
+
+  charts.thematicTrends.data.labels = labels;
+  charts.thematicTrends.data.datasets = datasets;
+  charts.thematicTrends.update();
+}
+
+// Update Geographic Expansion Chart
+function updateGeographicTrendsChart() {
+  if (!charts.geographicTrends || !partnersData) return;
+
+  const categoryYearCounts = {};
+  partnersData.forEach((p) => {
+    const year = new Date(p.registrationDate).getFullYear();
+    const cat = p.category || "Unknown";
+
+    if (!categoryYearCounts[cat]) categoryYearCounts[cat] = {};
+    categoryYearCounts[cat][year] = (categoryYearCounts[cat][year] || 0) + 1;
+  });
+
+  const yearsSet = new Set();
+  Object.values(categoryYearCounts).forEach((yearData) =>
+    Object.keys(yearData).forEach((y) => yearsSet.add(Number(y))),
+  );
+  const years = Array.from(yearsSet).sort();
+  const recentYears = years.slice(-5);
+  const labels = recentYears.map(String);
+
+  const datasets = Object.entries(categoryYearCounts).map(
+    ([cat, yearData], idx) => ({
+      label: cat,
+      data: labels.map((year) => yearData[year] || 0),
+      backgroundColor: `hsl(${(idx * 60) % 360}, 70%, 50%)`,
+    }),
+  );
+
+  charts.geographicTrends.data.labels = labels;
+  charts.geographicTrends.data.datasets = datasets;
+  charts.geographicTrends.update();
+}
+
+// Update Partnership Duration Trends Chart
+function updateDurationTrendsChart() {
+  if (!charts.durationTrends || !partnersData) return;
+
+  const durationSums = {};
+  const counts = {};
+  const currentYear = new Date().getFullYear();
+
+  partnersData.forEach((p) => {
+    const regDate = new Date(p.registrationDate);
+    if (!isNaN(regDate)) {
+      const year = regDate.getFullYear();
+      const duration = currentYear - year;
+      durationSums[year] = (durationSums[year] || 0) + duration;
+      counts[year] = (counts[year] || 0) + 1;
+    }
+  });
+
+  const years = Object.keys(durationSums).map(Number).sort();
+  const avgDurations = years.map((y) =>
+    counts[y] ? durationSums[y] / counts[y] : 0,
+  );
+
+  charts.durationTrends.data.labels = years.map(String);
+  charts.durationTrends.data.datasets[0].data = avgDurations;
+  charts.durationTrends.update();
+}
+
+// Update Analytics based on date range filter
+function updateAnalytics() {
+  const startDateVal = $("#startDate").val();
+  const endDateVal = $("#endDate").val();
+
+  let filteredData = partnersData;
+  if (startDateVal && endDateVal) {
+    const startDate = new Date(startDateVal);
+    const endDate = new Date(endDateVal);
+    filteredData = partnersData.filter((p) => {
+      const d = new Date(p.registrationDate);
+      return d >= startDate && d <= endDate;
+    });
+  }
+
+  const originalData = partnersData;
+  partnersData = filteredData;
+
+  updateGrowthChart();
+  updateMoUStatusChart();
+  updateSupportYearsChart();
+  updateDistrictHeatmapChart();
+
+  partnersData = originalData;
+
+  showNotification("Analytics updated for selected date range", "success");
+}
+
+// Update Trends based on selected period (simplified - monthly only here)
 function updateTrends() {
   const period = $("#trendPeriod").val();
-  showNotification(`Trends updated for ${period} view`, "info");
+
+  // TODO: Implement aggregation by quarterly or yearly if needed
+
+  updateTrendsChart();
+  updateThematicTrendsChart();
+  updateGeographicTrendsChart();
+  updateDurationTrendsChart();
+
+  showNotification(`Trends updated for ${period} view`, "success");
 }
 
 // Utility function for notifications
