@@ -4,6 +4,7 @@ let contactsGrid = null;
 let supportYearsGrid = null;
 let documentsGrid = null;
 let dropdownData = {};
+
 const ugandaDistrictsSubcounties = {
   Kampala: [
     "Central Division",
@@ -291,15 +292,19 @@ function getCookie(name) {
 async function loadInitialData() {
   try {
     // Load dropdown data
-    const [thematicAreasRes, partnerCategoriesRes] = await Promise.all([
-      fetch("/api/v1/thematic-areas"),
-      fetch("/api/v1/partner-categories"),
-    ]);
+    const [thematicAreasRes, partnerCategoriesRes, supportDocumentsRes] =
+      await Promise.all([
+        fetch("/api/v1/thematic-areas"),
+        fetch("/api/v1/partner-categories"),
+        fetch("/api/v1/partners/support-documents"),
+      ]);
 
-    const [thematicAreasJson, partnerCategoriesJson] = await Promise.all([
-      thematicAreasRes.json(),
-      partnerCategoriesRes.json(),
-    ]);
+    const [thematicAreasJson, partnerCategoriesJson, supportDocumentsJson] =
+      await Promise.all([
+        thematicAreasRes.json(),
+        partnerCategoriesRes.json(),
+        supportDocumentsRes.json(),
+      ]);
 
     dropdownData = {
       thematicAreas: thematicAreasJson.map((v) => ({
@@ -311,7 +316,10 @@ async function loadInitialData() {
         ...v,
         ID: v.ID,
       })),
+      supportDocuments: supportDocumentsJson,
     };
+
+    loadDocumentsData(dropdownData.supportDocuments.documents);
 
     populateSupportYearThematicAreas();
   } catch (error) {
@@ -428,7 +436,6 @@ async function loadPartnerProfile(partneruuid) {
     populatePartnerInfo(partner);
     loadContactsData(partner.partner_contacts || []);
     loadSupportYearsData(partner.partner_support_years || []);
-    loadDocumentsData(partner.documents || []);
   } catch (error) {
     console.error("Error loading partner profile:", error);
     showNotification("Failed to load partner profile", "error");
@@ -457,10 +464,10 @@ function populatePartnerInfo(partner) {
   if (partner.partner_address && partner.partner_address.length > 0) {
     partner.partner_address.forEach((address) => {
       addressesList.append(`
-                <div class="address-item">
-                    ${address.address || address}
-                </div>
-            `);
+        <div class="address-item">
+            ${address.address || address}
+        </div>
+      `);
     });
   } else {
     addressesList.append(
@@ -468,24 +475,28 @@ function populatePartnerInfo(partner) {
     );
   }
 
-  // MoU Information
-  $("#overviewHasMou").text(partner.has_mou ? "Yes" : "No");
-  $("#overviewSignedBy").text(partner.mou?.signedBy || "-");
-  $("#overviewWhoTitle").text(partner.mou?.whoTitle || "-");
-  $("#overviewSignedDate").text(partner.mou?.signedDate || "-");
-  $("#overviewExpiryDate").text(partner.mou?.expiryDate || "-");
+  // MoH MoU Information
+  const mohMou = partner.support_documents?.find(
+    (doc) => doc.document_type === "MoH MoU",
+  );
 
-  if (partner.mou_link) {
+  $("#overviewHasMou").text(partner.has_mou_moh ? "Yes" : "No");
+  $("#overviewSignedBy").text(mohMou?.signed_by || "-");
+  $("#overviewWhoTitle").text(mohMou?.who_title || "-");
+  $("#overviewSignedDate").text(mohMou?.signed_date || "-");
+  $("#overviewExpiryDate").text(mohMou?.expiry_date || "-");
+
+  if (mohMou?.file_link) {
     $("#overviewMouFile").html(`
-            <a href="${partner.mou_link}" target="_blank" class="file-link">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                </svg>
-                View MoU Document
-            </a>
-        `);
+      <a href="${mohMou.file_link}" target="_blank" class="file-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+          </svg>
+          View MoH MoU Document
+      </a>
+    `);
   } else {
-    $("#overviewMouFile").text("No document available");
+    $("#overviewMouFile").html("No MoH MoU document available");
   }
 }
 
@@ -599,12 +610,14 @@ function initializeDocumentsGrid() {
       { headerName: "Type", field: "type", width: 120 },
       { headerName: "Upload Date", field: "uploadDate", width: 150 },
       { headerName: "Size", field: "size", width: 100 },
+      { headerName: "Size", field: "size", width: 100 },
+      { headerName: "File Link", field: "file_link", width: 100, hide: true },
       {
         headerName: "Actions",
         field: "actions",
         width: 150,
         cellRenderer: (params) => `
-                        <button class="btn-icon" onclick="downloadDocument('${params.data.id}')" title="Download">
+                        <button class="btn-icon" onclick="downloadDocument('${params.data.file_link}')" title="Download">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
                             </svg>
@@ -665,9 +678,18 @@ function loadContactsData(contacts) {
 }
 
 function loadDocumentsData(documents) {
-  if (documentsGrid) {
-    documentsGrid.setGridOption("rowData", documents);
-  }
+  if (!documentsGrid || !Array.isArray(documents)) return;
+
+  const normalized = documents.map((doc) => ({
+    id: doc.ID,
+    name: doc.document_type || "Unknown",
+    type: doc.document_type || "-",
+    uploadDate: new Date(doc.CreatedAt).toLocaleDateString(),
+    size: "-", // optional, if you have file size info
+    file_link: doc.file_link || "#",
+  }));
+
+  documentsGrid.setGridOption("rowData", normalized);
 }
 
 // Profile section navigation
@@ -754,18 +776,19 @@ async function saveContact() {
     id: 0,
     names: name,
     title: position,
-    phoneNumber: phone,
-    officialEmail: email,
+    phone_number: phone,
+    official_email: email,
   };
 
   if (editingContactIndex !== null) {
-    newContact.ID = currentPartner.partner_contacts[editingContactIndex].ID;
-    await fetch("/api/v1/contacts", {
+    newContact.id = currentPartner.partner_contacts[editingContactIndex].ID;
+    let response = await fetch("/api/v1/contacts", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newContact),
     });
-    currentPartner.partner_contacts[editingContactIndex] = newContact;
+    let res = await response.json();
+    currentPartner.partner_contacts[editingContactIndex] = res.contact;
   } else {
     await fetch("/api/v1/contacts", {
       method: "POST",
@@ -780,8 +803,20 @@ async function saveContact() {
   showNotification("Contact saved successfully", "success");
 }
 
+function deleteSupportYear(index) {
+  if (confirm("Are you sure you want to delete this support year?")) {
+    currentPartner.partner_support_years.splice(index, 1);
+    loadSupportYearsData(currentPartner.partner_support_years);
+    showNotification("Support year deleted successfully", "success");
+  }
+}
+
 function deleteContact(index) {
-  showNotification("Delete contact functionality coming soon", "info");
+  if (confirm("Are you sure you want to delete this contact?")) {
+    currentPartner.partner_contacts.splice(index, 1);
+    loadContactsData(currentPartner.partner_contacts);
+    showNotification("Contact deleted successfully", "success");
+  }
 }
 
 let editingSupportYearIndex = null;
@@ -950,8 +985,8 @@ function uploadDocument() {
   showNotification("Upload document functionality coming soon", "info");
 }
 
-function downloadDocument(id) {
-  showNotification("Download document functionality coming soon", "info");
+function downloadDocument(link) {
+  window.open(link, "_blank");
 }
 
 function deleteDocument(id) {

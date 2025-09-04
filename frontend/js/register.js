@@ -1039,25 +1039,20 @@ function removeContact(button) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const hasMouCheckbox = document.getElementById("hasMou");
-  if (hasMouCheckbox) {
-    hasMouCheckbox.addEventListener("change", function () {
-      const mouDetails = document.getElementById("mouDetails");
-      if (mouDetails) {
-        mouDetails.style.display = this.checked ? "block" : "none";
+  const checkboxes = [
+    { box: "hasMouMoH", details: "mouDetailsMoH" },
+    { box: "hasMouURSB", details: "mouDetailsURSB" },
+    { box: "hasMouNGO", details: "mouDetailsNGO" },
+  ];
 
-        const mouFields = mouDetails.querySelectorAll("input[required]");
-        mouFields.forEach((field) => {
-          if (this.checked) {
-            field.setAttribute("required", "");
-          } else {
-            field.removeAttribute("required");
-            field.value = "";
-          }
-        });
-      }
+  checkboxes.forEach(({ box, details }) => {
+    const checkbox = document.getElementById(box);
+    const section = document.getElementById(details);
+
+    checkbox.addEventListener("change", () => {
+      section.style.display = checkbox.checked ? "block" : "none";
     });
-  }
+  });
 });
 
 function validateCurrentStep() {
@@ -1493,18 +1488,29 @@ async function submitRegistration(data) {
         email: contact.email || "",
       })),
       mou: {
-        hasMou: data.mou.hasMou || false,
-        signedBy: data.mou.signedBy || "",
-        whoTitle: data.mou.whoTitle || "",
-        signedDate: data.mou.signedDate || "",
-        expiryDate: data.mou.expiryDate || "",
+        moh: {
+          hasMou: data.moh?.hasMou || false,
+          signedBy: data.moh?.signedBy || "",
+          whoTitle: data.moh?.whoTitle || "",
+          signedDate: data.moh?.signedDate || "",
+          expiryDate: data.moh?.expiryDate || "",
+        },
+        ursb: {
+          hasMou: data.ursb?.hasMou || false,
+          signedDate: data.ursb?.signedDate || "",
+          expiryDate: data.ursb?.expiryDate || "",
+        },
+        ngo: {
+          hasMou: data.ngo?.hasMou || false,
+          signedDate: data.ngo?.signedDate || "",
+          expiryDate: data.ngo?.expiryDate || "",
+        },
       },
       supportYears: (data.supportYears || []).map((supportYear) => ({
         year: Number.parseInt(supportYear.year) || 0,
         quarter: supportYear.quarter || "",
         level: supportYear.level || "",
         thematicAreas: supportYear.thematicAreas || [],
-        // ensure district + subcounties always match
         districts:
           supportYear.level === "National"
             ? []
@@ -1512,27 +1518,35 @@ async function submitRegistration(data) {
                 .split(",")
                 .map((district) => district.trim())
                 .map((district) => {
-                  // Check if the district exists in the master list
                   const subcounties =
                     ugandaDistrictsSubcounties[district] || [];
-
-                  return {
-                    district: district,
-                    subcounties: subcounties,
-                  };
+                  return { district, subcounties };
                 }),
       })),
       userAccounts: data.userAccounts || [],
     };
 
+    // Build multipart form
     const formData = new FormData();
     formData.append("data", JSON.stringify(submitData));
 
-    const fileInput = form.querySelector('input[name="mouFile"]');
-    if (fileInput && fileInput.files && fileInput.files[0]) {
-      formData.append("mouFile", fileInput.files[0]);
+    // Attach files if present
+    const mohFileInput = form.querySelector('input[name="mouFileMoH"]');
+    if (mohFileInput?.files?.[0]) {
+      formData.append("mouFileMoH", mohFileInput.files[0]);
     }
 
+    const ursbFileInput = form.querySelector('input[name="mouFileURSB"]');
+    if (ursbFileInput?.files?.[0]) {
+      formData.append("mouFileURSB", ursbFileInput.files[0]);
+    }
+
+    const ngoFileInput = form.querySelector('input[name="mouFileNGO"]');
+    if (ngoFileInput?.files?.[0]) {
+      formData.append("mouFileNGO", ngoFileInput.files[0]);
+    }
+
+    // Submit to API
     const response = await fetch("/api/v1/partners", {
       method: "POST",
       body: formData,
@@ -1549,15 +1563,8 @@ async function submitRegistration(data) {
     showNotification("Registration submitted successfully!", "success");
 
     setTimeout(() => {
-      if (
-        confirm(
-          "Registration completed! Please check your email to confirm your email address!",
-        )
-      ) {
-        window.location.href = "/";
-      } else {
-        window.location.href = "/";
-      }
+      alert("Registration completed! Please check your email to confirm.");
+      window.location.href = "/";
     }, 2000);
   } catch (error) {
     console.error("Registration submission error:", error);
@@ -1583,13 +1590,25 @@ function collectFormData() {
     },
     addresses: [],
     contacts: [],
-    mou: {
-      hasMou: formData.get("hasMou") === "on",
-      signedBy: formData.get("signedBy"),
-      whoTitle: formData.get("whoTitle"),
-      signedDate: formData.get("signedDate"),
-      expiryDate: formData.get("expiryDate"),
-      file: formData.get("mouFile"),
+    moh: {
+      hasMou: formData.get("hasMouMoH") === "on",
+      signedBy: formData.get("signedByMoH"),
+      whoTitle: formData.get("whoTitleMoH"),
+      signedDate: formData.get("signedDateMoH"),
+      expiryDate: formData.get("expiryDateMoH"),
+      file: formData.get("mouFileMoH"),
+    },
+    ursb: {
+      hasMou: formData.get("hasMouURSB") === "on",
+      signedDate: formData.get("signedDateURSB"),
+      expiryDate: formData.get("expiryDateURSB"),
+      file: formData.get("mouFileURSB"),
+    },
+    ngo: {
+      hasMou: formData.get("hasMouNGO") === "on",
+      signedDate: formData.get("signedDateNGO"),
+      expiryDate: formData.get("expiryDateNGO"),
+      file: formData.get("mouFileNGO"),
     },
     supportYears: supportYearsData,
   };

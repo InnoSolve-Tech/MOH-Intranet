@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"mime"
+	"mime/multipart"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -27,62 +27,23 @@ import (
 func CreatePartner(c *fiber.Ctx) error {
 	var submissionData models.PartnerSubmissionData
 
-	// Check content type to determine parsing method
 	contentType := c.Get("Content-Type")
 
+	// Parse JSON data from multipart form or raw JSON
 	if strings.Contains(contentType, "multipart/form-data") {
-		// Handle FormData submission
-
-		// Parse the JSON data from form field
 		dataField := c.FormValue("data")
 		if dataField == "" {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error": "Missing data field in form submission",
 			})
 		}
-
 		if err := json.Unmarshal([]byte(dataField), &submissionData); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error":   "Invalid JSON data in form field",
 				"details": err.Error(),
 			})
 		}
-
-		// Handle file from FormData
-		if submissionData.MoU.HasMoU {
-			file, err := c.FormFile("mouFile")
-			if err == nil && file != nil {
-				// Process the multipart file
-				fileHandle, err := file.Open()
-				if err != nil {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"error":   "Failed to open uploaded file",
-						"details": err.Error(),
-					})
-				}
-				defer fileHandle.Close()
-
-				// Read file content
-				fileContent, err := io.ReadAll(fileHandle)
-				if err != nil {
-					return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-						"error":   "Failed to read uploaded file",
-						"details": err.Error(),
-					})
-				}
-
-				// Create file object for processing
-				fileObj := map[string]interface{}{
-					"name":    file.Filename,
-					"content": base64.StdEncoding.EncodeToString(fileContent),
-				}
-
-				submissionData.MoU.File = fileObj
-			}
-		}
-
 	} else {
-		// Handle JSON submission (your existing code)
 		if err := c.BodyParser(&submissionData); err != nil {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"error":   "Invalid JSON data",
@@ -99,26 +60,7 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Handle MoU file if provided
-	mouFilePath := ""
-	if submissionData.MoU.HasMoU {
-
-		if submissionData.MoU.File != nil {
-			filePath, err := handleMoUFile(submissionData.MoU.File)
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error":   "Failed to process MoU file",
-					"details": err.Error(),
-				})
-			}
-			mouFilePath = filePath
-		}
-	}
-
-	// Rest of your existing code remains the same...
-	// [Continue with transaction handling, saving to database, etc.]
-
-	// Start database transaction
+	// Begin DB transaction
 	tx := database.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -126,7 +68,6 @@ func CreatePartner(c *fiber.Ctx) error {
 		}
 	}()
 
-	// Create main partner record
 	partner := models.Partner{
 		UUID:            uuid.New().String(),
 		PartnerName:     submissionData.BasicInfo.PartnerName,
@@ -135,8 +76,10 @@ func CreatePartner(c *fiber.Ctx) error {
 		PartnerCategory: submissionData.BasicInfo.Category,
 		OfficialPhone:   submissionData.BasicInfo.OfficialPhone,
 		OfficialEmail:   submissionData.BasicInfo.OfficialEmail,
-		HasMoU:          submissionData.MoU.HasMoU,
-		MoULink:         mouFilePath,
+
+		HasMoUMoH:  submissionData.MoU.MoH.HasMoU,
+		HasMoUURSB: submissionData.MoU.URSB.HasMoU,
+		HasMoUNGO:  submissionData.MoU.NGO.HasMoU,
 	}
 
 	if err := tx.Create(&partner).Error; err != nil {
@@ -147,7 +90,7 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Save addresses
+	// Save addresses and contacts
 	if err := saveAddresses(tx, submissionData.Addresses, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -156,7 +99,6 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Save contacts
 	if err := saveContacts(tx, submissionData.Contacts, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -165,18 +107,88 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Save MoU details if exists
-	if submissionData.MoU.HasMoU {
-		if err := saveMoUDetails(tx, submissionData.MoU, partner.ID, mouFilePath); err != nil {
+	// -------------------------------
+	// Handle uploaded MoU files using saveUploadedFile
+	// -------------------------------
+	saveFileFromField := func(fieldName string) (string, error) {
+		file, err := c.FormFile(fieldName)
+		if err != nil || file == nil {
+			return "", nil
+		}
+		return saveUploadedFile(c, file)
+	}
+
+	mohFilePath, _ := saveFileFromField("mouFileMoH")
+	ursbFilePath, _ := saveFileFromField("mouFileURSB")
+	ngoFilePath, _ := saveFileFromField("mouFileNGO")
+
+	// -------------------------------
+	// Save SupportDocuments
+	// -------------------------------
+	saveDocument := func(docType, signedBy, whoTitle, signedDateStr, expiryDateStr, filePath string) error {
+		if filePath == "" && signedDateStr == "" && expiryDateStr == "" {
+			return nil
+		}
+
+		var signedDate, expiryDate time.Time
+		if signedDateStr != "" {
+			if t, err := time.Parse("2006-01-02", signedDateStr); err == nil {
+				signedDate = t
+			}
+		}
+		if expiryDateStr != "" {
+			if t, err := time.Parse("2006-01-02", expiryDateStr); err == nil {
+				expiryDate = t
+			}
+		}
+
+		doc := models.SupportDocuments{
+			PartnerID:    partner.ID,
+			DocumentType: docType,
+			SignedBy:     signedBy,
+			WhoTitle:     whoTitle,
+			SignedDate:   signedDate,
+			ExpiryDate:   expiryDate,
+			FileLink:     filePath,
+		}
+
+		return tx.Create(&doc).Error
+	}
+
+	if submissionData.MoU.MoH.HasMoU {
+		if err := saveDocument("MoH MoU", submissionData.MoU.MoH.SignedBy, submissionData.MoU.MoH.WhoTitle,
+			submissionData.MoU.MoH.SignedDate, submissionData.MoU.MoH.ExpiryDate, mohFilePath); err != nil {
 			tx.Rollback()
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error":   "Failed to save MoU details",
+				"error":   "Failed to save MoH document",
 				"details": err.Error(),
 			})
 		}
 	}
 
+	if submissionData.MoU.URSB.HasMoU {
+		if err := saveDocument("URSB Certificate", "", "", submissionData.MoU.URSB.SignedDate, submissionData.MoU.URSB.ExpiryDate, ursbFilePath); err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to save URSB document",
+				"details": err.Error(),
+			})
+		}
+	}
+
+	if submissionData.MoU.NGO.HasMoU {
+		if err := saveDocument("NGO Registration", "", "", submissionData.MoU.NGO.SignedDate, submissionData.MoU.NGO.ExpiryDate, ngoFilePath); err != nil {
+			tx.Rollback()
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error":   "Failed to save NGO document",
+				"details": err.Error(),
+			})
+		}
+	}
+
+	// -------------------------------
 	// Save support years
+	// -------------------------------
 	if err := saveSupportYears(tx, submissionData.SupportYears, partner.ID); err != nil {
 		tx.Rollback()
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -185,7 +197,9 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Handle user accounts if provided
+	// -------------------------------
+	// Handle user accounts
+	// -------------------------------
 	if len(submissionData.UserAccounts) > 0 {
 		if err := handleUserAccounts(c, tx, submissionData.UserAccounts, submissionData.Contacts, partner.ID); err != nil {
 			tx.Rollback()
@@ -204,14 +218,16 @@ func CreatePartner(c *fiber.Ctx) error {
 		})
 	}
 
-	// Load the complete partner data with relationships for response
+	// Load partner with preloads
 	var completePartner models.Partner
 	database.DB.Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
-		Preload("PartnerMoU").
+		Preload("PartnerSupportYears.Districts").
+		Preload("SupportDocuments").
 		First(&completePartner, partner.ID)
 
+	// Create email confirmation token
 	token := helpers.GenerateSecureToken(32)
 	pt := models.PasswordToken{
 		Token:     token,
@@ -224,11 +240,7 @@ func CreatePartner(c *fiber.Ctx) error {
 
 	defaultDomain := "http://localhost:7088"
 	domain := getEnv("DOMAIN", &defaultDomain)
-
-	// Build confirmation link with the token as query parameter
 	confirmLink := fmt.Sprintf("%s/confirmation.html?token=%s", domain, url.QueryEscape(token))
-
-	// Compose email body, e.g. including clickable link
 	body := fmt.Sprintf("Thank you for registering. Please confirm your email by clicking the link below:\n\n%s", confirmLink)
 
 	go helpers.SendEmail(submissionData.UserAccounts[0].Username, "Password Reset", body)
@@ -237,6 +249,27 @@ func CreatePartner(c *fiber.Ctx) error {
 		"message": "Partner created successfully",
 		"partner": completePartner,
 	})
+}
+
+// Helper to save *multipart.FileHeader to disk
+func saveUploadedFile(c *fiber.Ctx, file *multipart.FileHeader) (string, error) {
+	saveDir := "./uploads/mou"
+	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
+		return "", err
+	}
+
+	ext := filepath.Ext(file.Filename)
+	if ext == "" {
+		ext = ".pdf"
+	}
+	fileName := fmt.Sprintf("mou_%d_%s%s", time.Now().Unix(), uuid.New().String()[:8], ext)
+	fullPath := filepath.Join(saveDir, fileName)
+
+	if err := c.SaveFile(file, fullPath); err != nil {
+		return "", err
+	}
+
+	return "/uploads/mou/" + fileName, nil
 }
 
 // validateBasicInfo validates the basic partner information
@@ -264,81 +297,6 @@ func validateBasicInfo(basicInfo struct {
 		return errors.New("official email is required")
 	}
 	return nil
-}
-
-// handleMoUFile processes the MoU file from FormData
-func handleMoUFile(fileInterface interface{}) (string, error) {
-	if fileInterface == nil {
-		return "", nil
-	}
-
-	// Create uploads directory first
-	saveDir := "./uploads/mou"
-	if err := os.MkdirAll(saveDir, os.ModePerm); err != nil {
-		return "", fmt.Errorf("failed to create upload directory: %v", err)
-	}
-
-	var fileName string
-	var fileData []byte
-	var err error
-
-	// Handle different file input types
-	switch v := fileInterface.(type) {
-	case string:
-		// Handle base64 string
-		if v == "" {
-			return "", nil
-		}
-		fileName = fmt.Sprintf("mou_%d_%s.pdf", time.Now().Unix(), uuid.New().String()[:8])
-		fileData, err = handleBase64String(v)
-		if err != nil {
-			return "", err
-		}
-
-	case map[string]interface{}:
-
-		// Try to get file name
-		if name, ok := v["name"].(string); ok && name != "" {
-			ext := filepath.Ext(name)
-			if ext == "" {
-				ext = ".pdf"
-			}
-			fileName = fmt.Sprintf("mou_%d_%s%s", time.Now().Unix(), uuid.New().String()[:8], ext)
-		} else {
-			fileName = fmt.Sprintf("mou_%d_%s.pdf", time.Now().Unix(), uuid.New().String()[:8])
-		}
-
-		// Try to get file data from various possible fields
-		if data, ok := v["data"].(string); ok && data != "" {
-			fileData, err = handleBase64String(data)
-		} else if content, ok := v["content"].(string); ok && content != "" {
-			fileData, err = handleBase64String(content)
-		} else if buffer, ok := v["buffer"].([]byte); ok && len(buffer) > 0 {
-			fileData = buffer
-		} else {
-			return "", fmt.Errorf("no valid file data found in file object")
-		}
-
-		if err != nil {
-			return "", err
-		}
-
-	default:
-		return "", fmt.Errorf("unsupported file type: %T", fileInterface)
-	}
-
-	if len(fileData) == 0 {
-		return "", fmt.Errorf("no file data to save")
-	}
-
-	// Save file to disk
-	fullPath := filepath.Join(saveDir, fileName)
-	if err := os.WriteFile(fullPath, fileData, 0644); err != nil {
-		return "", fmt.Errorf("failed to save file: %v", err)
-	}
-
-	// Return relative path for database storage
-	return "/uploads/mou/" + fileName, nil
 }
 
 // handleBase64String processes base64 encoded file data
@@ -412,7 +370,7 @@ func saveContacts(tx *gorm.DB, contacts []struct {
 	return nil
 }
 
-// saveMoUDetails saves MoU details to the database
+// saveMoUDetails saves MoU or other support documents to the database
 func saveMoUDetails(tx *gorm.DB, mouData struct {
 	HasMoU     bool        `json:"hasMou"`
 	SignedBy   string      `json:"signedBy"`
@@ -420,30 +378,39 @@ func saveMoUDetails(tx *gorm.DB, mouData struct {
 	SignedDate string      `json:"signedDate"`
 	ExpiryDate string      `json:"expiryDate"`
 	File       interface{} `json:"file"`
-}, partnerID uint, filePath string) error {
+}, partnerID uint, fileLink string, docType string) error {
+	if !mouData.HasMoU {
+		return nil // nothing to save
+	}
 
-	mou := models.PartnerMoU{
-		SignedBy:  strings.TrimSpace(mouData.SignedBy),
-		WhoTitle:  strings.TrimSpace(mouData.WhoTitle),
-		FilePath:  filePath,
-		PartnerID: partnerID,
+	doc := models.SupportDocuments{
+		PartnerID:    partnerID,
+		DocumentType: strings.TrimSpace(docType),
+		SignedBy:     strings.TrimSpace(mouData.SignedBy),
+		WhoTitle:     strings.TrimSpace(mouData.WhoTitle),
+		FileLink:     fileLink,
 	}
 
 	// Parse dates
 	if mouData.SignedDate != "" {
-		if signedDate, err := time.Parse("2006-01-02", mouData.SignedDate); err == nil {
-			mou.SignedDate = &signedDate
+		signedDate, err := time.Parse("2006-01-02", mouData.SignedDate)
+		if err != nil {
+			return fmt.Errorf("invalid signed date format: %v", err)
 		}
+		doc.SignedDate = signedDate
 	}
 
 	if mouData.ExpiryDate != "" {
-		if expiryDate, err := time.Parse("2006-01-02", mouData.ExpiryDate); err == nil {
-			mou.ExpiryDate = &expiryDate
+		expiryDate, err := time.Parse("2006-01-02", mouData.ExpiryDate)
+		if err != nil {
+			return fmt.Errorf("invalid expiry date format: %v", err)
 		}
+		doc.ExpiryDate = expiryDate
 	}
 
-	if err := tx.Create(&mou).Error; err != nil {
-		return fmt.Errorf("failed to create MoU details: %v", err)
+	// Save document
+	if err := tx.Create(&doc).Error; err != nil {
+		return fmt.Errorf("failed to save support document: %v", err)
 	}
 
 	return nil
@@ -652,7 +619,7 @@ func GetPartners(c *fiber.Ctx) error {
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
 		Preload("PartnerSupportYears.Districts").
-		Preload("PartnerMoU").
+		Preload("SupportDocuments").
 		Find(&partners).Error; err != nil {
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -682,6 +649,7 @@ func GetPartnerByID(c *fiber.Ctx) error {
 	if err := database.DB.Preload("PartnerAddress").
 		Preload("PartnerContacts").
 		Preload("PartnerSupportYears").
+		Preload("SupportDocuments").
 		Preload("PartnerSupportYears.Districts").
 		Preload("PartnerMoU").
 		Where("uuid = ?", partnerUUID).
@@ -779,6 +747,55 @@ func DeletePartner(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "Partner deleted successfully",
+	})
+}
+
+func GetSupportDocuments(c *fiber.Ctx) error {
+	userUUID := c.Cookies("user_uuid")
+	if userUUID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"error": "Unauthorized: missing user_uuid",
+		})
+	}
+
+	// Find the user
+	var user models.Users
+	if err := database.DB.Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Database error",
+			"details": err.Error(),
+		})
+	}
+
+	// Find the partner linked to this user via PartnerContacts
+	var partnerContact models.PartnerContacts
+	if err := database.DB.Preload("Partner").Where("user_id = ?", user.ID).First(&partnerContact).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Partner not found for user"})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Database error",
+			"details": err.Error(),
+		})
+	}
+
+	partnerID := partnerContact.PartnerID
+
+	// Get all support documents for this partner
+	var documents []models.SupportDocuments
+	if err := database.DB.Where("partner_id = ?", partnerID).Find(&documents).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to fetch support documents",
+			"details": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"partner_id": partnerID,
+		"documents":  documents,
 	})
 }
 

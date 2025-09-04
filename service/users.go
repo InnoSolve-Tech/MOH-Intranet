@@ -156,6 +156,7 @@ func SignIn(c *fiber.Ctx) error {
 
 	return c.JSON(fiber.Map{
 		"message": "Signed in successfully",
+		"role":    user.Role.RoleName,
 	})
 }
 
@@ -350,6 +351,7 @@ func GetUserByUUID(c *fiber.Ctx) error {
 			Where("user_id = ?", user.ID).
 			Preload("Partner").
 			Preload("Partner.PartnerAddress").
+			Preload("Partner.SupportDocuments").
 			Preload("Partner.PartnerSupportYears").
 			Preload("Partner.PartnerSupportYears.Districts").
 			Preload("Partner.PartnerContacts").
@@ -376,4 +378,41 @@ func getEnv(key string, fallback *string) string {
 		return *fallback
 	}
 	return ""
+}
+
+func ActivateOrDeactivateUser(c *fiber.Ctx) error {
+	userUUID := c.Params("uuid")
+
+	var user models.Users
+
+	// Fetch user and preload role
+	if err := database.DB.
+		Preload("Role").
+		Where("uuid = ?", userUUID).
+		First(&user).Error; err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "Failed to fetch user",
+			"details": err.Error(),
+		})
+	}
+
+	// Toggle active status
+	user.Active = !user.Active
+	if err := database.DB.Save(&user).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"error":   "Failed to update user",
+			"details": err.Error(),
+		})
+	}
+
+	var mes string
+	if user.Active {
+		mes = "activated"
+	} else {
+		mes = "deactivated"
+	}
+
+	return c.JSON(fiber.Map{
+		"message": fmt.Sprintf("User %s successfully.", mes),
+	})
 }

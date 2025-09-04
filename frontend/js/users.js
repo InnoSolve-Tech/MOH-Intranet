@@ -57,7 +57,8 @@ async function loadUsers() {
       phone: "", // No phone in database
       role: user.roles ? user.roles.role_name : "Unknown",
       scope: user.scope,
-      status: user.DeletedAt ? "inactive" : "active",
+      status: !user.active ? "inactive" : "active",
+      active: user.active,
       lastLogin: "Not tracked", // No lastLogin in database
       createdAt: new Date(user.CreatedAt).toISOString().split("T")[0],
       permissions: user.roles
@@ -135,6 +136,14 @@ function initializeGrid() {
         <span class="status-badge status-${params.value}">${params.value}</span>
       `,
     },
+
+    {
+      headerName: "UUID",
+      field: "uuid",
+      width: 70,
+      flex: 1,
+      hide: true,
+    },
     {
       headerName: "Actions",
       width: 120,
@@ -151,9 +160,9 @@ function initializeGrid() {
               <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
             </svg>
           </button>
-          <button class="action-btn btn-toggle" onclick="toggleUserStatus(${params.data.id})" title="Toggle">
+          <button class="action-btn btn-toggle" onclick="toggleUserStatus('${params.data.uuid}')" title="Toggle">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-              <path d="${params.data.status === "active" ? "M6 19h4V5H6v14zm8-14v14h4V5h-4z" : "M8 5v14l11-7z"}"/>
+              <path d="${params.data.active == true ? "M6 19h4V5H6v14zm8-14v14h4V5h-4z" : "M8 5v14l11-7z"}"/>
             </svg>
           </button>
           <button class="action-btn btn-delete" onclick="deleteUser(${params.data.id})" title="Delete">
@@ -183,6 +192,27 @@ function initializeGrid() {
   const gridDiv = $("#usersGrid")[0];
   if (gridDiv) {
     gridApi = agGrid.createGrid(gridDiv, gridOptions);
+  }
+}
+async function toggleUserStatus(uuid) {
+  if (!uuid) return;
+
+  try {
+    const response = await fetch(`/api/v1/users/change-status/${uuid}`, {
+      method: "PUT",
+    });
+
+    if (!response.ok) {
+      console.error("Failed to toggle status");
+      showNotification("Failed to update user status", "error");
+      return;
+    }
+
+    await loadUsers(); // reload updated list
+    showNotification("User status toggled successfully!", "success");
+  } catch (error) {
+    console.error("Error toggling user status:", error);
+    showNotification("Error toggling user status", "error");
   }
 }
 
@@ -496,41 +526,6 @@ function viewUser(id) {
   alert(
     `User Details:\n\nName: ${user.firstName}\nEmail: ${user.email}\nPhone: ${user.phone || "Not provided"}\nRole: ${user.role}\nScope: ${user.scope || "Not assigned"}\nStatus: ${user.status}\nLast Login: ${user.lastLogin}\nCreated: ${user.createdAt}`,
   );
-}
-
-async function toggleUserStatus(id) {
-  const user = usersData.find((u) => u.id === id);
-  if (!user) return;
-
-  const newStatus = user.status === "active" ? "inactive" : "active";
-  const action = newStatus === "active" ? "activate" : "deactivate";
-
-  if (confirm(`Are you sure you want to ${action} ${user.firstName}?`)) {
-    try {
-      const response = await fetch(`/api/v1/users/${user.uuid}/status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (!response.ok) {
-        console.warn("Status toggle endpoint not available, updating locally");
-        user.status = newStatus;
-        applyTreeFilters();
-      } else {
-        await loadUsers();
-      }
-
-      showNotification(`User ${action}d successfully!`, "success");
-    } catch (error) {
-      console.error("Error toggling user status:", error);
-      user.status = newStatus;
-      applyTreeFilters();
-      showNotification(`User ${action}d locally (API unavailable)`, "success");
-    }
-  }
 }
 
 async function deleteUser(id) {

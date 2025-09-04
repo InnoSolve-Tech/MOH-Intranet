@@ -207,40 +207,103 @@
 
         <!-- Step 3: MoU -->
         <div class="form-step" data-step="3">
+          <!-- MoH -->
           <div class="checkbox-group">
-            <input type="checkbox" id="hasMou" name="hasMou" />
-            <label for="hasMou">We have an MoU with Ministry of Health</label>
+            <input type="checkbox" id="hasMouMoH" name="hasMouMoH" />
+            <label for="hasMouMoH"
+              >We have an MoU with Ministry of Health</label
+            >
           </div>
 
-          <div class="mou-details" id="mouDetails" style="display: none">
+          <div class="mou-details" id="mouDetailsMoH" style="display: none">
             <div class="form-row">
               <div class="form-group">
-                <label for="signedBy">Signed By (MoH Representative) *</label>
-                <input type="text" id="signedBy" name="signedBy" required />
+                <label for="signedByMoH"
+                  >Signed By (MoH Representative) *</label
+                >
+                <input type="text" id="signedByMoH" name="signedByMoH" />
               </div>
               <div class="form-group">
-                <label for="whoTitle">Title (MoH Representative) *</label>
-                <input type="text" id="whoTitle" name="whoTitle" required />
+                <label for="whoTitleMoH">Title (MoH Representative) *</label>
+                <input type="text" id="whoTitleMoH" name="whoTitleMoH" />
               </div>
             </div>
 
             <div class="form-row">
               <div class="form-group">
-                <label for="signedDate">Signed Date *</label>
-                <input type="date" id="signedDate" name="signedDate" required />
+                <label for="signedDateMoH">Signed Date *</label>
+                <input type="date" id="signedDateMoH" name="signedDateMoH" />
               </div>
               <div class="form-group">
-                <label for="expiryDate">Expiry Date</label>
-                <input type="date" id="expiryDate" name="expiryDate" />
+                <label for="expiryDateMoH">Expiry Date</label>
+                <input type="date" id="expiryDateMoH" name="expiryDateMoH" />
               </div>
             </div>
 
             <div class="form-group">
-              <label for="mouFile">Upload MoU Document</label>
+              <label for="mouFileMoH">Upload MoU Document</label>
               <input
                 type="file"
-                id="mouFile"
-                name="mouFile"
+                id="mouFileMoH"
+                name="mouFileMoH"
+                accept="application/pdf"
+              />
+            </div>
+          </div>
+
+          <!-- URSB -->
+          <div class="checkbox-group">
+            <input type="checkbox" id="hasMouURSB" name="hasMouURSB" />
+            <label for="hasMouURSB">We have an MoU with URSB</label>
+          </div>
+
+          <div class="mou-details" id="mouDetailsURSB" style="display: none">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signedDateURSB">Signed Date *</label>
+                <input type="date" id="signedDateURSB" name="signedDateURSB" />
+              </div>
+              <div class="form-group">
+                <label for="expiryDateURSB">Expiry Date</label>
+                <input type="date" id="expiryDateURSB" name="expiryDateURSB" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mouFileURSB">Upload URSB Document</label>
+              <input
+                type="file"
+                id="mouFileURSB"
+                name="mouFileURSB"
+                accept="application/pdf"
+              />
+            </div>
+          </div>
+
+          <!-- NGO Board -->
+          <div class="checkbox-group">
+            <input type="checkbox" id="hasMouNGO" name="hasMouNGO" />
+            <label for="hasMouNGO">We have an MoU with NGO Board</label>
+          </div>
+
+          <div class="mou-details" id="mouDetailsNGO" style="display: none">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signedDateNGO">Signed Date *</label>
+                <input type="date" id="signedDateNGO" name="signedDateNGO" />
+              </div>
+              <div class="form-group">
+                <label for="expiryDateNGO">Expiry Date</label>
+                <input type="date" id="expiryDateNGO" name="expiryDateNGO" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mouFileNGO">Upload NGO Board Document</label>
+              <input
+                type="file"
+                id="mouFileNGO"
+                name="mouFileNGO"
                 accept="application/pdf"
               />
             </div>
@@ -265,7 +328,7 @@
                 >
                   <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                 </svg>
-                Add Support Year
+                Add Support Details
               </button>
             </div>
             <div
@@ -304,7 +367,7 @@
     <div id="addSupportYearModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h3>Add Support Year</h3>
+          <h3>Add Support Details</h3>
           <span class="close" onclick="closeAddSupportYearModal()"
             >&times;</span
           >

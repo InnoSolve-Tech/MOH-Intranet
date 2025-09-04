@@ -35,6 +35,7 @@ func SetupRoutes(app *fiber.App) {
 		users.Get("/:uuid", service.GetUserByUUID)
 		users.Put("/change-password", service.ResetPassword)
 		users.Put("/change-scope", service.ChangeScope)
+		users.Put("/change-status/:uuid", service.ActivateOrDeactivateUser)
 		users.Post("/set-password", service.SetPassword)
 	}
 
@@ -42,10 +43,12 @@ func SetupRoutes(app *fiber.App) {
 	{
 		partners.Post("", service.CreatePartner) // Create partner with file upload
 		partners.Get("", service.GetPartners)
+		partners.Get("/support-documents", service.GetSupportDocuments)
 		partners.Put("/contact/:id", service.UpdateContact)
 		partners.Get("/:uuid", service.GetPartnerByID)   // Get partner by UUID
 		partners.Put("/:uuid", service.UpdatePartner)    // Update partner by UUID
 		partners.Delete("/:uuid", service.DeletePartner) // Delete partner by UUID
+
 	}
 
 	thematicAreas := api.Group("/thematic-areas")

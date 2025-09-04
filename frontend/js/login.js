@@ -31,9 +31,13 @@ async function handleLogin(e) {
       alert(error.error);
       return;
     }
-
+    let res = await response.json();
     // Redirect on success
-    window.location.href = "/menu/user-profile.html";
+    if (res.role == "admin") {
+      window.location.href = "/menu/admin-dashboard.html";
+    } else {
+      window.location.href = "/menu/user-dashboard.html";
+    }
   } catch (err) {
     console.error("Login error:", err);
     alert("An error occurred. Please try again.");

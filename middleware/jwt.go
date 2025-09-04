@@ -173,8 +173,10 @@ func mapPathToMenuKey(path string) string {
 		return "users"
 	case "user-profile":
 		return "user-profile"
-	case "reports":
-		return "reports"
+	case "admin-dashboard":
+		return "admin-dashboard"
+	case "user-dashboard":
+		return "user-dashboard"
 	case "settings":
 		return "settings"
 	default:
@@ -189,14 +191,14 @@ func isMenuKeyAllowedForUser(menuKey string, user *models.Users) bool {
 		return menuKey == "partner-profile" || menuKey == "user-profile"
 	}
 
-	// Admin user sees everything except partner-profile
+	// Admin user sees everything except partner-profile and user-dashboard
 	if user.Role.RoleName == "admin" {
-		return menuKey != "partner-profile"
+		return menuKey != "partner-profile" && menuKey != "user-dashboard"
 	}
 
 	// Scope-based example (assuming user.Scope exists)
 	if user.Scope == "individual" {
-		return menuKey == "partner-profile" || menuKey == "user-profile"
+		return menuKey == "partner-profile" || menuKey == "user-profile" || menuKey == "user-dashboard"
 	}
 	// Role functions assumed to be a slice of keys like []string{"partners","users",...}
 	var allowedFunctions []string

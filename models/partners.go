@@ -11,19 +11,35 @@ import (
 
 type Partner struct {
 	gorm.Model
-	UUID                string                `json:"uuid" gorm:"unique;not null"`
-	PartnerName         string                `json:"partner_name" gorm:"not null"`
-	Acronym             string                `json:"acronym"`
-	PartnerType         string                `json:"partner_type" gorm:"not null"`
-	PartnerCategory     string                `json:"partner_category" gorm:"not null"`
-	OfficialPhone       string                `json:"official_phone" gorm:"not null"`
-	OfficialEmail       string                `json:"official_email" gorm:"unique;not null"`
-	HasMoU              bool                  `json:"has_mou"`
-	MoULink             string                `json:"mou_link"`
+	UUID            string `json:"uuid" gorm:"unique;not null"`
+	PartnerName     string `json:"partner_name" gorm:"not null"`
+	Acronym         string `json:"acronym"`
+	PartnerType     string `json:"partner_type" gorm:"not null"`
+	PartnerCategory string `json:"partner_category" gorm:"not null"`
+	OfficialPhone   string `json:"official_phone" gorm:"not null"`
+	OfficialEmail   string `json:"official_email" gorm:"unique;not null"`
+
+	// Boolean flags for MoUs
+	HasMoUMoH  bool `json:"has_mou_moh"`
+	HasMoUURSB bool `json:"has_mou_ursb"`
+	HasMoUNGO  bool `json:"has_mou_ngo"`
+
+	// Related data
 	PartnerAddress      []PartnerAddress      `json:"partner_address"`
 	PartnerContacts     []PartnerContacts     `json:"partner_contacts"`
 	PartnerSupportYears []PartnerSupportYears `json:"partner_support_years"`
-	PartnerMoU          *PartnerMoU           `json:"partner_mou"`
+	SupportDocuments    []SupportDocuments    `json:"support_documents"` // new table for all support docs
+}
+
+type SupportDocuments struct {
+	gorm.Model
+	PartnerID    uint      `json:"partner_id" gorm:"not null"`
+	DocumentType string    `json:"document_type"`       // e.g., "MoH MoU", "URSB Certificate", "NGO Registration"
+	SignedBy     string    `json:"signed_by,omitempty"` // Only for MoH MoU
+	WhoTitle     string    `json:"who_title,omitempty"` // Only for MoH MoU
+	SignedDate   time.Time `json:"signed_date,omitempty"`
+	ExpiryDate   time.Time `json:"expiry_date,omitempty"`
+	FileLink     string    `json:"file_link,omitempty"`
 }
 
 type PartnerAddress struct {
@@ -40,8 +56,8 @@ type PartnerContacts struct {
 	PhoneNumber   string  `json:"phone_number"`
 	OfficialEmail string  `json:"official_email"`
 	PartnerID     uint    `json:"partner_id"`
-	UserID        uint    `json:"user_id"`
-	User          Users   `json:"user" gorm:"foreignKey:UserID;references:ID"`
+	UserID        *uint   `json:"user_id"`
+	User          Users   `json:"user" gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	Partner       Partner `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 
@@ -62,17 +78,6 @@ type PartnerSupportYearDistrict struct {
 	Subcounties          datatypes.JSON      `json:"subcounties" gorm:"type:jsonb"`
 	PartnerSupportYearID uint                `json:"partner_support_year_id"`
 	PartnerSupportYear   PartnerSupportYears `json:"partner_support_year" gorm:"foreignKey:PartnerSupportYearID;references:ID"`
-}
-
-type PartnerMoU struct {
-	gorm.Model
-	SignedBy   string     `json:"signed_by"`
-	WhoTitle   string     `json:"who_title"`
-	SignedDate *time.Time `json:"signed_date"`
-	ExpiryDate *time.Time `json:"expiry_date"`
-	FilePath   string     `json:"file_path"`
-	PartnerID  uint       `json:"partner_id"`
-	Partner    Partner    `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 
 // Request struct aligned with frontend JSON
@@ -96,12 +101,28 @@ type PartnerSubmissionData struct {
 	} `json:"contacts"`
 
 	MoU struct {
-		HasMoU     bool        `json:"hasMou"`
-		SignedBy   string      `json:"signedBy"`
-		WhoTitle   string      `json:"whoTitle"`
-		SignedDate string      `json:"signedDate"`
-		ExpiryDate string      `json:"expiryDate"`
-		File       interface{} `json:"file"`
+		MoH struct {
+			HasMoU     bool        `json:"hasMou"`
+			SignedBy   string      `json:"signedBy"`
+			WhoTitle   string      `json:"whoTitle"`
+			SignedDate string      `json:"signedDate"`
+			ExpiryDate string      `json:"expiryDate"`
+			File       interface{} `json:"file"`
+		} `json:"moh"`
+
+		URSB struct {
+			HasMoU     bool        `json:"hasMou"`
+			SignedDate string      `json:"signedDate"`
+			ExpiryDate string      `json:"expiryDate"`
+			File       interface{} `json:"file"`
+		} `json:"ursb"`
+
+		NGO struct {
+			HasMoU     bool        `json:"hasMou"`
+			SignedDate string      `json:"signedDate"`
+			ExpiryDate string      `json:"expiryDate"`
+			File       interface{} `json:"file"`
+		} `json:"ngo"`
 	} `json:"mou"`
 
 	SupportYears []struct {

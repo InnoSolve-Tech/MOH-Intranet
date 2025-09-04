@@ -34,7 +34,7 @@ async function loadPartnersData() {
       phone: partner.official_phone || "-",
       email: partner.official_email || "-",
       status: partner.status || "Active",
-      hasMou: partner.has_mou ? "Yes" : "No",
+      hasMou: partner.has_mou_moh ? "Yes" : "No",
       mouLink: partner.mou_link || null,
       addresses: partner.partner_address || [],
       contacts: partner.partner_contacts || [],

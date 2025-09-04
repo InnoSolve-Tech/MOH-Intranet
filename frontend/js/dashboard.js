@@ -190,6 +190,20 @@ function filterMenuItems(user) {
   // Define all available menu items
   const allMenuItems = [
     {
+      key: "admin-dashboard",
+      page: "admin-dashboard",
+      href: "admin-dashboard.html",
+      icon: `<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>`,
+      title: "Admin Dashboard",
+    },
+    {
+      key: "user-dashboard",
+      page: "user-dashboard",
+      href: "user-dashboard.html",
+      icon: `<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>`,
+      title: "Dashboard",
+    },
+    {
       key: "partners",
       page: "partners",
       href: "partners.html",
@@ -218,13 +232,6 @@ function filterMenuItems(user) {
       title: "User Profile",
     },
     {
-      key: "reports",
-      page: "reports",
-      href: "reports.html",
-      icon: `<path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>`,
-      title: "Reports",
-    },
-    {
       key: "settings",
       page: "settings",
       href: "settings.html",
@@ -237,21 +244,21 @@ function filterMenuItems(user) {
   if (!user) {
     // If no user data, show minimal access
     return allMenuItems.filter((item) =>
-      ["partner-profile", "user-profile"].includes(item.key),
+      ["user-dashboard", "partner-profile", "user-profile"].includes(item.key),
     );
   }
 
   // Check if user is admin (can see everything)
   if (user.roles && user.roles.role_name === "admin") {
     return allMenuItems.filter(
-      (item) => !["partner-profile"].includes(item.key),
+      (item) => !["partner-profile", "user-dashboard"].includes(item.key),
     );
   }
 
   // Check scope-based filtering
   if (user.scope === "individual") {
     return allMenuItems.filter((item) =>
-      ["partner-profile", "user-profile"].includes(item.key),
+      ["user-dashboard", "partner-profile", "user-profile"].includes(item.key),
     );
   }
 
