@@ -991,14 +991,6 @@ Ministry of Health Uganda`,
         cellRenderer: (params) => params.data.districts.join(", ") || "None",
       },
       {
-        headerName: "Partners",
-        field: "partnerCount",
-        sortable: true,
-        flex: 1,
-        cellRenderer: (params) =>
-          `<strong>${params.data.partnerCount || 0}</strong>`,
-      },
-      {
         headerName: "Actions",
         field: "actions",
         cellRenderer: (params) => `

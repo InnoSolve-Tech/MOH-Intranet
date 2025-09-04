@@ -18,6 +18,70 @@
     />
   </head>
   <body>
+    <style>
+      /* Modal width */
+      .large-modal {
+        max-width: 900px;
+        width: 90%;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      /* Tabs */
+      .tabs {
+        display: flex;
+        border-bottom: 1px solid #ddd;
+        margin-bottom: 1rem;
+      }
+      .tab-btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        background: #f8f9fa;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.2s ease;
+      }
+      .tab-btn:hover {
+        background: #e9ecef;
+      }
+      .tab-btn.active {
+        background: #fff;
+        border-bottom: 3px solid #007bff;
+        color: #007bff;
+      }
+
+      /* Tab content */
+      .tab-content {
+        max-height: 60vh;
+        overflow-y: auto;
+        padding: 1rem;
+      }
+
+      /* Card style inside modal */
+      .card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .card h3 {
+        margin-top: 0;
+        font-size: 1rem;
+        color: #333;
+      }
+
+      /* Modal footer */
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 1rem;
+        border-top: 1px solid #e5e7eb;
+      }
+    </style>
     <div class="dashboard-container">
       <!-- Sidebar -->
       <div id="sidebar-container"></div>
@@ -252,10 +316,13 @@
     </div>
 
     <!-- Modal -->
+    <!-- Partner Details Modal -->
     <div id="viewPartnerModal" class="modal">
-      <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="partnerModalTitle">Partner Details</h2>
+      <div class="modal-content large-modal">
+        <div class="modal-header">
+          <h2 id="partnerModalTitle">Partner Details</h2>
+          <span class="close" onclick="closePartnerModal()">&times;</span>
+        </div>
 
         <!-- Tabs -->
         <div class="tabs">
@@ -268,11 +335,63 @@
 
         <!-- Tab Content -->
         <div class="tab-content">
-          <div class="tab-pane active" id="overview"></div>
-          <div class="tab-pane" id="addresses"></div>
-          <div class="tab-pane" id="contacts"></div>
-          <div class="tab-pane" id="support"></div>
-          <div class="tab-pane" id="mou"></div>
+          <div class="tab-pane active" id="overview">
+            <div class="card">
+              <h3>Basic Information</h3>
+              <p><strong>Name:</strong> <span id="partnerNameView"></span></p>
+              <p>
+                <strong>Acronym:</strong> <span id="partnerAcronymView"></span>
+              </p>
+              <p><strong>Type:</strong> <span id="partnerTypeView"></span></p>
+              <p>
+                <strong>Category:</strong>
+                <span id="partnerCategoryView"></span>
+              </p>
+            </div>
+            <div class="card">
+              <h3>Contact</h3>
+              <p><strong>Phone:</strong> <span id="partnerPhoneView"></span></p>
+              <p><strong>Email:</strong> <span id="partnerEmailView"></span></p>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="addresses">
+            <div class="card">
+              <h3>Registered Address</h3>
+              <p id="partnerAddressView"></p>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="contacts">
+            <div class="card">
+              <h3>Partner Contacts</h3>
+              <div id="partnerContactsList"></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="support">
+            <div class="card">
+              <h3>Support Years</h3>
+              <div id="partnerSupportList"></div>
+            </div>
+          </div>
+
+          <div class="tab-pane" id="mou">
+            <div class="card">
+              <h3>Memorandum of Understanding</h3>
+              <div id="partnerMouDetails"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closePartnerModal()">
+            Close
+          </button>
+          <button class="btn btn-primary" onclick="editPartner()">
+            Edit Partner
+          </button>
         </div>
       </div>
     </div>

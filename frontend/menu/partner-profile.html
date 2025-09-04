@@ -286,6 +286,135 @@
       </main>
     </div>
 
+    <!-- Contact Modal -->
+    <div id="contactModal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 600px">
+        <div class="modal-header">
+          <h3 id="contactModalTitle">Add Contact</h3>
+          <button type="button" onclick="closeContactModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="contactForm">
+            <div class="form-group">
+              <label for="contactName">Name</label>
+              <input type="text" id="contactName" name="name" required />
+            </div>
+            <div class="form-group">
+              <label for="contactPosition">Position</label>
+              <input
+                type="text"
+                id="contactPosition"
+                name="position"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="contactPhone">Phone</label>
+              <input type="tel" id="contactPhone" name="phone" required />
+            </div>
+            <div class="form-group">
+              <label for="contactEmail">Email</label>
+              <input type="email" id="contactEmail" name="email" required />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeContactModal()">Cancel</button>
+          <button type="button" onclick="saveContact()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Support Year Modal -->
+    <div id="supportYearModal" class="modal" style="display: none">
+      <div class="modal-content" style="max-width: 700px">
+        <div class="modal-header">
+          <h3 id="supportYearModalTitle">Add Support Year</h3>
+          <button type="button" onclick="closeSupportYearModal()">
+            &times;
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="supportYearForm">
+            <div class="form-group">
+              <label for="syYear">Year</label>
+              <input
+                type="number"
+                id="syYear"
+                name="year"
+                required
+                min="2000"
+                max="2100"
+              />
+            </div>
+            <div class="form-group">
+              <label for="syLevel">Level</label>
+              <select
+                id="syLevel"
+                name="level"
+                required
+                onchange="handleSupportYearDistrictChange()"
+              >
+                <option value="">Select Level</option>
+                <option value="National">National</option>
+                <option value="District">District</option>
+              </select>
+            </div>
+            <div class="form-group" id="supportYearThematicContainer">
+              <label>Thematic Areas</label>
+              <div
+                id="supportYearThematicCheckboxes"
+                style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  border: 1px solid #ccc;
+                  padding: 5px;
+                "
+              ></div>
+            </div>
+            <div
+              class="form-group"
+              id="supportYearDistrictsContainer"
+              style="display: none"
+            >
+              <label>Districts</label>
+              <div
+                id="supportYearDistrictsCheckboxes"
+                style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  border: 1px solid #ccc;
+                  padding: 5px;
+                "
+              ></div>
+            </div>
+            <div
+              class="form-group"
+              id="supportYearSubcountiesContainer"
+              style="display: none"
+            >
+              <label>Subcounties</label>
+              <div
+                id="supportYearSubcountiesCheckboxes"
+                style="
+                  max-height: 200px;
+                  overflow-y: auto;
+                  border: 1px solid #ccc;
+                  padding: 5px;
+                "
+              ></div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" onclick="closeSupportYearModal()">
+            Cancel
+          </button>
+          <button type="button" onclick="saveSupportYear()">Save</button>
+        </div>
+      </div>
+    </div>
+
     <script src="../js/dashboard.js"></script>
     <script src="../js/partner-profile.js"></script>
   </body>

@@ -3,13 +3,321 @@ let currentPartner = null;
 let contactsGrid = null;
 let supportYearsGrid = null;
 let documentsGrid = null;
-
+let dropdownData = {};
+const ugandaDistrictsSubcounties = {
+  Kampala: [
+    "Central Division",
+    "Kawempe Division",
+    "Makindye Division",
+    "Nakawa Division",
+    "Rubaga Division",
+  ],
+  Wakiso: [
+    "Busukuma",
+    "Kakiri",
+    "Kasangati",
+    "Katabi",
+    "Kyadondo",
+    "Kyengera",
+    "Makongo",
+    "Namayumba",
+    "Nangabo",
+    "Nsangi",
+    "Ssisa",
+  ],
+  Mukono: [
+    "Bamunanika",
+    "Buikwe",
+    "Goma",
+    "Kasawo",
+    "Kimenyedde",
+    "Mukono",
+    "Nagojje",
+    "Nakisunga",
+    "Ntenjeru",
+    "Yiffer",
+  ],
+  Jinja: [
+    "Budondo",
+    "Bugembe",
+    "Buwenge",
+    "Jinja",
+    "Kakira",
+    "Mafubira",
+    "Mpumudde",
+  ],
+  Mbale: [
+    "Bufumbo",
+    "Bungokho",
+    "Butaleja",
+    "Lwangoli",
+    "Malaba",
+    "Manafwa",
+    "Mbale",
+    "Nabumali",
+    "Namanyonyi",
+    "Namisindwa",
+    "Wanale",
+  ],
+  Gulu: [
+    "Aswa",
+    "Awach",
+    "Bardege",
+    "Bungatira",
+    "Gulu",
+    "Koro",
+    "Lalogi",
+    "Layibi",
+    "Lukole",
+    "Ongako",
+    "Palaro",
+    "Patiko",
+    "Pece",
+    "Unyama",
+  ],
+  Lira: [
+    "Adekokwok",
+    "Agweng",
+    "Aloi",
+    "Amach",
+    "Amolator",
+    "Aromo",
+    "Barr",
+    "Dokolo",
+    "Kwania",
+    "Lira",
+    "Otuke",
+  ],
+  Mbarara: [
+    "Biharwe",
+    "Bubaare",
+    "Bukanga",
+    "Bunyaruguru",
+    "Gwakisa",
+    "Ibanda",
+    "Isingiro",
+    "Kashaari",
+    "Kashari",
+    "Kenshunga",
+    "Kikagate",
+    "Kinoni",
+    "Masha",
+    "Mbarara",
+    "Nyabushozi",
+    "Rubaya",
+    "Rubindi",
+    "Rukiri",
+    "Rwampara",
+    "Rwanyamahembe",
+  ],
+  Kasese: [
+    "Buhuhira",
+    "Bukonzo East",
+    "Bukonzo West",
+    "Bulembia",
+    "Bwesumbu",
+    "Hima",
+    "Ibanda",
+    "Kabatoro",
+    "Kahokya",
+    "Kasese",
+    "Katebwa",
+    "Karusandara",
+    "Kisinga",
+    "Kitswamba",
+    "Kyarumba",
+    "Kyondo",
+    "Mahango",
+    "Maliba",
+    "Munkunyu",
+    "Nyakatonzi",
+    "Rukoki",
+  ],
+  "Fort Portal": [
+    "Bundibugyo",
+    "Fort Portal",
+    "Hakibale",
+    "Kabwoya",
+    "Kabarole",
+    "Rwebisengo",
+  ],
+  Hoima: [
+    "Buhaguzi",
+    "Bugambe",
+    "Bulima",
+    "Busiisi",
+    "Hoima",
+    "Kabwoya",
+    "Kigorobya",
+    "Kyabigambire",
+    "Kyangwali",
+  ],
+  Masaka: [
+    "Bukomansimbi",
+    "Buwunga",
+    "Kabonera",
+    "Kalungu",
+    "Kyanamukaka",
+    "Kyesiiga",
+    "Lwengo",
+    "Masaka",
+    "Mukungwe",
+    "Villa Maria",
+  ],
+  Soroti: [
+    "Arapai",
+    "Gweri",
+    "Katakwi",
+    "Kyere",
+    "Pingire",
+    "Serere",
+    "Soroti",
+    "Tubur",
+  ],
+  Arua: [
+    "Arua",
+    "Ayivu",
+    "Logiri",
+    "Maracha",
+    "Omugo",
+    "Rigbo",
+    "Terego",
+    "Vura",
+  ],
+  Kabale: [
+    "Bukinda",
+    "Bunyangabu",
+    "Hamurwa",
+    "Kaharo",
+    "Kamuganguzi",
+    "Kamwezi",
+    "Katuna",
+    "Kitumba",
+    "Maziba",
+    "Ndorwa East",
+    "Ndorwa West",
+  ],
+  Moroto: [
+    "Katikekile",
+    "Kotido",
+    "Moroto",
+    "Nadunget",
+    "Nakapiripirit",
+    "Rupa",
+    "Tapac",
+  ],
+  Kitgum: [
+    "Akwang",
+    "Kitgum",
+    "Lagoro",
+    "Lamwo",
+    "Mucwini",
+    "Namokora",
+    "Palabek Gem",
+  ],
+  Pader: ["Aromo", "Atanga", "Kilak", "Pader", "Pajule", "Purongo"],
+  Adjumani: ["Adjumani", "Dzaipi", "Elegu", "Itirikwa", "Ofua", "Pakele"],
+  Moyo: ["Aliba", "Dufile", "Gimara", "Itula", "Lefori", "Moyo", "Obongi"],
+  Apac: [
+    "Akokoro",
+    "Apac",
+    "Chegere",
+    "Ibuje",
+    "Inomo",
+    "Kole",
+    "Maruzi",
+    "Oyam",
+  ],
+  Tororo: [
+    "Mulanda",
+    "Nagongera",
+    "Paya",
+    "Rubongi",
+    "Tororo",
+    "West Budama North",
+    "West Budama South",
+  ],
+  Busia: ["Busia", "Buteba", "Dabani", "Lumino", "Masafu", "Mundika", "Sikuda"],
+  Iganga: [
+    "Bulamogi",
+    "Buyende",
+    "Iganga",
+    "Kigulu",
+    "Makuutu",
+    "Namayingo",
+    "Namungalwe",
+  ],
+  Kamuli: [
+    "Balawoli",
+    "Bugulumbya",
+    "Butansi",
+    "Gadumire",
+    "Kamuli",
+    "Namasagali",
+  ],
+  Pallisa: [
+    "Budaka",
+    "Butebo",
+    "Gogonyo",
+    "Kamuge",
+    "Kasilo",
+    "Kibale",
+    "Pallisa",
+    "Petete",
+  ],
+  Kumi: ["Ongino", "Atutur", "Kachumbala", "Kumi", "Ngora", "Serere"],
+  Kapchorwa: ["Chepsukunya", "Kapchorwa", "Kaptum", "Tegeres"],
+  Kotido: ["Kotido", "Nakapelimoru", "Rengen"],
+  Bundibugyo: ["Bundibugyo", "Bubandi", "Busaru", "Harugongo", "Ntoroko"],
+  Kisoro: [
+    "Bufumbira",
+    "Busanza",
+    "Chahi",
+    "Kirundo",
+    "Kisoro",
+    "Murora",
+    "Nyakabande",
+    "Nyarubuye",
+  ],
+};
 // Declare the $ variable
 const $ = window.jQuery;
 function getCookie(name) {
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
   if (parts.length === 2) return parts.pop().split(";").shift();
+}
+
+async function loadInitialData() {
+  try {
+    // Load dropdown data
+    const [thematicAreasRes, partnerCategoriesRes] = await Promise.all([
+      fetch("/api/v1/thematic-areas"),
+      fetch("/api/v1/partner-categories"),
+    ]);
+
+    const [thematicAreasJson, partnerCategoriesJson] = await Promise.all([
+      thematicAreasRes.json(),
+      partnerCategoriesRes.json(),
+    ]);
+
+    dropdownData = {
+      thematicAreas: thematicAreasJson.map((v) => ({
+        ...v,
+        name: v.area,
+        ID: v.ID,
+      })),
+      partnerCategories: partnerCategoriesJson.map((v) => ({
+        ...v,
+        ID: v.ID,
+      })),
+    };
+
+    populateSupportYearThematicAreas();
+  } catch (error) {
+    console.error("Error loading initial data:", error);
+    throw error;
+  }
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -20,10 +328,84 @@ document.addEventListener("DOMContentLoaded", async () => {
   const partner_uuid = getCookie("user_uuid");
   if (partner_uuid) {
     await loadPartnerProfile(partner_uuid);
+    await loadInitialData();
   } else {
     showNotification("User UUID not found in cookies", "error");
   }
 });
+
+function populateSupportYearThematicAreas() {
+  const container = document.getElementById("supportYearThematicCheckboxes");
+  container.innerHTML = "";
+
+  if (!dropdownData.thematicAreas) return;
+
+  dropdownData.thematicAreas.forEach((area, index) => {
+    const div = document.createElement("div");
+    div.className = "checkbox-item";
+    div.innerHTML = `
+      <input type="checkbox" id="syThematic_${index}" name="syThematicAreas" value="${area.name}">
+      <label for="syThematic_${index}">${area.name}</label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function populateSupportYearDistricts() {
+  const container = document.getElementById("supportYearDistrictsCheckboxes");
+  container.innerHTML = "";
+
+  Object.keys(ugandaDistrictsSubcounties).forEach((district, index) => {
+    const div = document.createElement("div");
+    div.className = "checkbox-item";
+    div.innerHTML = `
+      <input type="checkbox" id="syDistrict_${index}" name="syDistricts" value="${district}" onchange="handleSupportYearDistrictChange()">
+      <label for="syDistrict_${index}">${district}</label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function handleSupportYearDistrictChange() {
+  const subcountyContainer = document.getElementById(
+    "supportYearSubcountiesContainer",
+  );
+  const subcountiesCheckboxes = document.getElementById(
+    "supportYearSubcountiesCheckboxes",
+  );
+  const selectedDistricts = Array.from(
+    document.querySelectorAll(
+      '#supportYearDistrictsCheckboxes input[name="syDistricts"]:checked',
+    ),
+  ).map((cb) => cb.value);
+
+  subcountiesCheckboxes.innerHTML = "";
+
+  if (selectedDistricts.length === 0) {
+    subcountyContainer.style.display = "none";
+    return;
+  }
+
+  subcountyContainer.style.display = "block";
+
+  selectedDistricts.forEach((district) => {
+    if (ugandaDistrictsSubcounties[district]) {
+      const groupLabel = document.createElement("div");
+      groupLabel.innerHTML = `<strong>${district}</strong>`;
+      subcountiesCheckboxes.appendChild(groupLabel);
+
+      ugandaDistrictsSubcounties[district].forEach((subcounty, index) => {
+        const div = document.createElement("div");
+        div.className = "checkbox-item";
+        div.innerHTML = `
+          <input type="checkbox" name="sySubcounties" value="${subcounty}" id="sySubcounty_${district}_${index}">
+          <label for="sySubcounty_${district}_${index}">${subcounty}</label>
+        `;
+        subcountiesCheckboxes.appendChild(div);
+      });
+    }
+  });
+}
 
 // Initialize partner profile page
 
@@ -306,28 +688,240 @@ function editPartner() {
   showNotification("Edit partner functionality coming soon", "info");
 }
 
+let editingContactIndex = null;
+
 function addContact() {
-  showNotification("Add contact functionality coming soon", "info");
+  editingContactIndex = null;
+  resetContactModalForm();
+  document.getElementById("contactModalTitle").textContent = "Add Contact";
+  document.getElementById("contactModal").style.display = "block";
 }
 
 function editContact(index) {
-  showNotification("Edit contact functionality coming soon", "info");
+  editingContactIndex = index;
+  const contact = currentPartner.partner_contacts[index];
+  if (!contact) return;
+  document.getElementById("contactModalTitle").textContent = "Edit Contact";
+
+  document.getElementById("contactName").value = contact.names || "";
+  document.getElementById("contactPosition").value = contact.title || "";
+  document.getElementById("contactPhone").value = contact.phone_number || "";
+  document.getElementById("contactEmail").value = contact.official_email || "";
+
+  document.getElementById("contactModal").style.display = "block";
+}
+
+function resetContactModalForm() {
+  const form = document.getElementById("contactForm");
+  form.reset();
+}
+
+function closeContactModal() {
+  document.getElementById("contactModal").style.display = "none";
+}
+
+function saveContact() {
+  const name = document.getElementById("contactName").value.trim();
+  const position = document.getElementById("contactPosition").value.trim();
+  const phone = document.getElementById("contactPhone").value.trim();
+  const email = document.getElementById("contactEmail").value.trim();
+
+  if (!name || !position || !phone || !email) {
+    showNotification("Please fill all contact fields", "error");
+    return;
+  }
+
+  // Basic email and phone validation could be reused here
+  if (!isValidEmail(email)) {
+    showNotification("Invalid email address", "error");
+    return;
+  }
+  if (!isValidPhone(phone)) {
+    showNotification("Invalid phone number", "error");
+    return;
+  }
+
+  const newContact = {
+    names: name,
+    title: position,
+    phone_number: phone,
+    official_email: email,
+  };
+
+  if (editingContactIndex !== null) {
+    currentPartner.partner_contacts[editingContactIndex] = newContact;
+  } else {
+    currentPartner.partner_contacts.push(newContact);
+  }
+
+  loadContactsData(currentPartner.partner_contacts);
+  closeContactModal();
+  showNotification("Contact saved successfully", "success");
 }
 
 function deleteContact(index) {
   showNotification("Delete contact functionality coming soon", "info");
 }
 
+let editingSupportYearIndex = null;
+
 function addSupportYear() {
-  showNotification("Add support year functionality coming soon", "info");
+  editingSupportYearIndex = null;
+  document.getElementById("supportYearModalTitle").textContent =
+    "Add Support Year";
+  resetSupportYearModalForm();
+  populateSupportYearThematicAreas();
+  populateSupportYearDistricts();
+  document.getElementById("supportYearModal").style.display = "block";
 }
 
 function editSupportYear(index) {
-  showNotification("Edit support year functionality coming soon", "info");
+  editingSupportYearIndex = index;
+  const sy = currentPartner.partner_support_years[index];
+  if (!sy) return;
+  document.getElementById("supportYearModalTitle").textContent =
+    "Edit Support Year";
+
+  populateSupportYearThematicAreas();
+  populateSupportYearDistricts();
+
+  setTimeout(() => {
+    document.getElementById("syYear").value = sy.year || "";
+    document.getElementById("syLevel").value = sy.level || "";
+    handleSupportYearDistrictChange();
+
+    // Set thematic areas
+    if (Array.isArray(sy.thematic_areas)) {
+      sy.thematic_areas.forEach((area) => {
+        const cb = document.querySelector(
+          `#supportYearThematicCheckboxes input[value="${area}"]`,
+        );
+        if (cb) cb.checked = true;
+      });
+    }
+
+    // Set districts and subcounties if not national
+    if (sy.level !== "National" && Array.isArray(sy.districts)) {
+      sy.districts.forEach((districtObj) => {
+        const districtCb = document.querySelector(
+          `#supportYearDistrictsCheckboxes input[value="${districtObj.district}"]`,
+        );
+        if (districtCb) districtCb.checked = true;
+      });
+      handleSupportYearDistrictChange();
+
+      setTimeout(() => {
+        sy.districts.forEach((districtObj) => {
+          if (Array.isArray(districtObj.subcounties)) {
+            districtObj.subcounties.forEach((subcounty) => {
+              const subcountyCb = document.querySelector(
+                `#supportYearSubcountiesCheckboxes input[value="${subcounty}"]`,
+              );
+              if (subcountyCb) subcountyCb.checked = true;
+            });
+          }
+        });
+      }, 100);
+    }
+  }, 100);
+
+  document.getElementById("supportYearModal").style.display = "block";
 }
 
-function deleteSupportYear(index) {
-  showNotification("Delete support year functionality coming soon", "info");
+function resetSupportYearModalForm() {
+  const form = document.getElementById("supportYearForm");
+  form.reset();
+  document.getElementById("supportYearDistrictsContainer").style.display =
+    "none";
+  document.getElementById("supportYearSubcountiesContainer").style.display =
+    "none";
+}
+
+function closeSupportYearModal() {
+  document.getElementById("supportYearModal").style.display = "none";
+}
+
+function saveSupportYear() {
+  const year = Number(document.getElementById("syYear").value);
+  const level = document.getElementById("syLevel").value;
+  const thematicAreas = Array.from(
+    document.querySelectorAll(
+      '#supportYearThematicCheckboxes input[type="checkbox"]:checked',
+    ),
+  ).map((cb) => cb.value);
+
+  if (!year || !level || thematicAreas.length === 0) {
+    showNotification(
+      "Please fill all required fields and select at least one thematic area",
+      "error",
+    );
+    return;
+  }
+
+  let districts = [];
+  if (level === "District") {
+    districts = Array.from(
+      document.querySelectorAll(
+        '#supportYearDistrictsCheckboxes input[type="checkbox"]:checked',
+      ),
+    ).map((cb) => cb.value);
+    if (districts.length === 0) {
+      showNotification("Please select at least one district", "error");
+      return;
+    }
+  }
+
+  let districtsWithSubcounties = [];
+  if (level === "District") {
+    districtsWithSubcounties = districts.map((district) => {
+      const subcounties = Array.from(
+        document.querySelectorAll(
+          '#supportYearSubcountiesCheckboxes input[type="checkbox"]:checked',
+        ),
+      )
+        .filter((cb) => {
+          // Only include subcounties that belong to this district
+          // We assume checkbox id format sySubcounty_<district>_<index>
+          return cb.id.startsWith(`sySubcounty_${district}_`);
+        })
+        .map((cb) => cb.value);
+
+      if (subcounties.length === 0) {
+        showNotification(
+          `Please select at least one subcounty for district ${district}`,
+          "error",
+        );
+        throw new Error("Subcounty validation failed");
+      }
+
+      return { district, subcounties };
+    });
+  }
+
+  let supportYearObj = {
+    year,
+    level,
+    thematic_areas: thematicAreas,
+    districts: level === "National" ? [] : districtsWithSubcounties,
+  };
+
+  try {
+    if (editingSupportYearIndex !== null) {
+      currentPartner.partner_support_years[editingSupportYearIndex] =
+        supportYearObj;
+    } else {
+      currentPartner.partner_support_years.push(supportYearObj);
+    }
+  } catch (e) {
+    if (e.message === "Subcounty validation failed") {
+      return;
+    }
+    console.error(e);
+  }
+
+  loadSupportYearsData(currentPartner.partner_support_years);
+  closeSupportYearModal();
+  showNotification("Support year saved successfully", "success");
 }
 
 function uploadDocument() {
