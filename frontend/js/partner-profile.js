@@ -694,7 +694,7 @@ function addContact() {
   editingContactIndex = null;
   resetContactModalForm();
   document.getElementById("contactModalTitle").textContent = "Add Contact";
-  document.getElementById("contactModal").style.display = "block";
+  document.getElementById("contactModal").classList.add("show");
 }
 
 function editContact(index) {
@@ -708,7 +708,7 @@ function editContact(index) {
   document.getElementById("contactPhone").value = contact.phone_number || "";
   document.getElementById("contactEmail").value = contact.official_email || "";
 
-  document.getElementById("contactModal").style.display = "block";
+  document.getElementById("contactModal").classList.add("show");
 }
 
 function resetContactModalForm() {
@@ -717,10 +717,19 @@ function resetContactModalForm() {
 }
 
 function closeContactModal() {
-  document.getElementById("contactModal").style.display = "none";
+  document.getElementById("contactModal").classList.remove("show");
+}
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
 }
 
-function saveContact() {
+function isValidPhone(phone) {
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  return phoneRegex.test(phone.replace(/[\s\-()]/g, ""));
+}
+
+async function saveContact() {
   const name = document.getElementById("contactName").value.trim();
   const position = document.getElementById("contactPosition").value.trim();
   const phone = document.getElementById("contactPhone").value.trim();
@@ -742,15 +751,27 @@ function saveContact() {
   }
 
   const newContact = {
+    id: 0,
     names: name,
     title: position,
-    phone_number: phone,
-    official_email: email,
+    phoneNumber: phone,
+    officialEmail: email,
   };
 
   if (editingContactIndex !== null) {
+    newContact.ID = currentPartner.partner_contacts[editingContactIndex].ID;
+    await fetch("/api/v1/contacts", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newContact),
+    });
     currentPartner.partner_contacts[editingContactIndex] = newContact;
   } else {
+    await fetch("/api/v1/contacts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newContact),
+    });
     currentPartner.partner_contacts.push(newContact);
   }
 
@@ -772,7 +793,8 @@ function addSupportYear() {
   resetSupportYearModalForm();
   populateSupportYearThematicAreas();
   populateSupportYearDistricts();
-  document.getElementById("supportYearModal").style.display = "block";
+
+  document.getElementById("supportYearModal").classList.add("show");
 }
 
 function editSupportYear(index) {
@@ -825,7 +847,7 @@ function editSupportYear(index) {
     }
   }, 100);
 
-  document.getElementById("supportYearModal").style.display = "block";
+  document.getElementById("supportYearModal").classList.add("show");
 }
 
 function resetSupportYearModalForm() {
@@ -838,7 +860,7 @@ function resetSupportYearModalForm() {
 }
 
 function closeSupportYearModal() {
-  document.getElementById("supportYearModal").style.display = "none";
+  document.getElementById("supportYearModal").classList.remove("show");
 }
 
 function saveSupportYear() {

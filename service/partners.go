@@ -545,29 +545,102 @@ func handleUserAccounts(c *fiber.Ctx, tx *gorm.DB, userAccounts []struct {
 	return nil
 }
 
-// Update contact information
-func UpdateContact(c *fiber.Ctx) error {
-	contactID := c.Params("id")
+// CreateContact creates a new contact for the partner of the logged-in user
+func CreateContact(c *fiber.Ctx) error {
+	userUUID := c.Cookies("user_uuid")
+	if userUUID == "" {
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized: missing user_uuid"})
+	}
 
+	// Find the user and preload Partner
+	var user models.Users
+	if err := database.DB.Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Database error", "details": err.Error()})
+	}
+
+	var partnerContact models.PartnerContacts
+	if err := database.DB.Preload("Partner").Where("user_id = ?", user.ID).First(&partnerContact).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Database error", "details": err.Error()})
+	}
+
+	// Parse new contact details
+	var newContact models.PartnerContacts
+	if err := c.BodyParser(&newContact); err != nil {
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request", "details": err.Error()})
+	}
+
+	// Assign contact to this user's partner
+	newContact.PartnerID = partnerContact.PartnerID
+
+	// Save the new contact
+	if err := database.DB.Create(&newContact).Error; err != nil {
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to create contact", "details": err.Error()})
+	}
+
+	return c.Status(201).JSON(fiber.Map{
+		"message": "Contact created successfully",
+		"contact": newContact,
+	})
+}
+
+// UpdateContact updates a contact for the partner of the logged-in user
+func UpdateContact(c *fiber.Ctx) error {
+	userUUID := c.Cookies("user_uuid")
+	if userUUID == "" {
+		return c.Status(401).JSON(fiber.Map{"error": "Unauthorized: missing user_uuid"})
+	}
+
+	// Find the user and preload Partner
+	var user models.Users
+	if err := database.DB.Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Database error", "details": err.Error()})
+	}
+
+	var partnerContact models.PartnerContacts
+	if err := database.DB.Preload("Partner").Where("user_id = ?", user.ID).First(&partnerContact).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"error": "User not found"})
+		}
+		return c.Status(500).JSON(fiber.Map{"error": "Database error", "details": err.Error()})
+	}
+
+	// Parse updated contact details
 	var updateData models.PartnerContacts
 	if err := c.BodyParser(&updateData); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid request"})
+		return c.Status(400).JSON(fiber.Map{"error": "Invalid request", "details": err.Error()})
 	}
 
+	if updateData.ID == 0 {
+		return c.Status(400).JSON(fiber.Map{"error": "Contact ID is required"})
+	}
+
+	// Ensure contact belongs to this user's partner
 	var existing models.PartnerContacts
-	if err := database.DB.First(&existing, contactID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return c.Status(404).JSON(fiber.Map{"error": "Contact not found"})
+	if err := database.DB.Where("id = ? AND partner_id = ?", updateData.ID, partnerContact.PartnerID).First(&existing).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(404).JSON(fiber.Map{"error": "Contact not found for this partner"})
 		}
-		return c.Status(500).JSON(fiber.Map{"error": "Database error"})
+		return c.Status(500).JSON(fiber.Map{"error": "Database error", "details": err.Error()})
 	}
 
-	// Update only the provided fields
+	// Update only provided fields
 	if err := database.DB.Model(&existing).Updates(updateData).Error; err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": "Failed to update contact"})
+		return c.Status(500).JSON(fiber.Map{"error": "Failed to update contact", "details": err.Error()})
 	}
 
-	return c.JSON(fiber.Map{"message": "Contact updated successfully"})
+	return c.JSON(fiber.Map{
+		"message": "Contact updated successfully",
+		"contact": existing,
+	})
 }
 
 // GET /partners

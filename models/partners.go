@@ -40,6 +40,8 @@ type PartnerContacts struct {
 	PhoneNumber   string  `json:"phone_number"`
 	OfficialEmail string  `json:"official_email"`
 	PartnerID     uint    `json:"partner_id"`
+	UserID        uint    `json:"user_id"`
+	User          Users   `json:"user" gorm:"foreignKey:UserID;references:ID"`
 	Partner       Partner `json:"partner" gorm:"foreignKey:PartnerID;references:ID"`
 }
 

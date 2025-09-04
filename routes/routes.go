@@ -79,4 +79,10 @@ func SetupRoutes(app *fiber.App) {
 		emails.Put("/:id", service.UpdateEmail)
 		emails.Delete("/:id", service.DeleteEmail)
 	}
+
+	partnerContacts := api.Group("/contacts")
+	{
+		partnerContacts.Post("", service.CreateContact)
+		partnerContacts.Put("", service.UpdateContact)
+	}
 }
