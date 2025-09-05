@@ -52,6 +52,7 @@ async function loadPartners() {
       throw new Error(`HTTP error! Status: ${res.status}`);
     }
     const apiPartners = await res.json();
+    console.log(apiPartners);
 
     partnersData = apiPartners.map((partner) => ({
       id: partner.ID,
@@ -70,8 +71,10 @@ async function loadPartners() {
               .join(", ")
           : "",
       status: "active", // Default status since API doesn't provide this
-      has_mou: partner.has_mou,
-      mou_link: partner.mou_link,
+      has_mou: partner.has_mou_moh,
+      mou_link: partner.support_documents.filter(
+        (v) => v.document_type == "MoH MoU" || v.document_type == "moh",
+      )[0].file_link,
       contacts: partner.partner_contacts
         ? partner.partner_contacts.map((contact) => ({
             name: contact.names,

@@ -38,97 +38,7 @@
         </header>
 
         <div class="content-body">
-          <!-- Overview Stats Cards for Single Partner -->
-          <!-- Focused Stat Cards for Single Partner -->
-          <div class="stats-cards">
-            <div class="stat-card">
-              <div class="stat-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path
-                    d="M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z"
-                  />
-                </svg>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number" id="contactsCount">0</div>
-                <div class="stat-label">Number of Contacts</div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M1 21h22L12 2 1 21z" />
-                </svg>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number" id="supportYearsCount">0</div>
-                <div class="stat-label">Support Years</div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M4 12h16M4 6h16M4 18h16" />
-                </svg>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number" id="hasMouStatus">No</div>
-                <div class="stat-label">Memorandum Signed</div>
-              </div>
-            </div>
-
-            <div class="stat-card">
-              <div class="stat-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14" />
-                </svg>
-              </div>
-              <div class="stat-content">
-                <div class="stat-number" id="districtsCoveredCount">0</div>
-                <div class="stat-label">Districts Covered</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Charts Grid -->
           <div class="charts-grid">
-            <div class="chart-card">
-              <div class="chart-header">
-                <h3>Partner Types Distribution</h3>
-                <button
-                  class="btn btn-sm btn-secondary"
-                  onclick="exportChart('partnerTypesChart')"
-                >
-                  Export
-                </button>
-              </div>
-              <div class="chart-container">
-                <canvas id="partnerTypesChart"></canvas>
-              </div>
-            </div>
-
             <div class="chart-card">
               <div class="chart-header">
                 <h3>Thematic Areas Coverage</h3>
@@ -146,85 +56,76 @@
 
             <div class="chart-card">
               <div class="chart-header">
-                <h3>Geographic Distribution</h3>
+                <h3>Support Years Timeline</h3>
                 <button
                   class="btn btn-sm btn-secondary"
-                  onclick="exportChart('geographicChart')"
+                  onclick="exportChart('supportYearsChart')"
                 >
                   Export
                 </button>
               </div>
               <div class="chart-container">
-                <canvas id="geographicChart"></canvas>
+                <canvas id="supportYearsChart"></canvas>
               </div>
             </div>
 
             <div class="chart-card">
               <div class="chart-header">
-                <h3>Registration Trends</h3>
+                <h3>District Coverage</h3>
                 <button
                   class="btn btn-sm btn-secondary"
-                  onclick="exportChart('trendsChart')"
+                  onclick="exportChart('districtsChart')"
                 >
                   Export
                 </button>
               </div>
               <div class="chart-container">
-                <canvas id="trendsChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Advanced Analytics Section -->
-          <div id="analytics-section" class="report-section">
-            <div class="section-header">
-              <h3>Advanced Analytics</h3>
-              <div class="date-range-picker">
-                <input
-                  type="date"
-                  id="startDate"
-                  onchange="updateAnalytics()"
-                />
-                <span>to</span>
-                <input type="date" id="endDate" onchange="updateAnalytics()" />
+                <canvas id="districtsChart"></canvas>
               </div>
             </div>
 
-            <div class="analytics-grid">
-              <div class="analytics-card">
-                <div class="card-header">
-                  <h4>Partner Growth Over Time</h4>
-                </div>
-                <div class="chart-container">
-                  <canvas id="growthChart"></canvas>
-                </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>Subcounty Coverage (Top 10)</h3>
+                <button
+                  class="btn btn-sm btn-secondary"
+                  onclick="exportChart('subcountiesChart')"
+                >
+                  Export
+                </button>
               </div>
-
-              <div class="analytics-card">
-                <div class="card-header">
-                  <h4>MoU Status Distribution</h4>
-                </div>
-                <div class="chart-container">
-                  <canvas id="mouStatusChart"></canvas>
-                </div>
+              <div class="chart-container">
+                <canvas id="subcountiesChart"></canvas>
               </div>
+            </div>
 
-              <div class="analytics-card">
-                <div class="card-header">
-                  <h4>Support Years Analysis</h4>
-                </div>
-                <div class="chart-container">
-                  <canvas id="supportYearsChart"></canvas>
-                </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>Contacts by Title</h3>
+                <button
+                  class="btn btn-sm btn-secondary"
+                  onclick="exportChart('contactsChart')"
+                >
+                  Export
+                </button>
               </div>
+              <div class="chart-container">
+                <canvas id="contactsChart"></canvas>
+              </div>
+            </div>
 
-              <div class="analytics-card">
-                <div class="card-header">
-                  <h4>District Coverage Heatmap</h4>
-                </div>
-                <div class="chart-container">
-                  <canvas id="districtHeatmapChart"></canvas>
-                </div>
+            <div class="chart-card">
+              <div class="chart-header">
+                <h3>MoU Status</h3>
+                <button
+                  class="btn btn-sm btn-secondary"
+                  onclick="exportChart('mouStatusChart')"
+                >
+                  Export
+                </button>
+              </div>
+              <div class="chart-container">
+                <canvas id="mouStatusChart"></canvas>
               </div>
             </div>
           </div>

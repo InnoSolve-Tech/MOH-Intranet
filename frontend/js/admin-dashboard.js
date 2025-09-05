@@ -23,7 +23,7 @@ async function loadPartnersData() {
     }
 
     const partners = await response.json();
-    console.log(partners);
+
     // Properly map partner data
     partnersData = partners.map((partner) => ({
       id: partner.ID,
@@ -170,6 +170,8 @@ function initializeOverviewCharts() {
             backgroundColor: "#28a745",
             borderColor: "#1e7e34",
             borderWidth: 1,
+            fill: false,
+            tension: 0,
           },
         ],
       },
