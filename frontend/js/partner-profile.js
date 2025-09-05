@@ -289,6 +289,47 @@ function getCookie(name) {
   if (parts.length === 2) return parts.pop().split(";").shift();
 }
 
+function onSupportYearLevelChange() {
+  const level = document.getElementById("syLevel").value;
+  const districtsContainer = document.getElementById(
+    "supportYearDistrictsContainer",
+  );
+  const subcountiesContainer = document.getElementById(
+    "supportYearSubcountiesContainer",
+  );
+  const districtCheckboxes = document.querySelectorAll(
+    '#supportYearDistrictsCheckboxes input[type="checkbox"]',
+  );
+
+  if (level === "National") {
+    // Hide districts and subcounties selectors
+    districtsContainer.style.display = "none";
+    subcountiesContainer.style.display = "none";
+
+    // Uncheck all district checkboxes
+    districtCheckboxes.forEach((cb) => {
+      cb.checked = false;
+      cb.disabled = true; // disable to prevent interaction
+    });
+  } else if (level === "District") {
+    // Show districts container, subcounties handled by district checkbox changes
+    districtsContainer.style.display = "block";
+    subcountiesContainer.style.display = "none";
+
+    // Enable district checkboxes
+    districtCheckboxes.forEach((cb) => {
+      cb.disabled = false;
+    });
+  } else {
+    // Level empty or other, hide both sections
+    districtsContainer.style.display = "none";
+    subcountiesContainer.style.display = "none";
+
+    // Disable districts checkboxes
+    districtCheckboxes.forEach((cb) => (cb.disabled = true));
+  }
+}
+
 async function loadInitialData() {
   try {
     // Load dropdown data

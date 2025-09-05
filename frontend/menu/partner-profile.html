@@ -329,7 +329,7 @@
     <div id="supportYearModal" class="modal" style="display: none">
       <div class="modal-content" style="max-width: 700px">
         <div class="modal-header">
-          <h3 id="supportYearModalTitle">Add Support Year</h3>
+          <h3 id="supportYearModalTitle">Add Support Details</h3>
           <button type="button" onclick="closeSupportYearModal()">
             &times;
           </button>
@@ -353,7 +353,7 @@
                 id="syLevel"
                 name="level"
                 required
-                onchange="handleSupportYearDistrictChange()"
+                onchange="onSupportYearLevelChange(); handleSupportYearDistrictChange();"
               >
                 <option value="">Select Level</option>
                 <option value="National">National</option>
