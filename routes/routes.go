@@ -2,6 +2,8 @@ package routes
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
+	_ "moh-intranet.com/docs"
 	"moh-intranet.com/middleware"
 	"moh-intranet.com/service"
 )
@@ -12,6 +14,8 @@ func SetupRoutes(app *fiber.App) {
 
 	// Serve static files
 	app.Static("/", "./frontend")
+
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	api := app.Group("/api/v1")
 
