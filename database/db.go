@@ -63,6 +63,7 @@ func ConnectDB() *gorm.DB {
 		&models.PasswordToken{},
 		&models.InternalGroups{},
 		&models.Emails{},
+		&models.ApiTokens{},
 	)
 
 	if err != nil {

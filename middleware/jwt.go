@@ -39,7 +39,7 @@ type UserClaims struct {
 	jwt.RegisteredClaims
 }
 
-// AuthMiddleware protects /menus/* pages only
+// AuthMiddleware protects /menus/* pages only, supports both JWT and API tokens
 func AuthMiddleware(config ...AuthConfig) fiber.Handler {
 	cfg := DefaultAuthConfig()
 	if len(config) > 0 {
@@ -111,35 +111,72 @@ func AuthMiddleware(config ...AuthConfig) fiber.Handler {
 			return "/"
 		}
 
-		token := c.Cookies(cfg.CookieName)
-		if token == "" {
-			return c.Redirect(getSafeRedirectURL())
-		}
-
-		claims, err := validateToken(token, cfg.JWTSecret)
-		if err != nil {
-			// Clear auth cookie but keep navigation cookie
-			c.Cookie(&fiber.Cookie{
-				Name:     cfg.CookieName,
-				Value:    "",
-				Expires:  time.Now().Add(-time.Hour),
-				HTTPOnly: true,
-			})
-			return c.Redirect(getSafeRedirectURL())
-		}
-
-		userUUID := claims.PartnerUUID
-		if userUUID == "" {
-			return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized: missing user UUID")
-		}
-
-		// Fetch user with role and functions
 		var user models.Users
-		if err := database.DB.Preload("Role").Where("uuid = ?", userUUID).First(&user).Error; err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error":   "Failed to fetch user",
-				"details": err.Error(),
-			})
+		var authenticated bool
+		var authType string
+
+		// Try API token authentication first
+		authHeader := c.Get("Authorization")
+		if after, ok := strings.CutPrefix(authHeader, "Bearer "); ok {
+			token := after
+
+			var apiToken models.ApiTokens
+			if err := database.DB.Preload("User.Role").Where("token = ?", token).First(&apiToken).Error; err == nil {
+				// Found a valid API token, get the associated user
+
+				authenticated = true
+				authType = "api_token"
+				c.Locals("apiToken", apiToken)
+			}
+			// If API token invalid, continue to try JWT (don't return error immediately)
+		}
+
+		// If not authenticated via API token, try JWT authentication
+		if !authenticated {
+			token := c.Cookies(cfg.CookieName)
+			if token == "" {
+				return c.Redirect(getSafeRedirectURL())
+			}
+
+			claims, err := validateToken(token, cfg.JWTSecret)
+			if err != nil {
+				// Clear auth cookie but keep navigation cookie
+				c.Cookie(&fiber.Cookie{
+					Name:     cfg.CookieName,
+					Value:    "",
+					Expires:  time.Now().Add(-time.Hour),
+					HTTPOnly: true,
+				})
+				return c.Redirect(getSafeRedirectURL())
+			}
+
+			userUUID := claims.PartnerUUID
+			if userUUID == "" {
+				return c.Status(fiber.StatusUnauthorized).SendString("Unauthorized: missing user UUID")
+			}
+
+			// Fetch user with role for JWT authentication
+			if err := database.DB.Preload("Role").Where("uuid = ?", userUUID).First(&user).Error; err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error":   "Failed to fetch user",
+					"details": err.Error(),
+				})
+			}
+
+			authenticated = true
+			authType = "jwt"
+		}
+
+		// If we still don't have authentication, handle the error
+		if !authenticated {
+			// If this was an API request with invalid token, return JSON error
+			if authHeader != "" {
+				return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+					"error": "Invalid authentication token",
+				})
+			}
+			// Otherwise redirect to safe page
+			return c.Redirect(getSafeRedirectURL())
 		}
 
 		// Map requested path to the menu key for filtering
@@ -150,13 +187,20 @@ func AuthMiddleware(config ...AuthConfig) fiber.Handler {
 
 		// Check if menuKey allowed by user's role and functions
 		if !isMenuKeyAllowedForUser(menuKey, &user) {
+			if authType == "api_token" {
+				return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+					"error": "Insufficient permissions for this resource",
+				})
+			}
 			return c.Redirect(getSafeRedirectURL())
 		}
 
 		// Save user info in context for other middlewares/handlers
 		c.Locals("user", user)
 		c.Locals("authenticated", true)
+		c.Locals("authType", authType)
 		c.Locals("userRole", user.Role.RoleName)
+
 		return c.Next()
 	}
 }
@@ -362,74 +406,6 @@ func validateToken(tokenString, secret string) (*UserClaims, error) {
 	}
 
 	return nil, jwt.ErrSignatureInvalid
-}
-
-// RequireAuth middleware for API routes that need authentication
-func RequireAuth(config ...AuthConfig) fiber.Handler {
-	cfg := DefaultAuthConfig()
-	if len(config) > 0 {
-		cfg = config[0]
-	}
-
-	return func(c *fiber.Ctx) error {
-		token := c.Cookies(cfg.CookieName)
-		if token == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Authentication required",
-			})
-		}
-
-		claims, err := validateToken(token, cfg.JWTSecret)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid or expired token",
-			})
-		}
-
-		// Store user info in context
-		c.Locals("user", claims)
-		c.Locals("userID", claims.UserID)
-		c.Locals("userRole", claims.Role)
-
-		return c.Next()
-	}
-}
-
-// RequireAdmin middleware for admin-only routes
-func RequireAdmin(config ...AuthConfig) fiber.Handler {
-	cfg := DefaultAuthConfig()
-	if len(config) > 0 {
-		cfg = config[0]
-	}
-
-	return func(c *fiber.Ctx) error {
-		token := c.Cookies(cfg.CookieName)
-		if token == "" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Authentication required",
-			})
-		}
-
-		claims, err := validateToken(token, cfg.JWTSecret)
-		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Invalid or expired token",
-			})
-		}
-
-		if claims.Role != "admin" && claims.Role != "super_admin" {
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "Admin privileges required",
-			})
-		}
-
-		// Store user info in context
-		c.Locals("user", claims)
-		c.Locals("userID", claims.UserID)
-		c.Locals("userRole", claims.Role)
-
-		return c.Next()
-	}
 }
 
 // SecurityHeaders adds security headers

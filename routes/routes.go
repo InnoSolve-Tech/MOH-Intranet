@@ -25,9 +25,6 @@ func SetupRoutes(app *fiber.App) {
 	api.Post("/forgot-password", service.ForgotPassword)
 	api.Post("/validate-token", service.ValidateToken)
 
-	// Protected API routes
-	api.Use(middleware.RequireAuth())
-
 	users := api.Group("/users")
 	{
 		users.Post("/register", service.RegisterUser)
@@ -87,5 +84,12 @@ func SetupRoutes(app *fiber.App) {
 	{
 		partnerContacts.Post("", service.CreateContact)
 		partnerContacts.Put("", service.UpdateContact)
+	}
+
+	api_token := api.Group("/tokens")
+	{
+		api_token.Post("", service.CreateApiToken)
+		api_token.Get("", service.ListApiTokens)
+		api_token.Delete("/:id", service.DeleteApiToken)
 	}
 }

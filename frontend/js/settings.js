@@ -13,6 +13,8 @@ class SettingsManager {
     this.editingItemIndex = -1;
     this.editingDropdownType = "";
     this.editingGroupIndex = -1;
+    this.apiTokens = [];
+    this.apiTokensGrid = null;
 
     // Email templates
     this.emailTemplates = {
@@ -107,6 +109,7 @@ Ministry of Health Uganda`,
   async init() {
     try {
       await this.loadInitialData();
+      await this.listApiTokens();
       this.initializeSettingsPage();
       this.setupEventListeners();
       this.showNotification("Settings loaded successfully", "success");
@@ -155,6 +158,144 @@ Ministry of Health Uganda`,
     }
   }
 
+async generateApiToken() {
+  const name = $("#newTokenName").val().trim();
+  if (!name) {
+    this.showNotification("Please enter a token name", "error");
+    return;
+  }
+
+  try {
+    const res = await fetch("/api/v1/tokens", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || "Failed to generate token");
+    }
+
+    const token = await res.json();
+
+    // Update grid
+    this.apiTokens.push(token);
+    this.initializeApiTokensGrid();
+
+    $("#newTokenName").val("");
+
+    // ✅ Show full token once (after creation)
+    alert(`Generated token for ${token.name}:\n\n${token.token}`);
+    this.showNotification("API token generated successfully", "success");
+  } catch (err) {
+    console.error("Error generating API token:", err);
+    this.showNotification(err.message, "error");
+  }
+}
+
+async listApiTokens() {
+  try {
+    const res = await fetch("/api/v1/tokens");
+    if (!res.ok) throw new Error("Failed to fetch API tokens");
+
+    const tokens = await res.json();
+    settingsManager.apiTokens = tokens;
+    console.log(tokens)
+    settingsManager.initializeApiTokensGrid();
+  } catch (err) {
+    console.error("Error listing API tokens:", err);
+    settingsManager.showNotification(err.message, "error");
+  }
+}
+
+async deleteApiToken(id) {
+  if (!confirm("Are you sure you want to delete this token?")) return;
+
+  try {
+    const res = await fetch(`/api/v1/tokens/${id}`, { method: "DELETE" });
+    if (!res.ok) throw new Error("Failed to delete API token");
+
+    settingsManager.apiTokens = settingsManager.apiTokens.filter((t) => t.id !== id);
+    settingsManager.initializeApiTokensGrid();
+    settingsManager.showNotification("API token deleted successfully", "success");
+  } catch (err) {
+    console.error("Error deleting API token:", err);
+    settingsManager.showNotification(err.message, "error");
+  }
+}
+
+  initializeApiTokensGrid() {
+    if (this.apiTokensGrid) {
+      this.apiTokensGrid.destroy();
+    }
+
+    const columnDefs = [
+      { headerName: "Name", field: "name", flex: 2, sortable: true },
+      {
+        headerName: "Token",
+        field: "token",
+        flex: 3,
+        cellRenderer: (params) =>
+          `<code>${params.data.token.substring(0, 10)}...****</code>`,
+      },
+      {
+        headerName: "Created",
+        field: "CreatedAt",
+        flex: 2,
+        cellRenderer: (params) =>
+          new Date(params.data.CreatedAt).toLocaleString(),
+      },
+      {
+        headerName: "Actions",
+        flex: 1,
+        cellRenderer: (params) => `
+        <button class="btn btn-sm btn-secondary" 
+          onclick="copyApiToken('${params.data.token}')"
+          title="Copy Token">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 
+            4H8c-1.1 0-2 .9-2 2v14c0 
+            1.1.9 2 2 2h11c1.1 0 2-.9 
+            2-2V7c0-1.1-.9-2-2-2zm0 
+            16H8V7h11v14z"/>
+          </svg>
+        </button>
+          <button class="btn btn-sm btn-danger" 
+            onclick="settingsManager.deleteApiToken(${params.data.ID})"
+            title="Delete Token">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 
+              4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+          </button>
+        `,
+      },
+    ];
+
+    const gridOptions = {
+      columnDefs,
+      rowData: this.apiTokens,
+      getRowId: (params) => params.data.id,
+      domLayout: "normal",
+      suppressRowClickSelection: true,
+      rowHeight: 40,
+    };
+
+    const gridDiv = document.getElementById("apiTokensGrid");
+    this.apiTokensGrid = window.agGrid.createGrid(gridDiv, gridOptions);
+  }
+
+  async copyApiToken(token) {
+  try {
+    await navigator.clipboard.writeText(token);
+    settingsManager.showNotification("API token copied to clipboard", "success");
+  } catch (err) {
+    console.error("Failed to copy token:", err);
+    settingsManager.showNotification("Failed to copy token", "error");
+  }
+}
+
   setupEventListeners() {
     // Email target type change
     $("#emailTargetType").on("change", () => this.updateEmailTargets());
@@ -191,7 +332,8 @@ Ministry of Health Uganda`,
           ? "Internal Groups"
           : sectionName === "bulk-email"
             ? "Bulk Email"
-            : "SMTP Configuration";
+            : sectionName === "smtp"
+            ? "SMTP Configuration": " API Tokens";
     $(`.nav-btn:contains("${buttonText}")`).addClass("active");
   }
 
@@ -1342,6 +1484,7 @@ Ministry of Health Uganda`,
 
     this.initializeInternalGroupsGrid();
     this.initializeEmailHistoryGrid();
+    this.initializeApiTokensGrid();
   }
 }
 
@@ -1369,3 +1512,6 @@ window.saveInternalGroup = () => settingsManager?.saveInternalGroup();
 window.testSmtpConnection = () => settingsManager?.testSmtpConnection();
 window.saveAllSettings = () => settingsManager?.saveAllSettings();
 window.closeEditItemModal = () => settingsManager?.closeAllModals();
+window.generateApiToken = () => settingsManager?.generateApiToken();
+window.deleteApiToken = (id) => settingsManager?.deleteApiToken(id);
+window.copyApiToken = (token) => settingsManager.copyApiToken(token);

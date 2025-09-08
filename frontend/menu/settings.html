@@ -107,6 +107,19 @@
               </svg>
               SMTP Configuration
             </button>
+              <button class="nav-btn" onclick="showSettingsSection('api-tokens')">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+    >
+      <path
+        d="M12 2a10 10 0 100 20 10 10 0 000-20zm1 14.93V20h-2v-3.07A8.001 8.001 0 014.07 13H1v-2h3.07A8.001 8.001 0 0111 4.07V1h2v3.07A8.001 8.001 0 0119.93 11H23v2h-3.07A8.001 8.001 0 0113 16.93z"
+      />
+    </svg>
+    API Tokens
+  </button>
           </div>
 
           <!-- Dropdown Management Section with Individual Cards -->
@@ -603,6 +616,50 @@
               </div>
             </div>
           </div>
+          <div id="api-tokens-settings" class="settings-section">
+  <div class="settings-card">
+    <div class="card-header">
+      <h3>API Token Management</h3>
+      <p>Generate and manage API tokens for integrations</p>
+    </div>
+    <div class="card-body">
+      <!-- Generate New Token -->
+      <div class="form-row">
+        <div class="form-group">
+          <input
+            type="text"
+            id="newTokenName"
+            placeholder="Token name (e.g., Partner API)"
+          />
+        </div>
+        <div class="form-group">
+          <button
+            type="button"
+            class="btn btn-primary"
+            onclick="generateApiToken()"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+            >
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+            </svg>
+            Generate Token
+          </button>
+        </div>
+      </div>
+
+      <!-- Token List -->
+      <div
+        id="apiTokensGrid"
+        class="ag-theme-alpine"
+        style="height: 300px; width: 100%; margin-top: 20px"
+      ></div>
+    </div>
+  </div>
+</div>
         </div>
       </main>
     </div>
