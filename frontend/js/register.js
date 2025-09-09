@@ -1347,7 +1347,7 @@ function showUserCreationModal(formData) {
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" onclick="closeUserCreationModal()">Skip</button>
+        <button type="button" class="btn btn-secondary" onclick="closeUserCreationModal()">Close</button>
         <button type="button" class="btn btn-primary" onclick="finalSubmitRegistration()">Submit Registration</button>
       </div>
     </div>
