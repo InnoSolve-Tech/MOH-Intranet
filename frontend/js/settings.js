@@ -158,72 +158,77 @@ Ministry of Health Uganda`,
     }
   }
 
-async generateApiToken() {
-  const name = $("#newTokenName").val().trim();
-  if (!name) {
-    this.showNotification("Please enter a token name", "error");
-    return;
-  }
-
-  try {
-    const res = await fetch("/api/v1/tokens", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || "Failed to generate token");
+  async generateApiToken() {
+    const name = $("#newTokenName").val().trim();
+    if (!name) {
+      this.showNotification("Please enter a token name", "error");
+      return;
     }
 
-    const token = await res.json();
+    try {
+      const res = await fetch("/api/v1/tokens", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
 
-    // Update grid
-    this.apiTokens.push(token);
-    this.initializeApiTokensGrid();
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to generate token");
+      }
 
-    $("#newTokenName").val("");
+      const token = await res.json();
 
-    // ✅ Show full token once (after creation)
-    alert(`Generated token for ${token.name}:\n\n${token.token}`);
-    this.showNotification("API token generated successfully", "success");
-  } catch (err) {
-    console.error("Error generating API token:", err);
-    this.showNotification(err.message, "error");
+      // Update grid
+      this.apiTokens.push(token);
+      this.initializeApiTokensGrid();
+
+      $("#newTokenName").val("");
+
+      // ✅ Show full token once (after creation)
+      alert(`Generated token for ${token.name}:\n\n${token.token}`);
+      this.showNotification("API token generated successfully", "success");
+    } catch (err) {
+      console.error("Error generating API token:", err);
+      this.showNotification(err.message, "error");
+    }
   }
-}
 
-async listApiTokens() {
-  try {
-    const res = await fetch("/api/v1/tokens");
-    if (!res.ok) throw new Error("Failed to fetch API tokens");
+  async listApiTokens() {
+    try {
+      const res = await fetch("/api/v1/tokens");
+      if (!res.ok) throw new Error("Failed to fetch API tokens");
 
-    const tokens = await res.json();
-    settingsManager.apiTokens = tokens;
-    console.log(tokens)
-    settingsManager.initializeApiTokensGrid();
-  } catch (err) {
-    console.error("Error listing API tokens:", err);
-    settingsManager.showNotification(err.message, "error");
+      const tokens = await res.json();
+      settingsManager.apiTokens = tokens;
+      console.log(tokens);
+      settingsManager.initializeApiTokensGrid();
+    } catch (err) {
+      console.error("Error listing API tokens:", err);
+      settingsManager.showNotification(err.message, "error");
+    }
   }
-}
 
-async deleteApiToken(id) {
-  if (!confirm("Are you sure you want to delete this token?")) return;
+  async deleteApiToken(id) {
+    if (!confirm("Are you sure you want to delete this token?")) return;
 
-  try {
-    const res = await fetch(`/api/v1/tokens/${id}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to delete API token");
+    try {
+      const res = await fetch(`/api/v1/tokens/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete API token");
 
-    settingsManager.apiTokens = settingsManager.apiTokens.filter((t) => t.id !== id);
-    settingsManager.initializeApiTokensGrid();
-    settingsManager.showNotification("API token deleted successfully", "success");
-  } catch (err) {
-    console.error("Error deleting API token:", err);
-    settingsManager.showNotification(err.message, "error");
+      settingsManager.apiTokens = settingsManager.apiTokens.filter(
+        (t) => t.id !== id,
+      );
+      settingsManager.initializeApiTokensGrid();
+      settingsManager.showNotification(
+        "API token deleted successfully",
+        "success",
+      );
+    } catch (err) {
+      console.error("Error deleting API token:", err);
+      settingsManager.showNotification(err.message, "error");
+    }
   }
-}
 
   initializeApiTokensGrid() {
     if (this.apiTokensGrid) {
@@ -287,14 +292,17 @@ async deleteApiToken(id) {
   }
 
   async copyApiToken(token) {
-  try {
-    await navigator.clipboard.writeText(token);
-    settingsManager.showNotification("API token copied to clipboard", "success");
-  } catch (err) {
-    console.error("Failed to copy token:", err);
-    settingsManager.showNotification("Failed to copy token", "error");
+    try {
+      await navigator.clipboard.writeText(token);
+      settingsManager.showNotification(
+        "API token copied to clipboard",
+        "success",
+      );
+    } catch (err) {
+      console.error("Failed to copy token:", err);
+      settingsManager.showNotification("Failed to copy token", "error");
+    }
   }
-}
 
   setupEventListeners() {
     // Email target type change
@@ -333,7 +341,8 @@ async deleteApiToken(id) {
           : sectionName === "bulk-email"
             ? "Bulk Email"
             : sectionName === "smtp"
-            ? "SMTP Configuration": " API Tokens";
+              ? "SMTP Configuration"
+              : " API Tokens";
     $(`.nav-btn:contains("${buttonText}")`).addClass("active");
   }
 

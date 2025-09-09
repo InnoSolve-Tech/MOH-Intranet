@@ -6,19 +6,18 @@ This package sets up all API routes for the **MOH Intranet backend** using **Fib
 
 ## Table of Contents
 
-* [Setup](#setup)
-* [Middleware](#middleware)
-* [API Endpoints](#api-endpoints)
-
-  * [Authentication](#authentication)
-  * [Users](#users)
-  * [Partners](#partners)
-  * [Thematic Areas](#thematic-areas)
-  * [Partner Categories](#partner-categories)
-  * [Internal Groups](#internal-groups)
-  * [Emails](#emails)
-  * [Contacts](#contacts)
-  * [API Tokens](#api-tokens)
+- [Setup](#setup)
+- [Middleware](#middleware)
+- [API Endpoints](#api-endpoints)
+  - [Authentication](#authentication)
+  - [Users](#users)
+  - [Partners](#partners)
+  - [Thematic Areas](#thematic-areas)
+  - [Partner Categories](#partner-categories)
+  - [Internal Groups](#internal-groups)
+  - [Emails](#emails)
+  - [Contacts](#contacts)
+  - [API Tokens](#api-tokens)
 
 ---
 
@@ -158,4 +157,3 @@ app.Static("/", "./frontend")
 | POST   | `/api/v1/tokens`     | Create API token |
 | GET    | `/api/v1/tokens`     | List API tokens  |
 | DELETE | `/api/v1/tokens/:id` | Delete API token |
-

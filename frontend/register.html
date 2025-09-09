@@ -207,6 +207,36 @@
 
         <!-- Step 3: MoU -->
         <div class="form-step" data-step="3">
+          <!-- URSB -->
+          <div class="checkbox-group">
+            <input type="checkbox" id="hasMouURSB" name="hasMouURSB" />
+            <label for="hasMouURSB">We have a certificate issued by URSB</label>
+          </div>
+
+          <div class="mou-details" id="mouDetailsURSB" style="display: none">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signedDateURSB">Signed Date *</label>
+                <input type="date" id="signedDateURSB" name="signedDateURSB" />
+              </div>
+              <div class="form-group">
+                <label for="expiryDateURSB">Expiry Date</label>
+                <input type="date" id="expiryDateURSB" name="expiryDateURSB" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="mouFileURSB">Upload URSB Document</label>
+              <input
+                type="file"
+                id="mouFileURSB"
+                name="mouFileURSB"
+                accept="application/pdf"
+                required
+              />
+            </div>
+          </div>
+
           <!-- MoH -->
           <div class="checkbox-group">
             <input type="checkbox" id="hasMouMoH" name="hasMouMoH" />
@@ -247,35 +277,7 @@
                 id="mouFileMoH"
                 name="mouFileMoH"
                 accept="application/pdf"
-              />
-            </div>
-          </div>
-
-          <!-- URSB -->
-          <div class="checkbox-group">
-            <input type="checkbox" id="hasMouURSB" name="hasMouURSB" />
-            <label for="hasMouURSB">We have an MoU with URSB</label>
-          </div>
-
-          <div class="mou-details" id="mouDetailsURSB" style="display: none">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="signedDateURSB">Signed Date *</label>
-                <input type="date" id="signedDateURSB" name="signedDateURSB" />
-              </div>
-              <div class="form-group">
-                <label for="expiryDateURSB">Expiry Date</label>
-                <input type="date" id="expiryDateURSB" name="expiryDateURSB" />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="mouFileURSB">Upload URSB Document</label>
-              <input
-                type="file"
-                id="mouFileURSB"
-                name="mouFileURSB"
-                accept="application/pdf"
+                required
               />
             </div>
           </div>
@@ -283,7 +285,9 @@
           <!-- NGO Board -->
           <div class="checkbox-group">
             <input type="checkbox" id="hasMouNGO" name="hasMouNGO" />
-            <label for="hasMouNGO">We have an MoU with NGO Board</label>
+            <label for="hasMouNGO"
+              >We have a certificate issued by the NGO Board</label
+            >
           </div>
 
           <div class="mou-details" id="mouDetailsNGO" style="display: none">
@@ -305,6 +309,7 @@
                 id="mouFileNGO"
                 name="mouFileNGO"
                 accept="application/pdf"
+                required
               />
             </div>
           </div>
